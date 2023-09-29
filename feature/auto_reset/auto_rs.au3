@@ -8,6 +8,7 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/web_mu_utils.au3"
 #include "../../utils/game_utils.au3"
+#RequireAdmin
 
 ; First time run => check log then write to file
 ;~ checkLogRsFirstTime()
@@ -19,6 +20,11 @@ Local $sSession
 ;~ login($sSession,"vinci7","manhva02","Victozia")
 ;~ $lvlStopCheck = 20
 ;~ checkLvlInWeb("Victozia", $lvlStopCheck, 1)
+;~ $charName = "Victozia"
+;~ $mainNo = getMainNoByChar($charName)
+;~ ; Active main no 
+;~ $activeWin = activeAndMoveWin($mainNo)
+;~ goMapLvl()
 
 start()
 
@@ -80,8 +86,9 @@ Func processReset($username, $password, $charName)
 			If $activeWin == True Then
 				; Click bỏ hết các bảng thông báo
 				handelWhenFinshDevilEvent()
+				secondWait(3)
 				; 1. Change Char
-				changeChar()
+				changeChar($mainNo)
 				; 2. Reset in web
 				_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
 				secondWait(5)
@@ -96,7 +103,7 @@ Func processReset($username, $password, $charName)
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
 				; 3. Return game
-				returnChar(getMainNo($mainNo))
+				returnChar($mainNo)
 				; 4. Go to sport
 				goToSportLvl1($mainNo)
 				; 5. Check lvl in web
@@ -127,7 +134,7 @@ Trước khi thay đổi nhân vật cần check xem đã đủ lvl reset hay ch
 Nếu không đủ lvl rs thì thực hiện follow leader ( mục đích nếu bị bắn về thành ) và chờ 15p để check lại lvl
 Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
-Func changeChar()
+Func changeChar($mainNo)
 	writeLog("Begin change char !")
 	sendKeyDelay("+h")
 	secondWait(1)
@@ -136,7 +143,10 @@ Func changeChar()
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(518, 456)
 	secondWait(7)
-	If PixelGetColor(47,764) <> 0xC06A1A Then
+	; Check title 
+	$checkActive = activeAndMoveWin($mainNo)
+	if $checkActive == True Then
+	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(518, 456)
@@ -212,8 +222,10 @@ EndFunc
 #ce
 Func goMapLvl()
 	writeLog("Bat dau map event lvl ! ")
-	_MU_Rs_MouseClick_Delay(134, 100)
-	_MU_Rs_MouseClick_Delay(383, 237)
+	; Click event icon
+	_MU_Rs_MouseClick_Delay(155, 119)
+	; Click map lvl
+	_MU_Rs_MouseClick_Delay(484, 326)
 	secondWait(3)
 	; Go to center
 	_MU_Rs_MouseClick_Delay(399, 183)

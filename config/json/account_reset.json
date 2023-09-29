@@ -1,4 +1,4 @@
 [
-{"active":true, "user_name":"vinci7","password":"manhva02","char_name":"Victozia","type_rs":"V", "hour_per_reset": 8, "time_rs":1,"limit": 5, "last_date_reset":"2023-09-27", "last_time_reset":"2023-09-27 01:23:02"},
+{"active":false, "user_name":"vinci7","password":"manhva02","char_name":"Victozia","type_rs":"V", "hour_per_reset": 8, "time_rs":1,"limit": 5, "last_date_reset":"2023-09-27", "last_time_reset":"2023-09-27 01:23:02"},
 {"active":true, "user_name":"game002","password":"111qqq","char_name":"JackAngel","type_rs":"V", "hour_per_reset": 8, "time_rs":1,"limit": 5, "last_date_reset":"2023-09-27", "last_time_reset":"2023-09-27 01:23:02"}
 ]

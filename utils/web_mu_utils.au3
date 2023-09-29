@@ -97,7 +97,7 @@ Func loginWebsite($sSession,$username, $password, $charName)
 
 	_WD_Window($sSession,"MINIMIZE")
 
-	_Demo_NavigateCheckBanner($sSession, $baseUrl)
+	_Demo_NavigateCheckBanner($sSession, $baseMuUrl)
     _WD_LoadWait($sSession, 1000)
 
 	; Fill user name
