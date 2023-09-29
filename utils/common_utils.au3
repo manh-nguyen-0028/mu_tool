@@ -248,3 +248,7 @@ EndFunc
 Func getPropertyJson($json, $propertyName)
 	Return _JSONGet($json, $propertyName)
 EndFunc
+
+Func setPropertyJson($json, $propertyName, $value)
+	Return _JSONSet($json, $propertyName, $value)
+EndFunc
