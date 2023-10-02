@@ -1,4 +1,4 @@
 [
-{"active":true,"user_name":"vinci7","password":"manhva02","char_name":"Victozia","type_rs":1,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2023/09/29 16:18:01"},
-{"active":true,"user_name":"game002","password":"111qqq","char_name":"JackAngel","type_rs":1,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2023/09/29 16:18:01"}
+{"active":true,"user_name":"vinci7","password":"manhva02","char_name":"Victozia","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2023/09/29 16:18:01"},
+{"active":true,"user_name":"game002","password":"111qqq","char_name":"JackAngel","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2023/09/29 16:18:01"}
 ]

@@ -88,12 +88,15 @@ Func getConfigSeeding()
 	writeLog(UBound($facebookPost))
 EndFunc
 
-Func _MU_followLeader()
+Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
 	writeLog("Begin follow leader !")
-	_MU_MouseClick_Delay(995, 147)
-	_MU_MouseClick_Delay(477, 476)
+	If $position == 1 Then
+		_MU_MouseClick_Delay(995, 147)
+		sendKeyDelay("{Enter}")
+		;~ _MU_MouseClick_Delay(477, 476)
+	EndIf
 EndFunc
 
 Func _MU_Get_Info_Char($accountInfo)

@@ -59,15 +59,18 @@ Func start()
 		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
 		;~ $lastDateReset = getPropertyJson($aAccountActiveWithrawRs[$i],"last_date_reset")
 		$nextTimeRs = addHour($lastTimeRs, Number($limit))
+		$mainNo = getMainNoByChar($charName)
 		writeLog("Thoi gian gan nhat co the reset: " & $nextTimeRs)
 		If getTimeNow() < $nextTimeRs Then ContinueLoop
 		If $timeRs >= $limit Then ContinueLoop
 		; Begin withdraw reset
-		processReset($aAccountActiveWithrawRs[$i])
-		; Logout account
-		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-		secondWait(5)
-		; check last reset
+		$activeMain = activeAndMoveWin($mainNo)
+		If $activeMain == True Then 
+			processReset($aAccountActiveWithrawRs[$i])
+			; Logout account
+			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
+			secondWait(5)
+		EndIf
 	Next
 
 	; Close webdriver neu thuc hien xong 
@@ -81,6 +84,7 @@ Func processReset($jAccountInfo)
 	$password = getPropertyJson($jAccountInfo,"password")
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$typeRs = getPropertyJson($jAccountInfo,"type_rs")
+	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
 	$isLoginSuccess = login($sSession, $username, $password, $charName)
@@ -135,12 +139,16 @@ Func processReset($jAccountInfo)
 					; 6. Active main
 					activeAndMoveWin($mainNo)
 					; 7. Go map lvl
-					goMapLvl()
+					If $resetInDay <=3 Then 
+						goMapLvl()
+					Else
+						goMapArena()
+					EndIf
 					; 8. Check lvl in web
-					$lvlStopCheck = 400
+					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($charName, $lvlStopCheck, 1)
 					; 9. Follow leader
-					_MU_followLeader()
+					_MU_followLeader(1)
 					; 10. minisize main 
 					minisizeMain($mainNo)
 				EndIf
@@ -176,7 +184,7 @@ Func getResetInDay($charName)
 	$array = StringSplit($array[2], ' lượt.', 1)
 	$rsInDay = $array[1]
 	writeLog("Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
-	Return $rsInDay
+	Return Number($rsInDay)
 EndFunc
 
 Func checkLogReset($sSession, $accountInfo)
@@ -295,13 +303,23 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	; Vào nhân vật kiểm tra lvl
 	_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 	secondWait(5)
-	
+	$mainNo = getMainNoByChar($charName)
 	; find lvl
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
 	writeLog("Current level: " & $nLvl)
+	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
+		If $tLvl <> $tmpLvl Then 
+			$tmpLvl = $tLvl
+		Else
+			$checkAutoHome = checkActiveAutoHome()
+			If $checkAutoHome == False Then
+				$activeMain = activeAndMoveWin($mainNo)
+				If $activeMain == True Then goSportStadium()
+			EndIf
+		EndIf
 		; Wait 1 min then retry
 		minuteWait($timeDelay)
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
@@ -343,4 +361,23 @@ Func goMapLvl()
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
 	; Doi 16p cho het event
 	minuteWait(16)
+EndFunc
+
+Func goMapArena()
+	writeLog("Bat dau map arena ! ")
+	; Click event icon
+	_MU_Rs_MouseClick_Delay(483, 494)
+	; Click map arena
+	;~ _MU_Rs_MouseClick_Delay(484, 326)
+	secondWait(8)
+	; Go to sport
+	goSportStadium()
+EndFunc
+
+Func goSportStadium() 
+	Send("{Tab}")
+	secondWait(2)
+	_MU_Rs_MouseClick_Delay(269, 329)
+	Send("{Tab}")
+	secondWait(2)
 EndFunc
