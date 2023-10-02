@@ -37,7 +37,7 @@ start()
 
 Func start()
 	; get array account need withdraw reset
-	Local $sFilePath = $sRootDir & "output\\File_" & $sDateTime & ".txt"
+	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
