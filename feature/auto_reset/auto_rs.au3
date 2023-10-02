@@ -15,6 +15,25 @@ Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
+;~ $charName = "GoldenGirl"
+
+;~ $jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
+;~ ; last time
+;~ For $i =0 To UBound($jsonRsGame) - 1
+;~ 	$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+;~ 	If $charNameTmp == $charName Then
+;~ 		_JSONSet(getTimeNow(), $jsonRsGame[$i],"last_time_reset")
+;~ 		; reset in day
+;~ 		$resetInDay = 10
+;~ 		_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+;~ 		setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+;~ 	EndIf
+;~ 	;~ ConsoleWrite($vElement)
+;~ Next
+
+
+;~ $jsonRsGame
+
 
 Func start()
 	; get array account need withdraw reset
@@ -109,12 +128,17 @@ Func processReset($jAccountInfo)
 				closeDiaglogConfim($sSession)
 				; Update info account json config
 				$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
-				; last time
-				_JSONSet(getTimeNow(), $jsonRsGame, $charName & "." & "last_time_reset")
-				; reset in day
-				$resetInDay = getResetInDay($charName)
-				_JSONSet($resetInDay, $jsonRsGame, $charName & "." & "time_rs")
-				setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+				For $i =0 To UBound($jsonRsGame) - 1
+					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+					If $charNameTmp == $charName Then
+						; last time rs
+						_JSONSet(getTimeNow(), $jsonRsGame[$i],"last_time_reset")
+						; reset in day
+						$resetInDay = getResetInDay($charName)
+						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+					EndIf
+				Next
 				; If reset online = true => withow handle in game
 				If $resetOnline == False Then
 					; 3. Return game
@@ -155,6 +179,7 @@ Func moveOtherMap()
 	sendKeyDelay("m")
 	_MU_MouseClick_Delay(161, 297)
 EndFunc
+
 Func getResetInDay($charName)
 	; Chuyen den site nay de thuc hien check thong tin
 	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
