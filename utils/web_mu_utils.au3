@@ -71,12 +71,7 @@ Func login($sSession, $username, $password, $charName)
 	
 	While $sTitle <> $sTitleLoginSuccess
 		If $timeLoginFail > 10 Then ExitLoop
-		$checkConfirmBox = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//button[@class='swal2-confirm swal2-styled']")
-		If @error Then
-			writeLogFile($logFile, "Không tìm thấy diaglog lỗi !")
-		Else
-			clickElement($sSession, $checkConfirmBox)
-		EndIf
+		closeDiaglogConfim($sSession)
 		loginWebsite($sSession,$username, $password, $charName)
 		$sTitle = getTitleWebsite($sSession)
 		$timeLoginFail = $timeLoginFail + 1
@@ -87,6 +82,15 @@ Func login($sSession, $username, $password, $charName)
 	Else
 		writeLogFile($logFile, "Đăng nhập thành công !")
 		Return True
+	EndIf
+EndFunc
+
+Func closeDiaglogConfim($sSession)
+	$checkConfirmBox = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//button[@class='swal2-confirm swal2-styled']")
+	If @error Then
+		writeLogFile($logFile, "Không tìm thấy diaglog lỗi !")
+	Else
+		clickElement($sSession, $checkConfirmBox)
 	EndIf
 EndFunc
 

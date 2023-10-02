@@ -11,6 +11,7 @@ Global $textPathRoot = $baseDir & "\config\text\"
 Global $inputPathRoot = $baseDir & "\input\"
 Global $outputPathRoot = $baseDir & "\output\"
 Global $driverPathRoot = $baseDir & "\driver\"
+Global $featurePathRoot = $baseDir & "\feature\"
 
 Local $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của script
 Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ; Lấy đường dẫn thư mục gốc
@@ -68,6 +69,30 @@ Func waitToNextHour($hourPlus = 1)
 	$nextTime = createTimeToTicks($nextHour, 0 , "05")
 	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
 	$diffTime = diffTime($currentTime, $nextTime)
+	Sleep($diffTime)
+EndFunc
+
+Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
+	If @MIN < $minPlus Then 
+		$nextHour = @HOUR
+	Else
+		$nextHour = @HOUR + $hourPlus
+	EndIf
+	writeLog("Wait to next hour : " &$nextHour)
+	$nextTime = createTimeToTicks($nextHour, $minPlus , $secPlus)
+	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
+	$diffTime = diffTime($currentTime, $nextTime)
+	writeLog("time diff: " & timeToText($diffTime))
+	Sleep($diffTime)
+EndFunc
+
+Func waitToNextTime($hourPlus, $minPlus, $secPlus)
+	$nextHour = @HOUR + $hourPlus
+	writeLog("Wait to next hour : " &$nextHour)
+	$nextTime = createTimeToTicks($nextHour, $minPlus , $secPlus)
+	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
+	$diffTime = diffTime($currentTime, $nextTime)
+	writeLog("time diff: " & timeToText($diffTime))
 	Sleep($diffTime)
 EndFunc
 

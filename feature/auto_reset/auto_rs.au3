@@ -18,20 +18,6 @@ Local $sSession
 
 ;~ $charName = "Growth"
 
-; close all chrome browser
-;~ checkThenCloseChrome()
-
-;~ $sSession = SetupChrome()
-;~ login($sSession,"pvc2021","manhva02",$charName)
-;~ $lvlStopCheck = 20
-;~ checkLvlInWeb("Victozia", $lvlStopCheck, 1)
-;~ getResetInDay($charName)
-;~ writeLog("rs trong ngay: " & getResetInDay($charName))
-;~ $mainNo = getMainNoByChar($charName)
-;~ ; Active main no 
-;~ $activeWin = activeAndMoveWin($mainNo)
-;~ goMapLvl()
-
 start()
 
 Func start()
@@ -119,14 +105,16 @@ Func processReset($jAccountInfo)
 				; Submit add point
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
+				; close diaglog confirm
+				closeDiaglogConfim($sSession)
 				; Update info account json config
-				$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "account_reset.json")
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
 				; last time
-				_JSONSet(getTimeNow(), $jsonDevilConfig, $charName & "." & "last_time_reset")
+				_JSONSet(getTimeNow(), $jsonRsGame, $charName & "." & "last_time_reset")
 				; reset in day
 				$resetInDay = getResetInDay($charName)
-				_JSONSet($resetInDay, $jsonDevilConfig, $charName & "." & "time_rs")
-				setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonDevilConfig)
+				_JSONSet($resetInDay, $jsonRsGame, $charName & "." & "time_rs")
+				setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
 				; If reset online = true => withow handle in game
 				If $resetOnline == False Then
 					; 3. Return game
@@ -147,6 +135,9 @@ Func processReset($jAccountInfo)
 					; 8. Check lvl in web
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($charName, $lvlStopCheck, 1)
+					; Move other map
+					moveOtherMap()
+					secondWait(8)
 					; 9. Follow leader
 					_MU_followLeader(1)
 					; 10. minisize main 
@@ -160,6 +151,10 @@ Func processReset($jAccountInfo)
 	EndIf
 EndFunc
 
+Func moveOtherMap()
+	sendKeyDelay("m")
+	_MU_MouseClick_Delay(161, 297)
+EndFunc
 Func getResetInDay($charName)
 	; Chuyen den site nay de thuc hien check thong tin
 	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
@@ -317,7 +312,7 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 			$checkAutoHome = checkActiveAutoHome()
 			If $checkAutoHome == False Then
 				$activeMain = activeAndMoveWin($mainNo)
-				If $activeMain == True Then goSportStadium()
+				If $activeMain == True Then goMapArena()
 			EndIf
 		EndIf
 		; Wait 1 min then retry
@@ -360,10 +355,12 @@ Func goMapLvl()
 	Send("{HOME}")
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
 	; Doi 16p cho het event
-	minuteWait(16)
+	;~ minuteWait(16)
 EndFunc
 
 Func goMapArena()
+	sendKeyDelay("{Enter}")
+	sendKeyDelay("{Enter}")
 	writeLog("Bat dau map arena ! ")
 	; Click event icon
 	_MU_Rs_MouseClick_Delay(483, 494)
