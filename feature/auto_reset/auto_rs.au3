@@ -10,18 +10,16 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-; First time run => check log then write to file
-;~ checkLogRsFirstTime()
-
 Local $aAccountActiveWithrawRs[0]
-Local $sSession
-
-;~ $charName = "Growth"
+Local $sSession,$logFile
+Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
 
 Func start()
 	; get array account need withdraw reset
+	Local $sFilePath = $sRootDir & "output\\File_" & $sDateTime & ".txt"
+	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
@@ -46,7 +44,7 @@ Func start()
 		;~ $lastDateReset = getPropertyJson($aAccountActiveWithrawRs[$i],"last_date_reset")
 		$nextTimeRs = addHour($lastTimeRs, Number($limit))
 		$mainNo = getMainNoByChar($charName)
-		writeLog("Thoi gian gan nhat co the reset: " & $nextTimeRs)
+		writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 		If getTimeNow() < $nextTimeRs Then ContinueLoop
 		If $timeRs >= $limit Then ContinueLoop
 		; Begin withdraw reset
@@ -58,6 +56,8 @@ Func start()
 			secondWait(5)
 		EndIf
 	Next
+
+	FileClose($logFile)
 
 	; Close webdriver neu thuc hien xong 
 	If $sSession Then _WD_DeleteSession($sSession)
@@ -168,7 +168,7 @@ Func getResetInDay($charName)
 	; Thong tin lvl, so lan trong ngay/ thang
 	$sElement = findElement($sSession, "//div[@role='alert']")
 	$charInfoText = getTextElement($sSession, $sElement)
-	writeLog("$charInfoText: " & $charInfoText)
+	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
 	; Lvl
 	$array = StringSplit($charInfoText, $charName &' level ', 1)
 	;~ _ArrayDisplay($array)
@@ -178,7 +178,7 @@ Func getResetInDay($charName)
 	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
 	$array = StringSplit($array[2], ' lượt.', 1)
 	$rsInDay = $array[1]
-	writeLog("Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
+	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
 	Return Number($rsInDay)
 EndFunc
 
@@ -196,7 +196,7 @@ Func checkLogReset($sSession, $accountInfo)
 	; Thong tin lvl, so lan trong ngay/ thang
 	$sElement = findElement($sSession, "//div[@role='alert']")
 	$charInfoText = getTextElement($sSession, $sElement)
-	writeLog("$charInfoText: " & $charInfoText)
+	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
 	; Lvl
 	$array = StringSplit($charInfoText, getCharName($accountInfo) &' level ', 1)
 	;~ _ArrayDisplay($array)
@@ -206,7 +206,7 @@ Func checkLogReset($sSession, $accountInfo)
 	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
 	$array = StringSplit($array[2], ' lượt.', 1)
 	$rsInDay = $array[1]
-	writeLog("Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
+	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
 
 	; Xem Nhat ky reset
 	_Demo_NavigateCheckBanner($sSession,combineUrl("web/char/char_info.logreset.shtml"))
@@ -223,7 +223,7 @@ Func checkLogReset($sSession, $accountInfo)
 	$nextLvlRs = 200 + ($lastRs * 5) + 5
 	$nextLvlRs = $nextLvlRs >= 400 ? 400 : $nextLvlRs
 	$isMatchLvlRs = $charLvl >= $nextLvlRs ? True : False
-	writeLog("Xem Nhat ky reset: " & $month & "@" & $day & "@" & $hour & "@" & $min & "@" & $timeRsText)
+	writeLogFile($logFile, "Xem Nhat ky reset: " & $month & "@" & $day & "@" & $hour & "@" & $min & "@" & $timeRsText)
 
 	; Get time per rs
 	$jsonRsLog = getAccountRsReportConfig()
@@ -245,7 +245,7 @@ Nếu không đủ lvl rs thì thực hiện follow leader ( mục đích nếu 
 Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
 Func changeChar($mainNo)
-	writeLog("Begin change char !")
+	writeLogFile($logFile, "Begin change char !")
 	sendKeyDelay("+h")
 	secondWait(1)
 	sendKeyDelay("{ESC}")
@@ -270,7 +270,7 @@ EndFunc
 Func returnChar($mainNo) 
 	activeAndMoveWin($mainNo)
 	secondWait(1)
-	writeLog("Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
+	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	_MU_Rs_MouseClick_Delay(924, 771)
 	secondWait(12)
 EndFunc 
@@ -279,17 +279,17 @@ EndFunc
 	Tim sport de luyen lvl len 20
 #ce
 Func goToSportLvl1($mainNo) 
-	writeLog("Bat ban do !")
+	writeLogFile($logFile, "Bat ban do !")
 	Send("{Tab}")
 	secondWait(2)
 	; An nhan vat
 	sendKeyDelay("+h")
 	secondWait(1)
-	writeLog("Bat dau tim vi tri sport 1")
+	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
 	_MU_MouseClick_Delay(501, 423)
 	secondWait(1)
 	Send("{Tab}")
-	writeLog("Tat ban do !")
+	writeLogFile($logFile, "Tat ban do !")
 	secondWait(2)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
@@ -303,7 +303,7 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
-	writeLog("Current level: " & $nLvl)
+	writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
 		If $tLvl <> $tmpLvl Then 
@@ -341,7 +341,7 @@ EndFunc
 	Vao event Lvl 
 #ce
 Func goMapLvl()
-	writeLog("Bat dau map event lvl ! ")
+	writeLogFile($logFile, "Bat dau map event lvl ! ")
 	; Click event icon
 	_MU_Rs_MouseClick_Delay(155, 119)
 	; Click map lvl
@@ -361,7 +361,7 @@ EndFunc
 Func goMapArena()
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
-	writeLog("Bat dau map arena ! ")
+	writeLogFile($logFile, "Bat dau map arena ! ")
 	; Click event icon
 	_MU_Rs_MouseClick_Delay(483, 494)
 	; Click map arena
