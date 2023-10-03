@@ -14,7 +14,6 @@ Func _MU_followLeader($position)
 	If $position == 1 Then
 		_MU_MouseClick_Delay(995, 147)
 		sendKeyDelay("{Enter}")
-		;~ _MU_MouseClick_Delay(477, 476)
 	EndIf
 EndFunc
 
