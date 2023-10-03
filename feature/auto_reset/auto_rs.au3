@@ -15,25 +15,6 @@ Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
-;~ $charName = "GoldenGirl"
-
-;~ $jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
-;~ ; last time
-;~ For $i =0 To UBound($jsonRsGame) - 1
-;~ 	$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
-;~ 	If $charNameTmp == $charName Then
-;~ 		_JSONSet(getTimeNow(), $jsonRsGame[$i],"last_time_reset")
-;~ 		; reset in day
-;~ 		$resetInDay = 10
-;~ 		_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
-;~ 		setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
-;~ 	EndIf
-;~ 	;~ ConsoleWrite($vElement)
-;~ Next
-
-
-;~ $jsonRsGame
-
 
 Func start()
 	; get array account need withdraw reset
@@ -205,62 +186,6 @@ Func getResetInDay($charName)
 	$rsInDay = $array[1]
 	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
 	Return Number($rsInDay)
-EndFunc
-
-Func checkLogReset($sSession, $accountInfo)
-	$isCanRs = False
-	 ; Chuyen den site nay de thuc hien check thong tin
-	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
-	_WD_LoadWait($sSession, 1000)
-
-	; Click vao button nhan vat can check 
-	$sElement = findElement($sSession, "//button[contains(text(),'"& getCharName($accountInfo) &"')]")
-	clickElement($sSession, $sElement)
-	secondWait(5)
-
-	; Thong tin lvl, so lan trong ngay/ thang
-	$sElement = findElement($sSession, "//div[@role='alert']")
-	$charInfoText = getTextElement($sSession, $sElement)
-	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
-	; Lvl
-	$array = StringSplit($charInfoText, getCharName($accountInfo) &' level ', 1)
-	;~ _ArrayDisplay($array)
-	$charLvl = Number(StringLeft ($array[2], 3))
-	
-	; Rs trong ngay
-	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
-	$array = StringSplit($array[2], ' lượt.', 1)
-	$rsInDay = $array[1]
-	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
-
-	; Xem Nhat ky reset
-	_Demo_NavigateCheckBanner($sSession,combineUrl("web/char/char_info.logreset.shtml"))
-	; Get element
-	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
-	$timeRsText = getTextElement($sSession, $sElement)
-	$month = StringLeft($timeRsText,2)
-	$day = StringMid($timeRsText,4,2)
-	$hour = StringMid($timeRsText,7,2)
-	$min = StringMid($timeRsText,10,2)
-	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[3]")
-	$lastRs = getTextElement($sSession, $sElement)
-	$lastRs = Number($lastRs)
-	$nextLvlRs = 200 + ($lastRs * 5) + 5
-	$nextLvlRs = $nextLvlRs >= 400 ? 400 : $nextLvlRs
-	$isMatchLvlRs = $charLvl >= $nextLvlRs ? True : False
-	writeLogFile($logFile, "Xem Nhat ky reset: " & $month & "@" & $day & "@" & $hour & "@" & $min & "@" & $timeRsText)
-
-	; Get time per rs
-	$jsonRsLog = getAccountRsReportConfig()
-	$hourPerRs = _JSONGet($jsonRsLog, "time_per_rs")
-	$nextTimeRs = _DateAdd('h', $hourPerRs, @YEAR &"/"& $month &"/"& $day &" "& $hour &":"& $min &":00")
-	$currentTime = _NowCalc()
-	ConsoleWrite("nextTimeRs: " & $nextTimeRs & @CRLF)
-	ConsoleWrite("currentTime: " & $currentTime & @CRLF)
-	ConsoleWrite("Time left: " & _DateDiff('n',$currentTime,$nextTimeRs) & @CRLF)
-
-	; Set next time rs to file
-	;~ writeRsLog($accountInfo, $nextTimeRs,$charLvl, $nextLvlRs)
 EndFunc
 
 #cs

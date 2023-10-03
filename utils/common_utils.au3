@@ -17,7 +17,15 @@ Local $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của s
 Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ; Lấy đường dẫn thư mục gốc
 
 Global $baseMuUrl = "https://hn.gamethuvn.net/"
-Global $logFile
+Global $logFile, $jsonPositionConfig
+
+init()
+
+; init
+Func init()
+	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+	Return True
+EndFunc
 
 ; FUNCTION
 ; Log
