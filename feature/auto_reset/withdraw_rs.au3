@@ -9,11 +9,13 @@
 #include "../../utils/web_mu_utils.au3"
 
 Local $aAccountActiveWithrawRs[0]
-Local $sSession
+Local $sSession,$sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
 
 Func start()
+	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
+	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	; get array account need withdraw reset
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_withdraw_config.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
@@ -47,6 +49,8 @@ Func start()
 		; check last reset
 	Next
 
+	FileClose($logFile)
+	
 	; Close webdriver neu thuc hien xong 
 	If $sSession Then _WD_DeleteSession($sSession)
 	
@@ -62,7 +66,7 @@ Func withdrawRs($username, $password, $charName)
 			; withraw reset
 			$errorIp = _Demo_NavigateCheckBanner($sSession,combineUrl("web/bank/reset_in_out.withdraw_confirm.shtml?val=1&char=" & $charName))
 			secondWait(5)
-			writeLog("$errorIp: " & $errorIp)
+			writeLogFile($logFile, "$errorIp: " & $errorIp)
 
 			If $errorIp == $_WD_ERROR_Timeout Then
 				; Thuc hien set lai vao file de khong thuc hien rs nua
@@ -72,7 +76,7 @@ Func withdrawRs($username, $password, $charName)
 				secondWait(5)
 				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
 				clickElement($sSession, $sElement)
-				writeLog("IP khong chinh chu khong the RS")
+				writeLogFile($logFile, "IP khong chinh chu khong the RS")
 				secondWait(5)
 			Else
 				$sElement = findElement($sSession, "//button[@type='submit']") 
@@ -80,7 +84,7 @@ Func withdrawRs($username, $password, $charName)
 				secondWait(5)
 				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
 				clickElement($sSession, $sElement)
-				writeLog("Rut reset thanh cong !")
+				writeLogFile($logFile, "Rut reset thanh cong !")
 				secondWait(5)
 			EndIf
 		EndIf

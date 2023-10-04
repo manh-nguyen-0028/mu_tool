@@ -4,12 +4,17 @@
 #include "../../include/_ImageSearch_UDF.au3"
 #RequireAdmin
 
+Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
+
 start()
 
 Func start()
+	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
+	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$jsonAccountActiveDevil = getArrayActiveDevil()
-	writeLog("Account active devil: " & UBound($jsonAccountActiveDevil))
+	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
 	If UBound($jsonAccountActiveDevil) > 0 Then processGoDevil()
+	FileClose($logFile)
 	Return True
 EndFunc
 
@@ -43,13 +48,14 @@ Func checkThenGoDevilEvent()
 			Case 12 To 19
 				$nextHour =@HOUR+1			
 			Case 20 To 22
-				If @MIN < 30 Then 
-					$nextHour =@HOUR
-					$nextMin = 30
-				Else
-					$nextHour = @HOUR+1
-					$nextMin = 00
-				EndIf
+				;~ If @MIN < 30 Then 
+				;~ 	$nextHour =@HOUR
+				;~ 	$nextMin = 30
+				;~ Else
+				;~ 	$nextHour = @HOUR+1
+				;~ 	$nextMin = 00
+				;~ EndIf
+				$nextHour = 23
 			Case 23 To 23
 				$nextHour =@HOUR+1
 			Case Else
@@ -65,10 +71,10 @@ Func checkThenGoDevilEvent()
 		; Check exists auto_rs.exe 
 		$processName = "auto_rs.exe"
 		If ProcessExists($processName) Then Exit
-		writeLog("Wait to go to devil event. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
+		writeLogFile($logFile, "Wait to go to devil event. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
 		$diffTime = diffTime(getCurrentTime(), $nextTime) 
 		Sleep($diffTime)
-		writeLog("Begin go to devil event !")
+		writeLogFile($logFile, "Begin go to devil event !")
 		goToDevilEvent()
 		;Sleep 25 minute
 		Local $nextMinFollowLeader = $nextMin + 26
@@ -78,18 +84,18 @@ Func checkThenGoDevilEvent()
 			$nextHourFollowLeader = 0
 		EndIf
 		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "05")
-		writeLog("Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader) )
+		writeLogFile($logFile, "Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader) )
 		Sleep(diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeFollowLeader) )
 		_MU_handleWhenFinishEvent()
 		minuteWait(1)
 		; Rs after go devil success
-		writeLog("Finish event devil")
+		writeLogFile($logFile, "Finish event devil")
 	Else
-		writeLog("Current time > Next Time. Begin sleep 1h. Time left: " & timeToText(60*60*1000)& @CRLF)
+		writeLogFile($logFile, "Current time > Next Time. Begin sleep 1h. Time left: " & timeToText(60*60*1000)& @CRLF)
 		;Sleep 1h
 		minuteWait(60)
-		writeLog("Sleep 1h finish")
-		writeLog("Next While Loop  >>> ")
+		writeLogFile($logFile, "Sleep 1h finish")
+		writeLogFile($logFile, "Next While Loop  >>> ")
 	EndIf
 EndFunc
 
@@ -102,12 +108,12 @@ Func goToDevilEvent()
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		If $jsonAccountActiveDevil[$i] <> '' Then
-			writeLog("Current account go devil : " & $jsonAccountActiveDevil[$i])
+			writeLogFile($logFile, "Current account go devil : " & $jsonAccountActiveDevil[$i])
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
 			$devilNo = _JSONGet($jsonAccountActiveDevil[$i], "devil_no")
 			$mainNo = getMainNoByChar($charName)
-			writeLog("Dang xu ly voi nhan vat " & $charName & " .Main no: " & $mainNo & " . HaveRuongK : " & $checkRuongK)
+			writeLogFile($logFile, "Dang xu ly voi nhan vat " & $charName & " .Main no: " & $mainNo & " . HaveRuongK : " & $checkRuongK)
 			; check active win
 			$checkActiveWin = activeAndMoveWin($mainNo)
 			$checkLvl400 = checkLvl400($mainNo)
@@ -117,7 +123,7 @@ Func goToDevilEvent()
 				If $activeStatus == "0" Then $reason = $reason & "Account khong duoc kich hoat di devil" & @CRLF
 				If $checkActiveWin == False Then $reason = $reason & "Khong tim thay cua so win" & @CRLF
 				If $checkLvl400 == False Then $reason = $reason & "Khong du 400 lvl" & @CRLF
-				writeLog("Khong du dieu kien di devil. Ly do: " & $reason)
+				writeLogFile($logFile, "Khong du dieu kien di devil. Ly do: " & $reason)
 				minisizeMain($mainNo)
 				ContinueLoop;
 			EndIf
@@ -154,15 +160,15 @@ Func goToDevilEvent()
 		minisizeMain($mainNo)
 	Next
 
-	writeLog("Da vao event devil tat ca cac acc !");
+	writeLogFile($logFile, "Da vao event devil tat ca cac acc !");
 	; Kiem tra neu Mod(@HOUR,4) ==0 => thuc hien rut rs  
-	writeLog("Gia tri check mod Mod(@HOUR,4) : " & Mod(@HOUR,4) ==0)
+	writeLogFile($logFile, "Gia tri check mod Mod(@HOUR,4) : " & Mod(@HOUR,4) ==0)
 EndFunc
 
 Func _MU_Search_Localtion($checkRuongK, $devilNo)
-	writeLog("Bat dau tim kiem vi tri cua nhan vat. _MU_Search_Localtion")
+	writeLogFile($logFile, "Bat dau tim kiem vi tri cua nhan vat. _MU_Search_Localtion")
 	Local $searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
-	writeLog("searchPixel : " & $searchPixel)
+	writeLogFile($logFile, "searchPixel : " & $searchPixel)
 	$countSerchPixel = 0;
 	$totalSearch = 0;
 	;~ 671 1050
@@ -188,7 +194,7 @@ EndFunc
 Func clickIntoNpcDevil($searchPixel, $devilNo)
 	; Kiem tra xem co tim duoc vi tri cua npc khong $searchPixel <> 0
 	If $searchPixel <> 0 Then
-		writeLog("searchPixel : " & $searchPixel[1]& "-" & $searchPixel[0])
+		writeLogFile($logFile, "searchPixel : " & $searchPixel[1]& "-" & $searchPixel[0])
 		$npcX = $searchPixel[0]-10
 		$npcY = $searchPixel[1] + 20
 		MouseMove($npcX,$npcY)
@@ -219,7 +225,7 @@ Func _MU_handleWhenFinishEvent()
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		If $jsonAccountActiveDevil[$i] <> '' Then
-			writeLog("Handle when finish event account : " & $jsonAccountActiveDevil[$i])
+			writeLogFile($logFile, "Handle when finish event account : " & $jsonAccountActiveDevil[$i])
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
 			$mainNo = getMainNoByChar($charName)
