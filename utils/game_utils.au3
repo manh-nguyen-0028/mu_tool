@@ -58,45 +58,6 @@ Func checkEmptyMinuteStadium($mainNo)
 	Return $isEmptyMinute
 EndFunc
 
-Func webLoadSuccess($isPrivateWeb)
-	; Search load page success
-	$_Image_Load_Web = @ScriptDir & "\image\load.bmp"
-	While _ImageSearch($_Image_Load_Web, 120, True)[0] = 0
-		secondWait(1)
-		writeLog("Web chua load xong. Doi 1 phut nhe !")
-	WEnd
-	writeLog("Load web success !")
-EndFunc
-
-Func searchConsoleTab()
-	writeLog("Click console tab")
-	; Click to console tab
-	$toaDoConsoleTabX = _JSONGet($jsonPositionConfig, "web.console_tab.x")
-	$toaDoConsoleTabY = _JSONGet($jsonPositionConfig, "web.console_tab.y")
-	_MU_MouseClick_Delay($toaDoConsoleTabX, $toaDoConsoleTabY)
-	; Bam vao button clean console
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "web.button_clean_console.x"), _JSONGet($jsonPositionConfig, "web.button_clean_console.y"))
-	; Click vao vi tri nhap text
-	_MU_MouseClick_Delay(@DesktopWidth -50, @DesktopHeight - 50);
-EndFunc
-
-Func loadWebAndOpenConsole($isPrivateWeb)
-	webLoadSuccess($isPrivateWeb)
-	_MU_MouseClick_Delay(10, 10);
-	secondWait(2)
-	; Send F12
-	Send("{F12}")
-	secondWait(2)
-	; Search console tab and click
-	searchConsoleTab()
-EndFunc
-
-Func getPathImage($imagePath)
-	$path =  @ScriptDir & "\image\" & $imagePath
-	writeLog("execute method getPathIgetPathImage($imagePath). Response: " & $path)
-	Return $path
-EndFunc
-
 Func getjsonPositionConfig()
 	Return $jsonPositionConfig
 EndFunc
@@ -145,7 +106,7 @@ Func clickEventStadium()
 EndFunc
 
 Func checkActiveAutoHome()
-	$pathImage = getPathImage("common") & "\not_active_auto_home.bmp"
+	$pathImage = $imagePathRoot & "common" & "\not_active_auto_home.bmp"
 	$result = True
 	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 385, 103, 100, True)
 	If $imageSearchResult[0] == 1 Then $result = False
@@ -164,7 +125,7 @@ Func checkRuongK($charInfo)
 
 		; send key K
 		sendKeyDelay("k")
-		$imageSearch = _ImageSearch_Area(@ScriptDir & "\image\devil\ruong_k.bmp", 0, 0, 1019, 471, 100,False)
+		$imageSearch = _ImageSearch_Area($imagePathRoot & "devil" & "\ruong_k.bmp", 0, 0, 1019, 471, 100,False)
 		If $imageSearch[0] == 1 Then
 			writeLog("Tim thay ruong K")
 			$result = True
