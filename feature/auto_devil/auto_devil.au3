@@ -224,16 +224,18 @@ Func _MU_handleWhenFinishEvent()
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
 			$mainNo = getMainNoByChar($charName)
 			$checkActiveWin = activeAndMoveWin($mainNo)
-			If $checkActiveWin == True And $checkRuongK == False Then 
+			If $checkActiveWin == True Then 
 				handelWhenFinshDevilEvent()
 				_MU_followLeader(1)
 				secondWait(8)
-				; Thuc hien check ruong K doi voi cac account chua co ruong K
-				$check = checkRuongK($jsonAccountActiveDevil[$i])
-				If $check == True Then 
-					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "devil_config.json")
-					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-					setJsonToFileFormat($jsonPathRoot & "devil_config.json", $jsonDevilConfig)
+				If $checkRuongK == False Then
+					; Thuc hien check ruong K doi voi cac account chua co ruong K
+					$check = checkRuongK($jsonAccountActiveDevil[$i])
+					If $check == True Then 
+						$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "devil_config.json")
+						_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
+						setJsonToFileFormat($jsonPathRoot & "devil_config.json", $jsonDevilConfig)
+					EndIf
 				EndIf
 				minisizeMain($mainNo)
 			EndIf
