@@ -14,16 +14,20 @@ Local $aAccountActiveWithrawRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-start()
+;~ startAutoRs()
 
-Func start()
+;~ $sTimeReset = getTimeReset(2 & "|" & "10-09 17:18",0)
+;~ writeLog($sTimeReset)
+
+Func startAutoRs()
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
-		If $active == True Then
+		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
+		If $active == True And "reset" == $type Then
 			Redim $aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) + 1]
 			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
@@ -42,11 +46,19 @@ Func start()
 		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
 		;~ $lastDateReset = getPropertyJson($aAccountActiveWithrawRs[$i],"last_date_reset")
-		$nextTimeRs = addHour($lastTimeRs, Number($limit))
+		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
 		writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-		If getTimeNow() < $nextTimeRs Then ContinueLoop
-		If $timeRs >= $limit Then ContinueLoop
+		If getTimeNow() < $nextTimeRs Then 
+			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
+			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			ContinueLoop
+		EndIf
+		If $timeRs >= $limit Then 
+			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
+			ContinueLoop
+		EndIf
 		; Begin withdraw reset
 		$activeMain = activeAndMoveWin($mainNo)
 		If $activeMain == True Then 
@@ -71,11 +83,21 @@ Func processReset($jAccountInfo)
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$typeRs = getPropertyJson($jAccountInfo,"type_rs")
 	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
+	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
 	$isLoginSuccess = login($sSession, $username, $password, $charName)
 	secondWait(5)
 	If $isLoginSuccess == True Then
+		$sLogReset = getLogReset($sSession, $charName)
+		$lastTimeRs = getTimeReset($sLogReset, $hourPerRs)
+		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+		If getTimeNow() < $nextTimeRs Then 
+			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
+			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			Return
+		EndIf
 		; Vào nhân vật kiểm tra lvl
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 		secondWait(5)
@@ -112,11 +134,12 @@ Func processReset($jAccountInfo)
 				For $i =0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
-						; last time rs
-						_JSONSet(getTimeNow(), $jsonRsGame[$i],"last_time_reset")
-						; reset in day
-						$resetInDay = getResetInDay($charName)
+						$sLogReset = getLogReset($sSession, $charName)
+						$resetInDay = getRsInDay($sLogReset)
 						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+						; last time rs
+						$sTimeReset = getTimeReset($sLogReset,0)
+						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
 					EndIf
 				Next
@@ -159,33 +182,6 @@ EndFunc
 Func moveOtherMap()
 	sendKeyDelay("m")
 	_MU_MouseClick_Delay(161, 297)
-EndFunc
-
-Func getResetInDay($charName)
-	; Chuyen den site nay de thuc hien check thong tin
-	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
-	_WD_LoadWait($sSession, 1000)
-
-	; Click vao button nhan vat can check 
-	$sElement = findElement($sSession, "//button[contains(text(),'"& $charName &"')]")
-	clickElement($sSession, $sElement)
-	secondWait(5)
-
-	; Thong tin lvl, so lan trong ngay/ thang
-	$sElement = findElement($sSession, "//div[@role='alert']")
-	$charInfoText = getTextElement($sSession, $sElement)
-	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
-	; Lvl
-	$array = StringSplit($charInfoText, $charName &' level ', 1)
-	;~ _ArrayDisplay($array)
-	$charLvl = Number(StringLeft ($array[2], 3))
-	
-	; Rs trong ngay
-	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
-	$array = StringSplit($array[2], ' lượt.', 1)
-	$rsInDay = $array[1]
-	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
-	Return Number($rsInDay)
 EndFunc
 
 #cs

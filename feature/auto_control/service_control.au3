@@ -1,13 +1,33 @@
 #include-once
 #include "../../utils/common_utils.au3"
+#include "../../utils/game_utils.au3"
+#include "../auto_reset/auto_rs.au3"
+#include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
 ;~ startPath()
+;~ test()
+start()
 
-While True
-    waitToNextHourMinutes(1, 35, 00)
-    If @HOUR < 20 And @HOUR > 22 Then startPath()
-WEnd
+Func test()
+    $charName="MonkeyKing"
+    $mainNo = getMainNoByChar($charName)
+    activeAndMoveWin($mainNo)
+    _MU_followLeader(1)
+    Return True
+EndFunc
+
+Func start()
+    While True
+        waitToNextHourMinutes(1, 35, 00)
+        ;~ If @HOUR < 20 Or @HOUR > 22 Then startPath()
+        If @HOUR < 20 Or @HOUR > 22 Then 
+            startWithDrawRs()
+            minuteWait(1)
+            startAutoRs()
+        EndIf
+    WEnd
+EndFunc
 
 Func startPath()
     ; withdraw reset
