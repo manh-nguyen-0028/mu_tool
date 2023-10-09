@@ -177,7 +177,8 @@ Func loginWebsite($sSession,$username, $password, $charName)
 	Return True
 EndFunc
 
-Func getResetInDay($sSession, $charName)
+; Format: $rsInDay|$timeReset
+Func getLogReset($sSession, $charName)
 	; Chuyen den site nay de thuc hien check thong tin
 	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
 	;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
@@ -202,5 +203,20 @@ Func getResetInDay($sSession, $charName)
 	$array = StringSplit($array[2], ' lượt.', 1)
 	$rsInDay = $array[1]
 	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
-	Return Number($rsInDay)
+
+	; Xem Nhat ky reset
+	_Demo_NavigateCheckBanner($sSession,combineUrl("web/char/char_info.logreset.shtml"))
+	; Get element
+	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
+	$timeRsText = getTextElement($sSession, $sElement)
+
+	Return Number($rsInDay) & "|" & $timeRsText
+EndFunc
+
+Func getRsInDay($sLogReset) 
+	Return Number(StringSplit($sLogReset, "|")[1])
+EndFunc
+
+Func getTimeReset($sLogReset) 
+	Return StringSplit($sLogReset, "|")[2]
 EndFunc

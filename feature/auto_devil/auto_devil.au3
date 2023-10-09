@@ -145,7 +145,7 @@ Func goToDevilEvent()
 		EndIf
 	Next
 
-	minuteWait(1)
+	secondWait(10)
 	
 	; Kiem tra xem cac acc da vao dc devil chua
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1

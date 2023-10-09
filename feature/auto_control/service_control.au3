@@ -19,8 +19,6 @@ Func start()
     While True
         waitToNextHourMinutes(1, 35, 00)
         If @HOUR < 20 Or @HOUR > 22 Then startPath()
-        ;~ startPath()
-        minuteWait(1)
     WEnd
 EndFunc
 

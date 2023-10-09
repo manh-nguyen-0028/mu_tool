@@ -79,11 +79,21 @@ Func processReset($jAccountInfo)
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$typeRs = getPropertyJson($jAccountInfo,"type_rs")
 	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
+	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
 	$isLoginSuccess = login($sSession, $username, $password, $charName)
 	secondWait(5)
 	If $isLoginSuccess == True Then
+		$sLogReset = getLogReset($sSession, $charName)
+		$lastTimeRs = getTimeReset($sLogReset)
+		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+		If getTimeNow() < $nextTimeRs Then 
+			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
+			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			Return
+		EndIf
 		; Vào nhân vật kiểm tra lvl
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 		secondWait(5)
@@ -120,11 +130,12 @@ Func processReset($jAccountInfo)
 				For $i =0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
-						; last time rs
-						_JSONSet(getTimeNow(), $jsonRsGame[$i],"last_time_reset")
-						; reset in day
-						$resetInDay = getResetInDay($sSession,$charName)
+						$sLogReset = getLogReset($sSession, $charName)
+						$resetInDay = getRsInDay($sLogReset)
 						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+						; last time rs
+						$sTimeReset = getTimeReset($sLogReset)
+						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
 					EndIf
 				Next
