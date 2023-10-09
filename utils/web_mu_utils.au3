@@ -176,3 +176,31 @@ Func loginWebsite($sSession,$username, $password, $charName)
 
 	Return True
 EndFunc
+
+Func getResetInDay($sSession, $charName)
+	; Chuyen den site nay de thuc hien check thong tin
+	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
+	;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
+	_WD_LoadWait($sSession, 1000)
+
+	; Click vao button nhan vat can check 
+	$sElement = findElement($sSession, "//button[contains(text(),'"& $charName &"')]")
+	clickElement($sSession, $sElement)
+	secondWait(5)
+
+	; Thong tin lvl, so lan trong ngay/ thang
+	$sElement = findElement($sSession, "//div[@role='alert']")
+	$charInfoText = getTextElement($sSession, $sElement)
+	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
+	; Lvl
+	$array = StringSplit($charInfoText, $charName &' level ', 1)
+	;~ _ArrayDisplay($array)
+	$charLvl = Number(StringLeft ($array[2], 3))
+	
+	; Rs trong ngay
+	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
+	$array = StringSplit($array[2], ' lượt.', 1)
+	$rsInDay = $array[1]
+	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
+	Return Number($rsInDay)
+EndFunc
