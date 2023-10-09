@@ -23,7 +23,8 @@ Func start()
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
-		If $active == True Then
+		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
+		If $active == True And "reset" == $type Then
 			Redim $aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) + 1]
 			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
