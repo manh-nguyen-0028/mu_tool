@@ -1,6 +1,8 @@
 #include-once
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
+#include "../auto_reset/auto_rs.au3"
+#include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
 ;~ startPath()
@@ -17,8 +19,13 @@ EndFunc
 
 Func start()
     While True
-        waitToNextHourMinutes(1, 35, 00)
-        If @HOUR < 20 Or @HOUR > 22 Then startPath()
+        waitToNextHourMinutes(1, 31, 00)
+        ;~ If @HOUR < 20 Or @HOUR > 22 Then startPath()
+        If @HOUR < 18 Or @HOUR > 22 Then 
+            startWithDrawRs()
+            minuteWait(1)
+            startAutoRs()
+        EndIf
     WEnd
 EndFunc
 

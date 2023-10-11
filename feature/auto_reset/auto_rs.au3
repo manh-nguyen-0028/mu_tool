@@ -14,9 +14,12 @@ Local $aAccountActiveWithrawRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-start()
+;~ startAutoRs()
 
-Func start()
+;~ $sTimeReset = getTimeReset(2 & "|" & "10-09 17:18",0)
+;~ writeLog($sTimeReset)
+
+Func startAutoRs()
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
@@ -87,7 +90,7 @@ Func processReset($jAccountInfo)
 	secondWait(5)
 	If $isLoginSuccess == True Then
 		$sLogReset = getLogReset($sSession, $charName)
-		$lastTimeRs = getTimeReset($sLogReset)
+		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
@@ -135,7 +138,7 @@ Func processReset($jAccountInfo)
 						$resetInDay = getRsInDay($sLogReset)
 						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 						; last time rs
-						$sTimeReset = getTimeReset($sLogReset)
+						$sTimeReset = getTimeReset($sLogReset,0)
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
 					EndIf

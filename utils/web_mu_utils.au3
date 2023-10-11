@@ -217,6 +217,13 @@ Func getRsInDay($sLogReset)
 	Return Number(StringSplit($sLogReset, "|")[1])
 EndFunc
 
-Func getTimeReset($sLogReset) 
-	Return StringSplit($sLogReset, "|")[2]
+Func getTimeReset($sLogReset, $hourPerRs) 
+	$timeRsText = StringSplit($sLogReset, "|")[2]
+	$month = StringLeft($timeRsText,2)
+	$day = StringMid($timeRsText,4,2)
+	$hour = StringMid($timeRsText,7,2)
+	$min = StringMid($timeRsText,10,2)
+
+	$nextTimeRs = _DateAdd('h', $hourPerRs, @YEAR &"/"& $month &"/"& $day &" "& $hour &":"& $min &":00")
+	Return $nextTimeRs
 EndFunc
