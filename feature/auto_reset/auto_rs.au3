@@ -23,6 +23,8 @@ Func startAutoRs()
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	writeLogFile($logFile, "Begin start auto reset !")
+	ReDim $aAccountActiveWithrawRs[0]
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
@@ -45,10 +47,10 @@ Func startAutoRs()
 		$limit = getPropertyJson($aAccountActiveWithrawRs[$i],"limit")
 		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
-		;~ $lastDateReset = getPropertyJson($aAccountActiveWithrawRs[$i],"last_date_reset")
+		
 		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
-		writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+		
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
 			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
@@ -86,16 +88,26 @@ Func processReset($jAccountInfo)
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
+	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password, $charName)
 	secondWait(5)
 	If $isLoginSuccess == True Then
+		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
-		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
-			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+		If $timeNow < $nextTimeRs Then 
+			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
+			writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
+				For $i =0 To UBound($jsonRsGame) - 1
+					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+					If $charNameTmp == $charName Then
+						_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+					EndIf
+				Next
 			Return
 		EndIf
 		; Vào nhân vật kiểm tra lvl

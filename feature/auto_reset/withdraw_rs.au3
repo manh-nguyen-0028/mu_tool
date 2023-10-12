@@ -17,6 +17,8 @@ Func startWithDrawRs()
 	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	; get array account need withdraw reset
+	writeLogFile($logFile, "Begin start withdraw reset !")
+	ReDim $aAccountActiveWithrawRs[0]
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
@@ -74,13 +76,22 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 	If $isLoginSuccess == True Then
 		$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
 		If $isHaveIP == True Then
+			$timeNow = getTimeNow()
 			$sLogReset = getLogReset($sSession, $charName)
 			$lastTimeRs = getTimeReset($sLogReset,0)
 			$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
-			If getTimeNow() < $nextTimeRs Then 
-				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
-				writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			If $timeNow < $nextTimeRs Then 
+				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
+				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
+					For $i =0 To UBound($jsonRsGame) - 1
+						$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+						If $charNameTmp == $charName Then
+							_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+							setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+						EndIf
+					Next
 				Return
 			EndIf
 
