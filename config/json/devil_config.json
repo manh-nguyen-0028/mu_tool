@@ -1,7 +1,10 @@
 [
-{"char_name":"JackAngel","have_ruong_k":true,"active":false,"devil_no":3},
-{"char_name":"GoldenGirl","have_ruong_k":true,"active":true,"devil_no":3},
-{"char_name":"zChuaTez","have_ruong_k":true,"active":true,"devil_no":4},
-{"char_name":"SumCaSiNo","have_ruong_k":true,"active":false,"devil_no":3},
-{"char_name":"Victozia","have_ruong_k":true,"active":false,"devil_no":3}
-]
+    {"char_name":"JackAngel","have_ruong_k":true,"active":false,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"GoldenGirl","have_ruong_k":true,"active":true,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"GiamDocSo","have_ruong_k":true,"active":true,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"dwgy5","have_ruong_k":true,"active":true,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"CoGaiVang","have_ruong_k":true,"active":false,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"zChuaTez","have_ruong_k":true,"active":true,"devil_no":4,"ignore_peak_hour": false},
+    {"char_name":"SumCaSiNo","have_ruong_k":true,"active":false,"devil_no":3,"ignore_peak_hour": false},
+    {"char_name":"Victozia","have_ruong_k":true,"active":false,"devil_no":3,"ignore_peak_hour": false}
+    ]

@@ -144,9 +144,14 @@ Func getArrayActiveDevil()
 		; active win and check ruong K
 		writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
 		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
+		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
 		If $activeDevil == True Then 
-			Redim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
-			$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
+			If $ignorePeakHour == True And @HOUR >= 20 And @HOUR <= 22 Then
+				writeLog("Peak hour can't go devil. Wait to 23h")
+			Else
+				Redim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
+				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
+			EndIf
 		EndIf
 	Next
 	Return $jsonAccountActiveDevil

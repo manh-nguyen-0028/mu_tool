@@ -48,14 +48,14 @@ Func checkThenGoDevilEvent()
 			Case 12 To 19
 				$nextHour =@HOUR+1			
 			Case 20 To 22
-				;~ If @MIN < 30 Then 
-				;~ 	$nextHour =@HOUR
-				;~ 	$nextMin = 30
-				;~ Else
-				;~ 	$nextHour = @HOUR+1
-				;~ 	$nextMin = 00
-				;~ EndIf
-				$nextHour = 23
+				If @MIN < 30 Then 
+					$nextHour =@HOUR
+					$nextMin = 30
+				Else
+					$nextHour = @HOUR+1
+					$nextMin = 00
+				EndIf
+				;~ $nextHour = 23
 			Case 23 To 23
 				$nextHour =@HOUR+1
 			Case Else
