@@ -4,6 +4,7 @@
 #include "wd_helper.au3"
 #include "wd_capabilities.au3"
 #include "../../utils/common_utils.au3"
+#include "../../utils/web_mu_utils.au3"
 
 Global $baseUrl = "https://hn.gamethuvn.net/"
 
@@ -18,8 +19,8 @@ Func SetupChrome()
     _WD_CapabilitiesAdd('excludeSwitches', 'enable-automation')
 	_WD_CapabilitiesAdd('args', 'start-maximized')
 	_WD_CapabilitiesAdd('args', 'disable-infobars')
-	_WD_CapabilitiesAdd('args', 'user-data-dir', 'C:\Users\manhnt\AppData\Local\Google\Chrome\User Data\')
-	_WD_CapabilitiesAdd('args', '--profile-directory', 'Profile 1')
+	_WD_CapabilitiesAdd('args', 'user-data-dir', $sChromeUserDataPath)
+	_WD_CapabilitiesAdd('args', '--profile-directory', 'Default')
 	_WD_CapabilitiesAdd('binary', "C:\Program Files\Google\Chrome\Application\chrome.exe")
 
 	_WD_Startup()

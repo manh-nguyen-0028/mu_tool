@@ -61,7 +61,7 @@ Func checkIp($sSession, $_WD_LOCATOR_ByXPath)
 	Return $isHaveIP
 EndFunc
 
-Func login($sSession, $username, $password, $charName)
+Func login($sSession, $username, $password)
 	; vao website
 	_WD_Navigate($sSession, $baseMuUrl)
 	secondWait(5)
@@ -72,7 +72,7 @@ Func login($sSession, $username, $password, $charName)
 	While $sTitle <> $sTitleLoginSuccess
 		If $timeLoginFail > 10 Then ExitLoop
 		closeDiaglogConfim($sSession)
-		loginWebsite($sSession,$username, $password, $charName)
+		loginWebsite($sSession,$username, $password)
 		$sTitle = getTitleWebsite($sSession)
 		$timeLoginFail = $timeLoginFail + 1
 	WEnd
@@ -94,7 +94,7 @@ Func closeDiaglogConfim($sSession)
 	EndIf
 EndFunc
 
-Func loginWebsite($sSession,$username, $password, $charName)
+Func loginWebsite($sSession,$username, $password)
 	$isSuccess = False
 
 	writeLog("$username: "&$username & " $password: "&$password)
@@ -127,8 +127,11 @@ Func loginWebsite($sSession,$username, $password, $charName)
 
 	If @error = $_WD_ERROR_Success Then 
 		$idCaptchaFinal = ''
+		$timeCheck = 0
+		
 		; Get captcha buoc 2 => call server captcha 
-		While $idCaptchaFinal == '' Or StringLen($idCaptchaFinal) > 4
+		While ($idCaptchaFinal == '' Or StringLen($idCaptchaFinal) > 4) And $timeCheck < 5
+			$timeCheck += 1
 			$sFilePath = "file:///" & $inputPathRoot & "/get_captcha.html"
 
 			; Get captcha buoc 1
@@ -157,6 +160,8 @@ Func loginWebsite($sSession,$username, $password, $charName)
 			secondWait(1)
 		WEnd
 		
+		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
+
 		; Chuyen lai tab ve gamethuvn.net
 		writeLog("Chuyen lai tab ve hn.gamethuvn.net")
 		_WD_Attach($sSession, "hn.gamethuvn.net", "URL")
@@ -174,7 +179,7 @@ Func loginWebsite($sSession,$username, $password, $charName)
 		secondWait(5)
 	EndIf
 
-	Return True
+	Return $isSuccess
 EndFunc
 
 ; Format: $rsInDay|$timeReset
@@ -226,4 +231,8 @@ Func getTimeReset($sLogReset, $hourPerRs)
 
 	$nextTimeRs = _DateAdd('h', $hourPerRs, @YEAR &"/"& $month &"/"& $day &" "& $hour &":"& $min &":00")
 	Return $nextTimeRs
+EndFunc
+
+Func getUrlAuction($sId)
+	Return "https://hn.gamethuvn.net/web/event/boss-item-bid.item.shtml?id="&$sId
 EndFunc

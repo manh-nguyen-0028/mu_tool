@@ -80,28 +80,27 @@ Func openConsoleThenClear()
 	Send("{F12}")
 	secondWait(2)
 	; Click into console tab
-	MouseClick("main",217, 782,2)
+	_MU_MouseClick_Delay(217, 782)
 	; click clean console
-	MouseClick("main",56, 815,2)
+	_MU_MouseClick_Delay(56, 815)
 	; Click vao cuoi man hinh
-	MouseClick("main",1837, 1006,1)
+	_MU_MouseClick_Delay(1837, 1006)
 	secondWait(1)
 EndFunc
 
 Func clickEventIcon()
-	writeLog("clickEventIcon() ")
-	MouseClick("main",157, 119, 1)
+	_MU_MouseClick_Delay(157, 119)
 	secondWait(1)
 EndFunc
 
 Func clickEventIconThenGoStadium() 
 	clickEventIcon() 
-	MouseClick("main",503, 493,1)
+	_MU_MouseClick_Delay(503, 493)
 	secondWait(5)
 EndFunc
 
 Func clickEventStadium() 
-	MouseClick("main",503, 493,1)
+	_MU_MouseClick_Delay(503, 493)
 	secondWait(1)
 EndFunc
 
@@ -167,4 +166,50 @@ Func _MU_Join_Event_Devil($checkRuongK)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_y"))
 	;~ ; Sleep 4s
 	secondWait(5)
+EndFunc
+
+Func switchOtherChar($currentChar)
+	$resultSwitch = False
+	$otherCharName = ""
+	For $i = 0 To UBound($aCharInAccount) -1
+		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
+		If $resultCheck Then
+			; Chuyen sang char con lai
+			$otherCharName = StringSplit($aCharInAccount[$i],"|")[2]
+			writeLog("Da tim thay other char: " & $otherCharName)
+			ExitLoop
+		EndIf
+	Next
+	If $otherCharName <> '' Then 
+		$mainNo = getMainNoByChar($otherCharName)
+		If activeAndMoveWin($mainNo) == True Then
+			; TODO: Thao tac chuyen char
+			; TODO: Click vao icon event
+			;~ clickEventIcon()
+			; TODO: Click vao vi tri trieu hoi ( theo tung acc)
+			; TODO: Click vao nhan vat can trieu hoi
+			; TODO: Bam vao nut tat ( truong hop nhan vat da dc trieu hoi roi)
+			; => Click vao icon chuyen
+			_MU_MouseClick_Delay(999,671)
+			; => Click vao chuyen
+			_MU_MouseClick_Delay(560,512)
+			; Lay lai mainNo cua current char
+			$mainNo = getMainNoByChar($currentChar)
+			; Doi khoang 6s
+			$timeCheck = 1;
+			While activeAndMoveWin($mainNo) == False And $timeCheck < 5
+				$timeCheck += 1
+				secondWait(2)
+			WEnd
+
+			If activeAndMoveWin($mainNo) == True Then $resultSwitch = True
+			; Kiem tra title xem dung la title cua minh khong
+		EndIf
+	EndIf
+	Return $resultSwitch
+EndFunc
+
+Func moveOtherMap()
+	sendKeyDelay("m")
+	_MU_MouseClick_Delay(161, 297)
 EndFunc

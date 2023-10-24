@@ -14,10 +14,24 @@ Local $aAccountActiveWithrawRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
+
 ;~ startAutoRs()
 
 ;~ $sTimeReset = getTimeReset(2 & "|" & "10-09 17:18",0)
 ;~ writeLog($sTimeReset)
+;~ testAa()
+clickEventIconThenGoStadium() 
+
+Func testAa()
+	Local $pTime = "2023/10/02 18:34:58"
+	Local $amount = 7
+
+	Local $addedTime = _DateAdd('h', $amount, $pTime)
+	Local $addedTime1 = _DateAdd('n', -20, $addedTime)
+
+	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
+	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
+EndFunc
 
 Func startAutoRs()
 	; get array account need withdraw reset
@@ -48,7 +62,7 @@ Func startAutoRs()
 		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
 		
-		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
 		
 		If getTimeNow() < $nextTimeRs Then 
@@ -61,8 +75,12 @@ Func startAutoRs()
 			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
 			ContinueLoop
 		EndIf
-		; Begin withdraw reset
+		; Begin reset
 		$activeMain = activeAndMoveWin($mainNo)
+
+		; Truong hop main hien tai khong duoc active, active main khac
+		If $activeMain == False Then $activeMain = switchOtherChar($charName)
+
 		If $activeMain == True Then 
 			processReset($aAccountActiveWithrawRs[$i])
 			; Logout account
@@ -89,13 +107,13 @@ Func processReset($jAccountInfo)
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
-	$isLoginSuccess = login($sSession, $username, $password, $charName)
+	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess == True Then
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
-		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		If $timeNow < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 			writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
@@ -175,6 +193,7 @@ Func processReset($jAccountInfo)
 					; 8. Check lvl in web
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($charName, $lvlStopCheck, 1)
+					activeAndMoveWin($mainNo)
 					; Move other map
 					moveOtherMap()
 					secondWait(8)
@@ -189,11 +208,6 @@ Func processReset($jAccountInfo)
 			EndIf
 		EndIf
 	EndIf
-EndFunc
-
-Func moveOtherMap()
-	sendKeyDelay("m")
-	_MU_MouseClick_Delay(161, 297)
 EndFunc
 
 #cs
@@ -264,9 +278,10 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
-		If $tLvl <> $tmpLvl Then 
-			$tmpLvl = $tLvl
+		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
+			$tmpLvl = $nLvl
 		Else
+			activeAndMoveWin($mainNo)
 			$checkAutoHome = checkActiveAutoHome()
 			If $checkAutoHome == False Then
 				$activeMain = activeAndMoveWin($mainNo)
@@ -320,11 +335,8 @@ Func goMapArena()
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
 	writeLogFile($logFile, "Bat dau map arena ! ")
-	; Click event icon
-	_MU_Rs_MouseClick_Delay(483, 494)
-	; Click map arena
-	;~ _MU_Rs_MouseClick_Delay(484, 326)
-	secondWait(8)
+	; Click event icon then go arena map
+	clickEventIconThenGoStadium()
 	; Go to sport
 	goSportStadium()
 EndFunc

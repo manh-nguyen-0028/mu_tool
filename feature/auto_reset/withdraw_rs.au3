@@ -42,7 +42,7 @@ Func startWithDrawRs()
 		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
 		;~ $mainNo = getMainNoByChar($charName)
-		$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
@@ -71,7 +71,7 @@ Func startWithDrawRs()
 EndFunc
 
 Func withdrawRs($username, $password, $charName,$hourPerRs)
-	$isLoginSuccess = login($sSession, $username, $password, $charName)
+	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess == True Then
 		$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
@@ -79,7 +79,7 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 			$timeNow = getTimeNow()
 			$sLogReset = getLogReset($sSession, $charName)
 			$lastTimeRs = getTimeReset($sLogReset,0)
-			$nextTimeRs = addHour($lastTimeRs, Number($hourPerRs))
+			$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 			If $timeNow < $nextTimeRs Then 
 				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)

@@ -19,11 +19,14 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 Global $baseMuUrl = "https://hn.gamethuvn.net/"
 Global $logFile, $jsonPositionConfig
 
+Global $aCharInAccount
+
 init()
 
 ; init
 Func init()
 	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+	$aCharInAccount=getArrayInFileTxt($textPathRoot & "char_in_account.txt")
 	Return True
 EndFunc
 
@@ -40,16 +43,18 @@ EndFunc
 
 ; Time
 Func minuteWait($minuteWait)
-	writeLog("Sleep in: " & $minuteWait & " minute !")
+	writeLogFile($logFile,"Sleep in: " & $minuteWait & " minute !")
 	Sleep($minuteWait*60*1000)
 EndFunc
 
 Func secondWait($secondWait)
-	;~ writeLog("Sleep in: " & $secondWait & " second !")
+	;~ writeLogFile($logFile,"Sleep in: " & $secondWait & " second !")
 	Sleep($secondWait*1000)
 EndFunc
 
 Func createTimeToTicks($gio,$phut,$giay)
+	If $gio == 24 Then $gio = 0
+	writeLog("Function createTimeToTicks($gio,$phut,$giay) : " & $gio & "-" & $phut & "-" & $giay)
 	Return _TimeToTicks($gio, $phut, $giay)
 EndFunc
 
@@ -73,7 +78,7 @@ EndFunc
 
 Func waitToNextHour($hourPlus = 1)
 	$nextHour = @HOUR + $hourPlus
-	writeLog("Wait to next hour : " &$nextHour)
+	writeLogFile($logFile,"Wait to next hour : " &$nextHour)
 	$nextTime = createTimeToTicks($nextHour, 0 , "05")
 	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
 	$diffTime = diffTime($currentTime, $nextTime)
@@ -81,26 +86,26 @@ Func waitToNextHour($hourPlus = 1)
 EndFunc
 
 Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
-	If @MIN < $minPlus Then 
+	If @MIN <= $minPlus Then 
 		$nextHour = @HOUR
 	Else
 		$nextHour = @HOUR + $hourPlus
 	EndIf
-	writeLog("Wait to next hour : " &$nextHour)
+	writeLogFile($logFile, "Wait to next hour : " &$nextHour)
 	$nextTime = createTimeToTicks($nextHour, $minPlus , $secPlus)
 	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
 	$diffTime = diffTime($currentTime, $nextTime)
-	writeLog("time diff: " & timeToText($diffTime))
+	writeLogFile($logFile,"time diff: " & timeToText($diffTime))
 	Sleep($diffTime)
 EndFunc
 
 Func waitToNextTime($hourPlus, $minPlus, $secPlus)
 	$nextHour = @HOUR + $hourPlus
-	writeLog("Wait to next hour : " &$nextHour)
+	writeLogFile($logFile,"Wait to next hour : " &$nextHour)
 	$nextTime = createTimeToTicks($nextHour, $minPlus , $secPlus)
 	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
 	$diffTime = diffTime($currentTime, $nextTime)
-	writeLog("time diff: " & timeToText($diffTime))
+	writeLogFile($logFile,"time diff: " & timeToText($diffTime))
 	Sleep($diffTime)
 EndFunc
 
@@ -115,6 +120,12 @@ EndFunc
 ; Return format 2023/09/28 09:20:44
 Func getTimeNow()
 	Return _NowCalc()
+EndFunc
+
+Func addTimePerRs($pTime, $amount)
+	$addHour = _DateAdd('h', $amount, $pTime)
+	$addMinute = _DateAdd('n', -20, $addHour)
+	Return $addMinute
 EndFunc
 
 Func addHour($pTime, $amount)
@@ -160,7 +171,7 @@ Func _MU_Mouse_RightClick_Delay($toadoX, $toadoY)
 EndFunc
 
 Func mouseMainClick($toaDoX, $toaDoY) 
-	MouseClick("main",$toaDoX, $toaDoY,1)
+	_MU_MouseClick_Delay($toaDoX, $toaDoY)
 	secondWait(1)
 EndFunc
 
@@ -178,26 +189,26 @@ Func activeMain($mainNo)
 EndFunc
 
 Func minisizeMain($mainNo)
-	writeLog("SW_MINIMIZE main: " & $mainNo)
+	writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
 Func activeAndMoveWin($main_i)
-	writeLog("activeAndMoveWin. Main no: " & $main_i )
+	writeLogFile($logFile,"activeAndMoveWin. Main no: " & $main_i )
 	$isActive = False;
 	If WinActivate($main_i) Then
 		$winActive = WinActivate($main_i)
 		WinMove($winActive,"",0,0)
 		$isActive = True
 	Else
-		writeLog("Window not activated : " & $main_i)
+		writeLogFile($logFile,"Window not activated : " & $main_i)
 	EndIf
 	Return $isActive
 EndFunc
 
 ; text
 Func readFileText($filePath)
-	writeLog("Read file : " &$filePath)
+	writeLogFile($logFile,"Read file : " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
 	FileClose($rtfhandle)
@@ -205,7 +216,6 @@ Func readFileText($filePath)
 EndFunc
 
 Func getArrayInFileTxt($filePath)
-	$filePath = $baseDir & $filePath
 	Local $arrayTmp 
 	; Đọc nội dung của file .txt vào mảng
 	If FileExists($filePath) Then
@@ -216,7 +226,7 @@ Func getArrayInFileTxt($filePath)
 			Exit
 		EndIf
 	Else
-		writeLog("File không tồn tại." & $filePath)
+		writeLogFile($logFile,"File không tồn tại." & $filePath)
 		MsgBox(16, "Lỗi", "File không tồn tại.")
 		Exit
 	EndIf
@@ -229,12 +239,12 @@ EndFunc
 
 ; image search 
 Func checkPixelColor($toaDoX, $toaDoY, $color)
-	writeLog("checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & $color)
+	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & $color)
 	$resultCompare = False
 	MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	writeLog("checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & Hex($colorGetPosition,6))
+	writeLogFile($logFile,"checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & Hex($colorGetPosition,6))
 	If $colorGetPosition = $color Then $resultCompare = True
 	Return $resultCompare
 EndFunc
@@ -243,7 +253,7 @@ EndFunc
 Func setJsonConfigToFile($path, $json)
 	$rtfhandle = FileOpen($path, $FO_OVERWRITE)
 	$json_str = convertJsonToString($json)
-	writeLog("setJsonConfigTimeToFile =>> " & $json_str)
+	writeLogFile($logFile,"setJsonConfigTimeToFile =>> " & $json_str)
 	FileWriteLine($rtfhandle, $json_str)
 	FileClose($rtfhandle)
 EndFunc
@@ -259,7 +269,7 @@ Func setJsonToFileFormat($path, $json)
 			Else
 				$json_str = convertJsonToString($json[$i]) & ","
 			EndIf
-			writeLog("setJsonConfigTimeToFile =>> " & $json_str)
+			writeLogFile($logFile,"setJsonConfigTimeToFile =>> " & $json_str)
 			FileWriteLine($rtfhandle, $json_str)
 		Next
 		FileWriteLine($rtfhandle, "]")
@@ -269,10 +279,10 @@ Func setJsonToFileFormat($path, $json)
 EndFunc
 
 Func getJsonFromFile($filePath)
-	writeLog("Read file : " &$filePath)
+	writeLogFile($logFile,"Read file : " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
-	;~ writeLog("Text read from file: " &$convtext)
+	;~ writeLogFile($logFile,"Text read from file: " &$convtext)
 	FileClose($rtfhandle)
 	$json = _JSONDecode($convtext)
 	Return $json
@@ -284,4 +294,15 @@ EndFunc
 
 Func setPropertyJson($json, $propertyName, $value)
 	Return _JSONSet($json, $propertyName, $value)
+EndFunc
+
+Func readFileTxtToArray($filePath)
+	$aResult = FileReadToArray($filePath)
+	If @error Then
+		MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file : " & $filePath)
+		Exit
+	Else
+		writeLogFile($logFile,"Read file " & $filePath & "success !")
+	EndIf
+	Return $aResult
 EndFunc

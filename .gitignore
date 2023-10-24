@@ -1,3 +1,6 @@
 feature/auto_reset/captcha_img.png
 feature/auto_reset/chrome.log
 feature/auto_reset/auto_rs.exe
+feature/auto_control/service_control.exe
+feature/auto_devil/auto_devil.exe
+feature/auto_reset/withdraw_rs.exe
