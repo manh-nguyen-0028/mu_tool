@@ -11,8 +11,6 @@
 Local $aAccountActiveWithrawRs[0]
 Local $sSession,$sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-;~ startWithDrawRs()
-
 Func startWithDrawRs()
 	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)

@@ -25,6 +25,7 @@ Local $recordExample = "5153|100"
 ;~ test()
 
 getConfigAuction()
+;~ minuteWait(60)
 
 Func test()
 
@@ -74,7 +75,7 @@ Func startAuction()
 	
 	checkThenCloseChrome()
 
-	deleteFileInFolder()
+	deleteFileInFolder($outputPathRoot)
 
 	; Set up chrome
 	$sSession = SetupChrome()
@@ -280,27 +281,6 @@ Func getConfigAuction()
 		MsgBox(16, "Lỗi", "File không tồn tại.")
 		Exit
 	EndIf
-	Return True
-EndFunc
-
-Func deleteFileInFolder()
-
-	Local $sFolderPath = $outputPathRoot ; Đường dẫn thư mục output
-
-	Local $aFileList = _FileListToArray($sFolderPath) ; Lấy danh sách các file trong thư mục
-
-	If @error Then
-		writeLogFile($logFile, "Không thể đọc danh sách file trong thư mục")
-	Else
-		For $i = 1 To $aFileList[0] ; Duyệt qua từng file
-			If StringInStr($aFileList[$i], "File_" & $sDateToday) == 0 Then ; Kiểm tra nếu tên file chứa "File_"
-				Local $sFilePath = $sFolderPath & "\" & $aFileList[$i] ; Đường dẫn đầy đủ của file
-				FileDelete($sFilePath) ; Xoá file
-			EndIf
-		Next
-		;~ MsgBox(64, "Thông báo", "Xoá các file thành công")
-	EndIf
-
 	Return True
 EndFunc
 

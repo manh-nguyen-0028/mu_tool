@@ -2,6 +2,7 @@
 #include <date.au3>
 #include "../include/json_utils.au3"
 #include <Array.au3>
+#include <File.au3>
 
 ; CONSTANT
 Global $baseDir = StringSplit(@ScriptDir,"mu_tool",1)[1] & "mu_tool"
@@ -94,9 +95,15 @@ Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
 	writeLogFile($logFile, "Wait to next hour : " &$nextHour)
 	$nextTime = createTimeToTicks($nextHour, $minPlus , $secPlus)
 	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
-	$diffTime = diffTime($currentTime, $nextTime)
-	writeLogFile($logFile,"time diff: " & timeToText($diffTime))
-	Sleep($diffTime)
+	
+	If @HOUR == 23 And @MIN > $minPlus Then 
+		$minuteWait = 60 - @MIN + $minPlus
+		minuteWait($minuteWait)
+	Else
+		$diffTime = diffTime($currentTime, $nextTime)
+		writeLogFile($logFile,"time diff: " & timeToText($diffTime))
+		Sleep($diffTime)
+	EndIf
 EndFunc
 
 Func waitToNextTime($hourPlus, $minPlus, $secPlus)
@@ -126,6 +133,12 @@ Func addTimePerRs($pTime, $amount)
 	$addHour = _DateAdd('h', $amount, $pTime)
 	$addMinute = _DateAdd('n', -20, $addHour)
 	Return $addMinute
+EndFunc
+
+Func addTimeSubtractionMinute($pTime, $amount)
+    $addHour = _DateAdd('h', $amount, $pTime)
+    $addMinute = _DateAdd('n', -10, $addHour)
+    Return $addMinute
 EndFunc
 
 Func addHour($pTime, $amount)
@@ -302,7 +315,40 @@ Func readFileTxtToArray($filePath)
 		MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file : " & $filePath)
 		Exit
 	Else
-		writeLogFile($logFile,"Read file " & $filePath & "success !")
+		writeLogFile($logFile,"Read file " & $filePath & " success !")
 	EndIf
 	Return $aResult
+EndFunc
+
+Func checkProcessExists($exeFileName)
+	$resultCheck = False
+	If ProcessExists($exeFileName) Then
+		writeLogFile($logFile, "Chương trình " & $exeFileName & " ĐANG chạy.")
+		$resultCheck = True
+	Else
+		writeLogFile($logFile, "Chương trình " & $exeFileName & " KHÔNG chạy.")
+		$resultCheck = False
+	EndIf
+	Return $resultCheck
+EndFunc
+
+Func deleteFileInFolder($sFolderPath)
+	Local $sDateToday = @YEAR & @MON & @MDAY
+	;~ Local $sFolderPath = $outputPathRoot ; Đường dẫn thư mục output
+
+	Local $aFileList = _FileListToArray($sFolderPath) ; Lấy danh sách các file trong thư mục
+
+	If @error Then
+		writeLogFile($logFile, "Không thể đọc danh sách file trong thư mục")
+	Else
+		For $i = 1 To $aFileList[0] ; Duyệt qua từng file
+			If StringInStr($aFileList[$i], "File_" & $sDateToday) == 0 Then ; Kiểm tra nếu tên file chứa "File_"
+				Local $sFilePath = $sFolderPath & "\" & $aFileList[$i] ; Đường dẫn đầy đủ của file
+				FileDelete($sFilePath) ; Xoá file
+			EndIf
+		Next
+		;~ MsgBox(64, "Thông báo", "Xoá các file thành công")
+	EndIf
+
+	Return True
 EndFunc

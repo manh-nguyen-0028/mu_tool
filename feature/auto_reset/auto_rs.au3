@@ -14,14 +14,6 @@ Local $aAccountActiveWithrawRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-
-;~ startAutoRs()
-
-;~ $sTimeReset = getTimeReset(2 & "|" & "10-09 17:18",0)
-;~ writeLog($sTimeReset)
-;~ testAa()
-clickEventIconThenGoStadium() 
-
 Func testAa()
 	Local $pTime = "2023/10/02 18:34:58"
 	Local $amount = 7

@@ -184,7 +184,7 @@ Func goToDevilEvent()
 
 		If $checkActiveWin == True And checkActiveAutoHome() == False Then 
 			handelWhenFinshDevilEvent()
-			_MU_followLeader(3)
+			_MU_followLeader(1)
 			; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
 			$checkActiveAutoHome = checkActiveAutoHome()
 			$countWaitAutoHome = 0
@@ -239,8 +239,6 @@ Func goToDevilEvent()
 		moveOtherMap()
 
 		secondWait(3)
-
-		handelWhenFinshDevilEvent()
 
 		_MU_followLeader(1)	
 		
