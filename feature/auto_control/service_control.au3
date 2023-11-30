@@ -2,6 +2,7 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
+
 #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
@@ -17,16 +18,21 @@ Func test()
     Return True
 EndFunc
 
+
+
 Func start()
+    ; 1. Delete file in folder log
+    deleteFileInFolder($outputPathRoot)
+
     While True
-        ;~ If @HOUR < 20 Or @HOUR > 22 Then startPath()
-        If @HOUR < 19 Or @HOUR > 22 Then 
+        waitToNextHourMinutes(1, 40, 00)
+        ;~ If @HOUR <> 23 And checkProcessExists("mu_auction.exe") == FALSE
+        If checkProcessExists("mu_auction.exe") == False And @HOUR <> 23 Then 
             writeLog("Start rs")
             startWithDrawRs()
-            secondWait(30)
+            secondWait(10)
             startAutoRs()
         EndIf
-        waitToNextHourMinutes(1, 31, 00)
     WEnd
 EndFunc
 
