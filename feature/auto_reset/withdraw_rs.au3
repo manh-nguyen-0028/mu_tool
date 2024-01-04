@@ -26,6 +26,7 @@ Func startWithDrawRs()
 			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
 	Next
+	writeLogFile($logFile, "So account rut rs: " & UBound($aAccountActiveWithrawRs))
 	If UBound($aAccountActiveWithrawRs) == 0 Then Exit
 	; close all chrome browser
 	checkThenCloseChrome()
@@ -42,12 +43,16 @@ Func startWithDrawRs()
 		;~ $mainNo = getMainNoByChar($charName)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+
+		writeLogFile($logFile, "Check gio hien tai va thoi gian co the rs : getTimeNow() < $nextTimeRs => " & getTimeNow() < $nextTimeRs)
+
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
 			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
 			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
+		
 		If $timeRs >= $limit Then 
 			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
 			ContinueLoop

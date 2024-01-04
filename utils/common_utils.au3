@@ -292,10 +292,10 @@ Func setJsonToFileFormat($path, $json)
 EndFunc
 
 Func getJsonFromFile($filePath)
-	writeLogFile($logFile,"Read file : " &$filePath)
+	writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
-	;~ writeLogFile($logFile,"Text read from file: " &$convtext)
+	writeLogFile($logFile,"Text read from file getJsonFromFile: " &$convtext)
 	FileClose($rtfhandle)
 	$json = _JSONDecode($convtext)
 	Return $json
