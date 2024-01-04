@@ -207,13 +207,13 @@ Func goToDevilEvent()
 	Local $nextHourMove = @HOUR
 
 	If @MIN >= 30 Then 
-		$nextMinMove = 37
+		$nextMinMove = 36
 	Else
-		$nextMinMove = 7
+		$nextMinMove = 6
 	EndIf
 
 	If @HOUR == 0 Or @HOUR == 24 Then
-		$nextMinMove = 7
+		$nextMinMove = 6
 		$nextHourMove = 0
 	EndIf
 
