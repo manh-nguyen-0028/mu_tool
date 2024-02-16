@@ -1133,7 +1133,7 @@ Func _Demo_NavigateCheckBanner($sSession, $sURL, $sXpath)
 EndFunc   ;==>_Demo_NavigateCheckBanner
 
 Func SetupGecko($bHeadless)
-	_WD_Option('Driver', 'geckodriver.exe')
+	_WD_Option('Driver', 'D:\Project\AutoIT\mu_tool\driver\firefox\geckodriver-v0.33.0\geckodriver.exe')
 	_WD_Option('DriverParams', '--log trace')
 	_WD_Option('Port', 4444)
 

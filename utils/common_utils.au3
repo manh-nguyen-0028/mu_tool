@@ -22,6 +22,9 @@ Global $logFile, $jsonPositionConfig
 
 Global $aCharInAccount
 
+; ENUM
+$LOG_TYPE_INFO = ""
+
 init()
 
 ; init
@@ -38,8 +41,16 @@ Func writeLog($textLog)
 EndFunc
 
 Func writeLogFile($logFile, $sText)
-	writeLog($sText)
+	writeLogFileType($logFile, $sText, "info")
 	FileWriteLine($logFile, @HOUR & "-" &@MIN & "-" &@SEC & " : " & $sText)
+EndFunc
+
+Func writeLogFileType($logFile, $sText, $type)
+	$logLevel = "info"
+	$prefix = @HOUR & ":" &@MIN & ":" &@SEC & " " & StringUpper($type) & " "
+	$textLog = $prefix & $sText
+	If $logLevel == "info" Then writeLog($textLog)
+	FileWriteLine($logFile, $textLog)
 EndFunc
 
 ; Time

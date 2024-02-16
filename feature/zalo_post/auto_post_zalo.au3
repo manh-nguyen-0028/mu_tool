@@ -42,9 +42,9 @@ Func startPostZalo()
     getJsonConfigTime()
 
     If isCanPost() == True Then
-        $sSession = SetupGecko()
+        $sSession = SetupChrome()
         
-        _WD_Navigate($sSession, "https://chat.zalo.me/")
+        _WD_Navigate($sSession, "https://chat.zalo.me/?null")
         secondWait(5)
         $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//input[@id='contact-search-input']")
         If @error = $_WD_ERROR_Success Then
