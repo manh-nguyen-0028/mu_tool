@@ -1,5 +1,5 @@
 [
-{"active":true,"user_name":"vinci7","type":"withdraw","password":"manhva02","char_name":"Victozia","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":0,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:40:00"},
-{"active":true,"user_name":"vinci7","type":"reset","password":"manhva02","char_name":"GoldenGirl","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":6,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:43:00"},
-{"active":true,"user_name":"game002","type":"reset","password":"111qqq","char_name":"JackAngel","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":3,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:58:00"}
+{"active":true,"position":"100-102","user_name":"vinci7","type":"withdraw","password":"manhva02","char_name":"Victozia","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":0,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:40:00"},
+{"active":true,"position":"100-102","user_name":"vinci7","type":"reset","password":"manhva02","char_name":"GoldenGirl","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":1,"limit":6,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:43:00"},
+{"active":true,"position":"100-102","user_name":"game002","type":"reset","password":"111qqq","char_name":"JackAngel","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"time_rs":3,"limit":5,"next_time_reset":"2023-09-27","last_time_reset":"2024/12/31 16:58:00"}
 ]
