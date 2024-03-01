@@ -57,6 +57,13 @@ Func startWithDrawRs()
 			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
 			ContinueLoop
 		EndIf
+
+		If $sSession Then 
+			writeLog("Da ton tai session. Khong can khoi tao lai")
+		Else
+			$sSession = SetupChrome()
+		EndIf
+
 		; Begin withdraw reset
 		withdrawRs($username, $password, $charName,$hourPerRs)
 		; Logout account
