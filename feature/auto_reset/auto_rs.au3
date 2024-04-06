@@ -43,7 +43,8 @@ Func startAutoRs()
 	If UBound($aAccountActiveWithrawRs) == 0 Then Exit
 	; close all chrome browser
 	checkThenCloseChrome()
-	; open sesssion chrome
+	; open sesssion chrome 
+	$sSession = SetupChrome()
 	For $i = 0 To UBound($aAccountActiveWithrawRs) - 1
 		$username = getPropertyJson($aAccountActiveWithrawRs[$i],"user_name")
 		$password = getPropertyJson($aAccountActiveWithrawRs[$i],"password")
@@ -73,11 +74,6 @@ Func startAutoRs()
 		If $activeMain == False Then $activeMain = switchOtherChar($charName)
 
 		If $activeMain == True Then 
-			If $sSession Then 
-				writeLog("Da ton tai session. Khong can khoi tao lai")
-			Else
-				$sSession = SetupChrome()
-			EndIf
 			processReset($aAccountActiveWithrawRs[$i])
 			; Logout account
 			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
