@@ -64,6 +64,8 @@ Func checkThenGoDevilEvent()
 
 	If $nextHour > @HOUR Then $nextMin = 00
 	
+	$nextMin = $nextMin + 1
+	
 	$nextTime = createTimeToTicks($nextHour, $nextMin, "05")
 	$diffTime = diffTime(getCurrentTime(), $nextTime) 
 

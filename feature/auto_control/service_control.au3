@@ -25,7 +25,6 @@ Func start()
     deleteFileInFolder($outputPathRoot)
 
     While True
-        waitToNextHourMinutes(1, 40, 00)
         ;~ If @HOUR <> 23 And checkProcessExists("mu_auction.exe") == FALSE
         If checkProcessExists("mu_auction.exe") == False And @HOUR <> 23 Then 
             writeLog("Start rs")
@@ -33,6 +32,7 @@ Func start()
             secondWait(10)
             startAutoRs()
         EndIf
+        waitToNextHourMinutes(1, 38, 00)
     WEnd
 EndFunc
 

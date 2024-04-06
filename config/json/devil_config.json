@@ -1,10 +1,11 @@
 [
-    {"active":true,"have_ruong_k":true,"char_name":"JackAngel","devil_no":4,"ignore_peak_hour":true, "is_fast_join":true},
+    {"active":true,"have_ruong_k":true,"char_name":"JackAngel","devil_no":3,"ignore_peak_hour":true, "is_fast_join":true},
+	{"active":true,"have_ruong_k":true,"char_name":"xXxamlt","devil_no":5,"ignore_peak_hour":false, "is_fast_join":false},
     {"active":false,"have_ruong_k":true,"char_name":"zChuaTez","devil_no":4,"ignore_peak_hour":false, "is_fast_join":false},
     {"active":false,"have_ruong_k":true,"char_name":"GoldenGirl","devil_no":3,"ignore_peak_hour":false, "is_fast_join":false},
 	{"active":false,"have_ruong_k":true,"char_name":"Gamez","devil_no":3,"ignore_peak_hour":true, "is_fast_join":false},
 	{"active":false,"have_ruong_k":true,"char_name":"SieuKs","devil_no":3,"ignore_peak_hour":false, "is_fast_join":false},
-    {"active":true,"have_ruong_k":true,"char_name":"Victozia","devil_no":3,"ignore_peak_hour":false, "is_fast_join":true},
+    {"active":false,"have_ruong_k":true,"char_name":"Victozia","devil_no":3,"ignore_peak_hour":false, "is_fast_join":true},
     {"active":false,"have_ruong_k":true,"char_name":"TimLaiKyUc","devil_no":3,"ignore_peak_hour":false, "is_fast_join":false},
     {"active":false,"have_ruong_k":true,"char_name":"GiamDocSo","devil_no":3,"ignore_peak_hour":false, "is_fast_join":false},
     {"active":false,"have_ruong_k":true,"char_name":"dwgy5","devil_no":3,"ignore_peak_hour":false, "is_fast_join":false},
