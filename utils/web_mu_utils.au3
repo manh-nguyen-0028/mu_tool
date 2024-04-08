@@ -17,7 +17,7 @@ Global $sAppDataLocalPath = StringRegExpReplace($sAppDataPath, "Roaming", "Local
 
 Global $sChromeUserDataPath = StringRegExpReplace($sAppDataPath, "Roaming", "Local\\Google\\Chrome\\User Data\") ; Lấy đường dẫn thư mục gốc
 
-Global $baseMuUrl = "https://hn.gamethuvn.net/"
+;~ Global $baseMuUrl = "https://hn.gamethuvn.net/"
 
 Global $sTitleLoginSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Thông báo"
 
@@ -163,8 +163,8 @@ Func loginWebsite($sSession,$username, $password)
 		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
 
 		; Chuyen lai tab ve gamethuvn.net
-		writeLog("Chuyen lai tab ve hn.gamethuvn.net")
-		_WD_Attach($sSession, "hn.gamethuvn.net", "URL")
+		writeLog("Chuyen lai tab ve "&$baseMuUrl)
+		_WD_Attach($sSession, $baseMuUrl, "URL")
 		
 		_WD_Window($sSession,"MINIMIZE")
 
@@ -234,5 +234,5 @@ Func getTimeReset($sLogReset, $hourPerRs)
 EndFunc
 
 Func getUrlAuction($sId)
-	Return "https://hn.gamethuvn.net/web/event/boss-item-bid.item.shtml?id="&$sId
+	Return $baseMuUrl&"web/event/boss-item-bid.item.shtml?id="&$sId
 EndFunc
