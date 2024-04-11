@@ -6,7 +6,7 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/web_mu_utils.au3"
 
-Global $baseUrl = "https://hn.gamethuvn.net/"
+Global $baseUrl = $baseMuUrl
 
 Func SetupChrome()
     _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver-win32\chromedriver.exe')

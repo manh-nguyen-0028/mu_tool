@@ -17,7 +17,7 @@ Global $featurePathRoot = $baseDir & "\feature\"
 Local $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của script
 Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ; Lấy đường dẫn thư mục gốc
 
-Global $baseMuUrl = "https://hn.gamethuvn.net/"
+Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig
 
 Global $aCharInAccount
@@ -295,7 +295,7 @@ Func getJsonFromFile($filePath)
 	writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
-	writeLogFile($logFile,"Text read from file getJsonFromFile: " &$convtext)
+	;~ writeLogFile($logFile,"Text read from file getJsonFromFile: " &$convtext)
 	FileClose($rtfhandle)
 	$json = _JSONDecode($convtext)
 	Return $json

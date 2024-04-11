@@ -112,6 +112,22 @@ Func checkActiveAutoHome()
 	Return $result
 EndFunc
 
+Func checkAutoOnBuff()
+	$pathImage = $imagePathRoot & "common" & "\check_on_buff.bmp"
+	$result = False
+	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 1056, 789, 100, True)
+	If $imageSearchResult[0] == 1 Then $result = True
+	Return $result
+EndFunc
+
+Func checkAutoOffBuff()
+	$pathImage = $imagePathRoot & "common" & "\check_off_buff.bmp"
+	$result = False
+	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 1056, 789, 100, True)
+	If $imageSearchResult[0] == 1 Then $result = True
+	Return $result
+EndFunc
+
 Func checkRuongK($charInfo)
 	$charName = _JSONGet($charInfo, "char_name")
 	$title = getMainNoByChar($charName)
