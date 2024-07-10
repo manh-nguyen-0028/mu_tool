@@ -37,10 +37,12 @@
 		  "huy_bo_y":475,
 		  "devil_3_x":843,
 		  "devil_3_y":409,
-		  "devil_4_x":864,
+		  "devil_4_x":789,
 		  "devil_4_y":460,
-		  "devil_5_x":843,
-		  "devil_5_y":409
+		  "devil_5_x":830,
+		  "devil_5_y":515,
+		  "devil_6_x":809,
+		  "devil_6_y":567
 	   },"event_devil_icon_no_had_k":{
 		  "x":37,
 		  "y":171,

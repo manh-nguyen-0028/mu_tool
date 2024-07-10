@@ -135,14 +135,21 @@ Func processReset($jAccountInfo)
 				; Click bỏ hết các bảng thông báo
 				handelWhenFinshDevilEvent()
 				secondWait(3)
-				; 1. Change Char
-				changeChar($mainNo)
+				If $resetOnline == False Then
+					; 1. Change Char
+					changeChar($mainNo)
+				EndIf
 				; 2. Reset in web
 				_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
 				secondWait(5)
 				; Click radio rs vip
 				_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
 				secondWait(2)
+				If $resetOnline == True Then
+					; Click radio online
+					_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
+					secondWait(2)
+				EndIf
 				; Click submit
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
