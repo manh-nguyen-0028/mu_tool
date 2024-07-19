@@ -10,61 +10,74 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aAccountActiveWithrawRs[0]
+Local $aAccountActiveRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
+Local $sDate = @YEAR & @MON & @MDAY
+Local $className = @ScriptName
 
-Func testAa()
+testAa()
+
+Func testAa($abc="x", $abc1="x1", $abc2="x2")
 	Local $pTime = "2023/10/02 18:34:58"
 	Local $amount = 7
 
 	Local $addedTime = _DateAdd('h', $amount, $pTime)
 	Local $addedTime1 = _DateAdd('n', -20, $addedTime)
 
-	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
-	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
+	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
+	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
+
+	writeLogMethodStart("testAa",@ScriptLineNumber)
 EndFunc
 
 Func startAutoRs()
 	; get array account need withdraw reset
-	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
-	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
+	$logFile = FileOpen($sFilePath, $FO_APPEND)
+	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
-	ReDim $aAccountActiveWithrawRs[0]
+	ReDim $aAccountActiveRs[0]
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
 		If $active == True And "reset" == $type Then
-			Redim $aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) + 1]
-			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
+			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
+			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
 	Next
-	If UBound($aAccountActiveWithrawRs) == 0 Then Exit
-	; close all chrome browser
-	checkThenCloseChrome()
-	; open sesssion chrome 
-	$sSession = SetupChrome()
-	For $i = 0 To UBound($aAccountActiveWithrawRs) - 1
-		$username = getPropertyJson($aAccountActiveWithrawRs[$i],"user_name")
-		$password = getPropertyJson($aAccountActiveWithrawRs[$i],"password")
-		$charName = getPropertyJson($aAccountActiveWithrawRs[$i],"char_name")
-		$lastTimeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"last_time_reset")
-		$limit = getPropertyJson($aAccountActiveWithrawRs[$i],"limit")
-		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
-		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
+	If UBound($aAccountActiveRs) == 0 Then 
+		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
+		FileClose($logFile)
+		Return
+	Else
+		; close all chrome browser
+		checkThenCloseChrome()
+		$sSession = SetupChrome()
+	EndIf
+
+	For $i = 0 To UBound($aAccountActiveRs) - 1
+		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRs[$i]))
+		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
+		$password = getPropertyJson($aAccountActiveRs[$i],"password")
+		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
+		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
+		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
+		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
+		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
 		
 		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
-			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
-			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			writeLogFile($logFile, "Chua den thoi gian reset. Thoi gian gan nhat co the reset" & $nextTimeRs)
+			;~ writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			;~ writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
 		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
+			writeLogFile($logFile, "Vuot qua so lan rs cho phep trong ngay. So lan RS hien tai => " & $timeRs)
 			ContinueLoop
 		EndIf
 		; Begin reset
@@ -74,13 +87,15 @@ Func startAutoRs()
 		If $activeMain == False Then $activeMain = switchOtherChar($charName)
 
 		If $activeMain == True Then 
-			processReset($aAccountActiveWithrawRs[$i])
+			processReset($aAccountActiveRs[$i])
 			; Logout account
 			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 			secondWait(5)
 		EndIf
 	Next
 
+	writeLogMethodEnd("startAutoRs",@ScriptLineNumber)
+	
 	FileClose($logFile)
 
 	; Close webdriver neu thuc hien xong 
@@ -90,6 +105,7 @@ Func startAutoRs()
 EndFunc
 
 Func processReset($jAccountInfo)
+	writeLogMethodStart("processReset",@ScriptLineNumber,$jAccountInfo)
 	$username = getPropertyJson($jAccountInfo,"user_name")
 	$password = getPropertyJson($jAccountInfo,"password")
 	$charName = getPropertyJson($jAccountInfo,"char_name")
@@ -132,10 +148,10 @@ Func processReset($jAccountInfo)
 			; Active main no 
 			$activeWin = activeAndMoveWin($mainNo)
 			If $activeWin == True Then
-				; Click bỏ hết các bảng thông báo
-				handelWhenFinshDevilEvent()
-				secondWait(3)
 				If $resetOnline == False Then
+					; Click bỏ hết các bảng thông báo
+					handelWhenFinshDevilEvent()
+					secondWait(3)
 					; 1. Change Char
 					changeChar($mainNo)
 				EndIf
@@ -198,15 +214,16 @@ Func processReset($jAccountInfo)
 					secondWait(8)
 					; 9. Follow leader
 					_MU_followLeader(1)
-					; 10. minisize main 
-					minisizeMain($mainNo)
 				EndIf
+				; 10. minisize main 
+				minisizeMain($mainNo)
 				; 11. Logout account
 				_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 				secondWait(5)
 			EndIf
 		EndIf
 	EndIf
+	writeLogMethodEnd("processReset",@ScriptLineNumber,$jAccountInfo)
 EndFunc
 
 #cs

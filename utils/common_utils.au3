@@ -21,6 +21,7 @@ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig
 
 Global $aCharInAccount
+Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 init()
 
@@ -37,9 +38,36 @@ Func writeLog($textLog)
 	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog &@CRLF)
 EndFunc
 
-Func writeLogFile($logFile, $sText)
-	writeLog($sText)
-	FileWriteLine($logFile, @HOUR & "-" &@MIN & "-" &@SEC & " : " & $sText)
+Func writeLogMethodStart($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
+	$sText = "INFO  "& "START " & $methodName & "()"
+	If $textLog <> Default Then
+		$sText = $sText&" with parameter =>" & $textLog
+	EndIf
+	writeLogFile($logFile,$sText, $line)
+EndFunc
+
+Func writeLogMethodEnd($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
+	$sText = "INFO  "& "END " & $methodName & "()"
+	If $textLog <> Default Then
+		$sText = $sText&" with parameter =>" & $textLog
+	EndIf
+	writeLogFile($logFile,$sText, $line)
+EndFunc
+
+Func writeLogFile($logFile, $sText,$line=Default)
+	logFileCommon($logFile, $sText,$line)
+EndFunc
+
+Func logFileCommon($logFile, $sText,$line=Default)
+	$sTextFinal = ''
+	If $line == Default Then
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName &" : " & $sText
+	Else
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "["&$line&"]" &" : " & $sText
+	EndIf
+	writeLog($sTextFinal)
+	FileWriteLine($logFile, $sTextFinal)
+	Return True
 EndFunc
 
 ; Time

@@ -187,6 +187,7 @@ EndFunc
 Func switchOtherChar($currentChar)
 	$resultSwitch = False
 	$otherCharName = ""
+	$otherMainNo = ""
 	For $i = 0 To UBound($aCharInAccount) -1
 		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
 		If $resultCheck Then
@@ -197,6 +198,7 @@ Func switchOtherChar($currentChar)
 		EndIf
 	Next
 	If $otherCharName <> '' Then 
+		$otherMainNo = getMainNoByChar($otherCharName)
 		$mainNo = getMainNoByChar($otherCharName)
 		If activeAndMoveWin($mainNo) == True Then
 			; TODO: Thao tac chuyen char
@@ -213,12 +215,26 @@ Func switchOtherChar($currentChar)
 			$mainNo = getMainNoByChar($currentChar)
 			; Doi khoang 6s
 			$timeCheck = 1;
-			While activeAndMoveWin($mainNo) == False And $timeCheck < 5
+			$checkActiveMain = activeAndMoveWin($mainNo)
+			While $checkActiveMain == False And $timeCheck < 5
 				$timeCheck += 1
 				secondWait(2)
 			WEnd
 
-			If activeAndMoveWin($mainNo) == True Then $resultSwitch = True
+			;~ $checkActiveMain = activeAndMoveWin($mainNo);
+			;~ writeLog("$checkActiveMain :" & $checkActiveMain)
+
+			If $checkActiveMain == True Then 
+				$resultSwitch = True
+			Else
+				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " &$mainNo)
+				; De chuot ra man hinh
+				_MU_MouseClick_Delay(504, 361)
+				secondWait(2)
+				;~ writeLog("Dong toan bo cua so")
+				writeLogFile($logFile,"Di chuot ra main hinh va minisize Main hien tai: " &$otherMainNo)
+				minisizeMain($otherMainNo)
+			EndIf
 			; Kiem tra title xem dung la title cua minh khong
 		EndIf
 	EndIf
