@@ -108,7 +108,12 @@ Func checkActiveAutoHome()
 	$pathImage = $imagePathRoot & "common" & "\not_active_auto_home.bmp"
 	$result = True
 	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 385, 103, 100, True)
-	If $imageSearchResult[0] == 1 Then $result = False
+	If $imageSearchResult[0] == 1 Then 
+		$result = False
+		writeLogFile($logFile, "Auto Z khong hoat dong")
+	Else
+		writeLogFile($logFile, "Auto Z dang hoat dong")
+	EndIf
 	Return $result
 EndFunc
 
@@ -160,7 +165,9 @@ Func getArrayActiveDevil()
 		writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
 		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
-		If $activeDevil == True Then 
+		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
+		; 19/07: add check $maxHourGo >= @HOUR
+		If $activeDevil == True And $maxHourGo >= @HOUR Then 
 			If $ignorePeakHour == True And @HOUR >= 20 And @HOUR <= 22 Then
 				writeLog("Peak hour can't go devil. Wait to 23h")
 			Else
@@ -217,7 +224,9 @@ Func switchOtherChar($currentChar)
 			$timeCheck = 1;
 			$checkActiveMain = activeAndMoveWin($mainNo)
 			While $checkActiveMain == False And $timeCheck < 5
+				$checkActiveMain = activeAndMoveWin($mainNo)
 				$timeCheck += 1
+				writeLogFile($logFile,"$timeCheck: " & $timeCheck)
 				secondWait(2)
 			WEnd
 

@@ -380,3 +380,19 @@ Func deleteFileInFolder($sFolderPath)
 
 	Return True
 EndFunc
+
+Func getOtherChar($currentChar)
+	$resultSwitch = False
+	$otherCharName = ""
+	$otherMainNo = ""
+	For $i = 0 To UBound($aCharInAccount) -1
+		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
+		If $resultCheck Then
+			; Chuyen sang char con lai
+			$otherCharName = StringSplit($aCharInAccount[$i],"|")[2]
+			writeLogFile($logFile, "Da tim thay other char: " & $otherCharName)
+			ExitLoop
+		EndIf
+	Next
+	Return $otherCharName
+EndFunc

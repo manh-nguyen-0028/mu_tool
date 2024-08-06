@@ -95,7 +95,7 @@ Func startAutoRs()
 	Next
 
 	writeLogMethodEnd("startAutoRs",@ScriptLineNumber)
-	
+
 	FileClose($logFile)
 
 	; Close webdriver neu thuc hien xong 
@@ -113,6 +113,8 @@ Func processReset($jAccountInfo)
 	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
+	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
+	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -186,6 +188,17 @@ Func processReset($jAccountInfo)
 						$sTimeReset = getTimeReset($sLogReset,0)
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+						If $resetInDay == 1 And $isBuff == True Then
+						;~ If $isBuff == True Then
+							; https://hn.mugamethuvn.info/web/char/charbuff.shtml
+							writeLogFile($logFile, "Begin buff char: " & $charName)
+							_WD_Navigate($sSession, $baseMuUrl & "web/char/charbuff.shtml")
+							secondWait(5)
+							_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+							secondWait(2)
+							; close diaglog confirm
+							closeDiaglogConfim($sSession)
+						EndIf
 					EndIf
 				Next
 				; If reset online = true => withow handle in game
@@ -206,17 +219,34 @@ Func processReset($jAccountInfo)
 						goMapArena()
 					EndIf
 					; 8. Check lvl in web
+					writeLogFile($logFile, @ScriptLineNumber & " Bat dau check lvl tren web !")
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
+					writeLogFile($logFile, @ScriptLineNumber & " Ket thuc check lvl tren web !")
 					; Move other map
 					moveOtherMap()
 					secondWait(8)
 					; 9. Follow leader
 					_MU_followLeader(1)
+					; 10. Wait in 1 min
+					minuteWait(1)
 				EndIf
+
+				$mainNoMinisize = $mainNo
+
+				If $isMainCharacter == False Then
+					writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+					$otherChar = getOtherChar($charName)
+					If $otherChar <> "" Then 
+						$resultWwithChar = switchOtherChar($otherChar)
+						If $resultWwithChar == True Then $mainNoMinisize = getMainNoByChar($otherChar)
+					EndIf
+					writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+				EndIf
+
 				; 10. minisize main 
-				minisizeMain($mainNo)
+				minisizeMain($mainNoMinisize)
 				; 11. Logout account
 				_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 				secondWait(5)
@@ -256,10 +286,14 @@ EndFunc
 	Dang nhap lai vao nhan vat
 #ce
 Func returnChar($mainNo) 
-	activeAndMoveWin($mainNo)
+	$checkActive = activeAndMoveWin($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	_MU_Rs_MouseClick_Delay(924, 771)
+	While $checkActive == False
+		_MU_Rs_MouseClick_Delay(924, 771)
+		$checkActive = activeAndMoveWin($mainNo)
+	WEnd
+	writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
 	secondWait(12)
 EndFunc 
 
@@ -291,7 +325,7 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
-	writeLogFile($logFile, "Current level: " & $nLvl)
+	;~ writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
@@ -299,11 +333,16 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 		Else
 			activeAndMoveWin($mainNo)
 			$checkAutoHome = checkActiveAutoHome()
+			writeLogFile($logFile, @ScriptLineNumber & " $checkAutoHome = " &$checkAutoHome)
 			If $checkAutoHome == False Then
 				$activeMain = activeAndMoveWin($mainNo)
-				If $activeMain == True Then goMapArena()
+				If $activeMain == True Then 
+					writeLogFile($logFile, @ScriptLineNumber & " Vao map stadium ")
+					goMapArena()
+				EndIf
 			EndIf
 		EndIf
+		;~ writeLogFile($logFile, "Current level: " & $nLvl)
 		; Wait 1 min then retry
 		minuteWait($timeDelay)
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)

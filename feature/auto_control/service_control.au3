@@ -18,8 +18,6 @@ Func test()
     Return True
 EndFunc
 
-
-
 Func start()
     ; 1. Delete file in folder log
     deleteFileInFolder($outputPathRoot)

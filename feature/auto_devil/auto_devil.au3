@@ -9,7 +9,7 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 start()
 
 Func start()
-	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
+	Local $sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
