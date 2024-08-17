@@ -9,7 +9,7 @@
 Global $baseUrl = $baseMuUrl
 
 Func SetupChrome()
-    _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver-win32\chromedriver.exe')
+    _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver-win64\chromedriver.exe')
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\chrome.log"')
 

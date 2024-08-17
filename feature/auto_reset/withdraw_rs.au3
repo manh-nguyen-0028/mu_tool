@@ -11,9 +11,12 @@
 Local $aAccountActiveWithrawRs[0]
 Local $sSession,$sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
+startWithDrawRs() 
+
 Func startWithDrawRs()
-	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
+	Local $sFilePath = $outputPathRoot & "File_Log_AutoRutRS_.txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	writeLogMethodStart("startWithDrawRs",@ScriptLineNumber)
 	; get array account need withdraw reset
 	writeLogFile($logFile, "Begin start withdraw reset !")
 	ReDim $aAccountActiveWithrawRs[0]
@@ -27,7 +30,11 @@ Func startWithDrawRs()
 		EndIf
 	Next
 	writeLogFile($logFile, "So account rut rs: " & UBound($aAccountActiveWithrawRs))
-	If UBound($aAccountActiveWithrawRs) == 0 Then Exit
+	If UBound($aAccountActiveWithrawRs) == 0 Then 
+		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
+		FileClose($logFile)
+		Return
+	EndIf
 	; close all chrome browser
 	checkThenCloseChrome()
 	; open sesssion chrome 
@@ -71,6 +78,7 @@ Func startWithDrawRs()
 	If $sSession Then _WD_DeleteSession($sSession)
 	
 	_WD_Shutdown()
+	writeLogMethodEnd("startWithDrawRs",@ScriptLineNumber)
 EndFunc
 
 Func withdrawRs($username, $password, $charName,$hourPerRs)

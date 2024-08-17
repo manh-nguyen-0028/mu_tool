@@ -108,7 +108,12 @@ Func checkActiveAutoHome()
 	$pathImage = $imagePathRoot & "common" & "\not_active_auto_home.bmp"
 	$result = True
 	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 385, 103, 100, True)
-	If $imageSearchResult[0] == 1 Then $result = False
+	If $imageSearchResult[0] == 1 Then 
+		$result = False
+		writeLogFile($logFile, "Auto Z khong hoat dong")
+	Else
+		writeLogFile($logFile, "Auto Z dang hoat dong")
+	EndIf
 	Return $result
 EndFunc
 
@@ -160,7 +165,9 @@ Func getArrayActiveDevil()
 		writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
 		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
-		If $activeDevil == True Then 
+		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
+		; 19/07: add check $maxHourGo >= @HOUR
+		If $activeDevil == True And $maxHourGo >= @HOUR Then 
 			If $ignorePeakHour == True And @HOUR >= 20 And @HOUR <= 22 Then
 				writeLog("Peak hour can't go devil. Wait to 23h")
 			Else
@@ -187,6 +194,7 @@ EndFunc
 Func switchOtherChar($currentChar)
 	$resultSwitch = False
 	$otherCharName = ""
+	$otherMainNo = ""
 	For $i = 0 To UBound($aCharInAccount) -1
 		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
 		If $resultCheck Then
@@ -197,6 +205,7 @@ Func switchOtherChar($currentChar)
 		EndIf
 	Next
 	If $otherCharName <> '' Then 
+		$otherMainNo = getMainNoByChar($otherCharName)
 		$mainNo = getMainNoByChar($otherCharName)
 		If activeAndMoveWin($mainNo) == True Then
 			; TODO: Thao tac chuyen char
@@ -213,12 +222,28 @@ Func switchOtherChar($currentChar)
 			$mainNo = getMainNoByChar($currentChar)
 			; Doi khoang 6s
 			$timeCheck = 1;
-			While activeAndMoveWin($mainNo) == False And $timeCheck < 5
+			$checkActiveMain = activeAndMoveWin($mainNo)
+			While $checkActiveMain == False And $timeCheck < 5
+				$checkActiveMain = activeAndMoveWin($mainNo)
 				$timeCheck += 1
+				writeLogFile($logFile,"$timeCheck: " & $timeCheck)
 				secondWait(2)
 			WEnd
 
-			If activeAndMoveWin($mainNo) == True Then $resultSwitch = True
+			;~ $checkActiveMain = activeAndMoveWin($mainNo);
+			;~ writeLog("$checkActiveMain :" & $checkActiveMain)
+
+			If $checkActiveMain == True Then 
+				$resultSwitch = True
+			Else
+				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " &$mainNo)
+				; De chuot ra man hinh
+				_MU_MouseClick_Delay(504, 361)
+				secondWait(2)
+				;~ writeLog("Dong toan bo cua so")
+				writeLogFile($logFile,"Di chuot ra main hinh va minisize Main hien tai: " &$otherMainNo)
+				minisizeMain($otherMainNo)
+			EndIf
 			; Kiem tra title xem dung la title cua minh khong
 		EndIf
 	EndIf

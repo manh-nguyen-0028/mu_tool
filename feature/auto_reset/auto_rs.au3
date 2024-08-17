@@ -10,61 +10,74 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aAccountActiveWithrawRs[0]
+Local $aAccountActiveRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
+Local $sDate = @YEAR & @MON & @MDAY
+Local $className = @ScriptName
 
-Func testAa()
+testAa()
+
+Func testAa($abc="x", $abc1="x1", $abc2="x2")
 	Local $pTime = "2023/10/02 18:34:58"
 	Local $amount = 7
 
 	Local $addedTime = _DateAdd('h', $amount, $pTime)
 	Local $addedTime1 = _DateAdd('n', -20, $addedTime)
 
-	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
-	MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
+	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
+	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
+
+	writeLogMethodStart("testAa",@ScriptLineNumber)
 EndFunc
 
 Func startAutoRs()
 	; get array account need withdraw reset
-	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
-	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
+	$logFile = FileOpen($sFilePath, $FO_APPEND)
+	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
-	ReDim $aAccountActiveWithrawRs[0]
+	ReDim $aAccountActiveRs[0]
 	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
 		If $active == True And "reset" == $type Then
-			Redim $aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) + 1]
-			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
+			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
+			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
 	Next
-	If UBound($aAccountActiveWithrawRs) == 0 Then Exit
-	; close all chrome browser
-	checkThenCloseChrome()
-	; open sesssion chrome 
-	$sSession = SetupChrome()
-	For $i = 0 To UBound($aAccountActiveWithrawRs) - 1
-		$username = getPropertyJson($aAccountActiveWithrawRs[$i],"user_name")
-		$password = getPropertyJson($aAccountActiveWithrawRs[$i],"password")
-		$charName = getPropertyJson($aAccountActiveWithrawRs[$i],"char_name")
-		$lastTimeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"last_time_reset")
-		$limit = getPropertyJson($aAccountActiveWithrawRs[$i],"limit")
-		$timeRs = getPropertyJson($aAccountActiveWithrawRs[$i],"time_rs")
-		$hourPerRs = getPropertyJson($aAccountActiveWithrawRs[$i],"hour_per_reset")
+	If UBound($aAccountActiveRs) == 0 Then 
+		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
+		FileClose($logFile)
+		Return
+	Else
+		; close all chrome browser
+		checkThenCloseChrome()
+		$sSession = SetupChrome()
+	EndIf
+
+	For $i = 0 To UBound($aAccountActiveRs) - 1
+		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRs[$i]))
+		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
+		$password = getPropertyJson($aAccountActiveRs[$i],"password")
+		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
+		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
+		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
+		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
+		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
 		
 		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & getTimeNow() < $nextTimeRs)
-			writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
-			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			writeLogFile($logFile, "Chua den thoi gian reset. Thoi gian gan nhat co the reset" & $nextTimeRs)
+			;~ writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
+			;~ writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
 		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "$timeRs >= $limit : " & $timeRs >= $limit)
+			writeLogFile($logFile, "Vuot qua so lan rs cho phep trong ngay. So lan RS hien tai => " & $timeRs)
 			ContinueLoop
 		EndIf
 		; Begin reset
@@ -74,12 +87,14 @@ Func startAutoRs()
 		If $activeMain == False Then $activeMain = switchOtherChar($charName)
 
 		If $activeMain == True Then 
-			processReset($aAccountActiveWithrawRs[$i])
+			processReset($aAccountActiveRs[$i])
 			; Logout account
 			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 			secondWait(5)
 		EndIf
 	Next
+
+	writeLogMethodEnd("startAutoRs",@ScriptLineNumber)
 
 	FileClose($logFile)
 
@@ -90,6 +105,7 @@ Func startAutoRs()
 EndFunc
 
 Func processReset($jAccountInfo)
+	writeLogMethodStart("processReset",@ScriptLineNumber,$jAccountInfo)
 	$username = getPropertyJson($jAccountInfo,"user_name")
 	$password = getPropertyJson($jAccountInfo,"password")
 	$charName = getPropertyJson($jAccountInfo,"char_name")
@@ -97,6 +113,8 @@ Func processReset($jAccountInfo)
 	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
+	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
+	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -132,17 +150,24 @@ Func processReset($jAccountInfo)
 			; Active main no 
 			$activeWin = activeAndMoveWin($mainNo)
 			If $activeWin == True Then
-				; Click bỏ hết các bảng thông báo
-				handelWhenFinshDevilEvent()
-				secondWait(3)
-				; 1. Change Char
-				changeChar($mainNo)
+				If $resetOnline == False Then
+					; Click bỏ hết các bảng thông báo
+					handelWhenFinshDevilEvent()
+					secondWait(3)
+					; 1. Change Char
+					changeChar($mainNo)
+				EndIf
 				; 2. Reset in web
 				_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
 				secondWait(5)
 				; Click radio rs vip
 				_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
 				secondWait(2)
+				If $resetOnline == True Then
+					; Click radio online
+					_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
+					secondWait(2)
+				EndIf
 				; Click submit
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
@@ -163,6 +188,17 @@ Func processReset($jAccountInfo)
 						$sTimeReset = getTimeReset($sLogReset,0)
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+						If $resetInDay == 1 And $isBuff == True Then
+						;~ If $isBuff == True Then
+							; https://hn.mugamethuvn.info/web/char/charbuff.shtml
+							writeLogFile($logFile, "Begin buff char: " & $charName)
+							_WD_Navigate($sSession, $baseMuUrl & "web/char/charbuff.shtml")
+							secondWait(5)
+							_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+							secondWait(2)
+							; close diaglog confirm
+							closeDiaglogConfim($sSession)
+						EndIf
 					EndIf
 				Next
 				; If reset online = true => withow handle in game
@@ -183,23 +219,41 @@ Func processReset($jAccountInfo)
 						goMapArena()
 					EndIf
 					; 8. Check lvl in web
+					writeLogFile($logFile, @ScriptLineNumber & " Bat dau check lvl tren web !")
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
+					writeLogFile($logFile, @ScriptLineNumber & " Ket thuc check lvl tren web !")
 					; Move other map
 					moveOtherMap()
 					secondWait(8)
 					; 9. Follow leader
 					_MU_followLeader(1)
-					; 10. minisize main 
-					minisizeMain($mainNo)
+					; 10. Wait in 1 min
+					minuteWait(1)
 				EndIf
+
+				$mainNoMinisize = $mainNo
+
+				If $isMainCharacter == False Then
+					writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+					$otherChar = getOtherChar($charName)
+					If $otherChar <> "" Then 
+						$resultWwithChar = switchOtherChar($otherChar)
+						If $resultWwithChar == True Then $mainNoMinisize = getMainNoByChar($otherChar)
+					EndIf
+					writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+				EndIf
+
+				; 10. minisize main 
+				minisizeMain($mainNoMinisize)
 				; 11. Logout account
 				_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 				secondWait(5)
 			EndIf
 		EndIf
 	EndIf
+	writeLogMethodEnd("processReset",@ScriptLineNumber,$jAccountInfo)
 EndFunc
 
 #cs
@@ -232,10 +286,14 @@ EndFunc
 	Dang nhap lai vao nhan vat
 #ce
 Func returnChar($mainNo) 
-	activeAndMoveWin($mainNo)
+	$checkActive = activeAndMoveWin($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	_MU_Rs_MouseClick_Delay(924, 771)
+	While $checkActive == False
+		_MU_Rs_MouseClick_Delay(924, 771)
+		$checkActive = activeAndMoveWin($mainNo)
+	WEnd
+	writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
 	secondWait(12)
 EndFunc 
 
@@ -267,7 +325,7 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
-	writeLogFile($logFile, "Current level: " & $nLvl)
+	;~ writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
@@ -275,11 +333,16 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 		Else
 			activeAndMoveWin($mainNo)
 			$checkAutoHome = checkActiveAutoHome()
+			writeLogFile($logFile, @ScriptLineNumber & " $checkAutoHome = " &$checkAutoHome)
 			If $checkAutoHome == False Then
 				$activeMain = activeAndMoveWin($mainNo)
-				If $activeMain == True Then goMapArena()
+				If $activeMain == True Then 
+					writeLogFile($logFile, @ScriptLineNumber & " Vao map stadium ")
+					goMapArena()
+				EndIf
 			EndIf
 		EndIf
+		;~ writeLogFile($logFile, "Current level: " & $nLvl)
 		; Wait 1 min then retry
 		minuteWait($timeDelay)
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
