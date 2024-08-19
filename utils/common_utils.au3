@@ -18,7 +18,8 @@ Local $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của s
 Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ; Lấy đường dẫn thư mục gốc
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
-Global $logFile, $jsonPositionConfig
+Global $logFile, $jsonPositionConfig, $jsonConfig
+Global $devilFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -28,7 +29,27 @@ init()
 ; init
 Func init()
 	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
+	For $i =0 To UBound($jsonConfig) - 1
+		$active = getPropertyJson($jsonConfig[$i], "active")
+		$type = getPropertyJson($jsonConfig[$i], "type")
+		$key = getPropertyJson($jsonConfig[$i], "key")
+		$value = getPropertyJson($jsonConfig[$i], "value")
+		If $active == True Then
+			If "position" == $type Then
+				$jsonPositionConfig = getJsonFromFile($jsonPathRoot & $value)
+				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
+			ElseIf "devil" == $type Then
+				$devilFileName = $value
+			EndIf
+		EndIf
+	Next
+	
 	$aCharInAccount=getArrayInFileTxt($textPathRoot & "char_in_account.txt")
+
+	; In ra log giá trị của $jsonPositionConfig
+    ;~ ConsoleWrite("jsonPositionConfig: " & convertJsonToString($jsonPositionConfig))
+	
 	Return True
 EndFunc
 

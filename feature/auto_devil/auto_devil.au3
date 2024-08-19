@@ -159,9 +159,9 @@ Func goToDevilEvent()
 			If $checkRuongK == False Then
 				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
 				If $checkRuongK == True Then 
-					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "devil_config.json")
+					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-					setJsonToFileFormat($jsonPathRoot & "devil_config.json", $jsonDevilConfig)
+					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
 				EndIf
 			EndIf
 			$checkActiveWin = activeAndMoveWin($mainNo)
@@ -270,7 +270,7 @@ Func _MU_Search_Localtion($checkRuongK, $devilNo)
 		secondWait(1)
 		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
 		While $searchPixel  = 0 And $countSerchPixel < 3
-			_MU_MouseClick_Delay(483,371)
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x"), _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y"))
 			$searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
 			$countSerchPixel = $countSerchPixel + 1;
 		WEnd
@@ -334,9 +334,9 @@ Func _MU_handleWhenFinishEvent()
 					; Thuc hien check ruong K doi voi cac account chua co ruong K
 					$check = checkRuongK($jsonAccountActiveDevil[$i])
 					If $check == True Then 
-						$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "devil_config.json")
+						$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 						_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-						setJsonToFileFormat($jsonPathRoot & "devil_config.json", $jsonDevilConfig)
+						setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
 					EndIf
 				EndIf
 				; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s

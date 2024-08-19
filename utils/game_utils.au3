@@ -12,7 +12,8 @@ Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
 	writeLog("Begin follow leader !")
 	If $position == 1 Then
-		_MU_MouseClick_Delay(995, 147)
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"), _JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
+		secondWait(1)
 		sendKeyDelay("{Enter}")
 	EndIf
 EndFunc
@@ -70,9 +71,9 @@ Func handelWhenFinshDevilEvent()
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
 	; Click neu dang bat shop
-	mouseMainClick(327, 104)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.close_shop.x"), _JSONGet($jsonPositionConfig,"button.close_shop.y"))
 	; Click vao tat neu dang bat may quay chao
-	mouseMainClick(508, 526)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.close_chao.x"), _JSONGet($jsonPositionConfig,"button.close_chao.y"))
 EndFunc
 
 Func openConsoleThenClear()
@@ -89,18 +90,18 @@ Func openConsoleThenClear()
 EndFunc
 
 Func clickEventIcon()
-	_MU_MouseClick_Delay(157, 119)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.x"), _JSONGet($jsonPositionConfig,"button.event_icon.y"))
 	secondWait(1)
 EndFunc
 
 Func clickEventIconThenGoStadium() 
 	clickEventIcon() 
-	_MU_MouseClick_Delay(503, 493)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y"))
 	secondWait(5)
 EndFunc
 
 Func clickEventStadium() 
-	_MU_MouseClick_Delay(503, 493)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y"))
 	secondWait(1)
 EndFunc
 
@@ -158,7 +159,7 @@ Func checkRuongK($charInfo)
 EndFunc
 
 Func getArrayActiveDevil()
-	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & "devil_config.json")
+	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 	Local $jsonAccountActiveDevil[0]
 	For $i = 0 To UBound($jsonDevilConfig) -1
 		; active win and check ruong K
@@ -215,9 +216,9 @@ Func switchOtherChar($currentChar)
 			; TODO: Click vao nhan vat can trieu hoi
 			; TODO: Bam vao nut tat ( truong hop nhan vat da dc trieu hoi roi)
 			; => Click vao icon chuyen
-			_MU_MouseClick_Delay(999,671)
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.switch_char.icon_x"), _JSONGet($jsonPositionConfig,"button.switch_char.icon_y"))
 			; => Click vao chuyen
-			_MU_MouseClick_Delay(560,512)
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.switch_char.button_change_x"), _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y"))
 			; Lay lai mainNo cua current char
 			$mainNo = getMainNoByChar($currentChar)
 			; Doi khoang 6s
@@ -238,7 +239,7 @@ Func switchOtherChar($currentChar)
 			Else
 				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " &$mainNo)
 				; De chuot ra man hinh
-				_MU_MouseClick_Delay(504, 361)
+				_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y"))
 				secondWait(2)
 				;~ writeLog("Dong toan bo cua so")
 				writeLogFile($logFile,"Di chuot ra main hinh va minisize Main hien tai: " &$otherMainNo)
@@ -252,5 +253,5 @@ EndFunc
 
 Func moveOtherMap()
 	sendKeyDelay("m")
-	_MU_MouseClick_Delay(161, 297)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.move.other_map_x"), _JSONGet($jsonPositionConfig,"button.move.other_map_y"))
 EndFunc

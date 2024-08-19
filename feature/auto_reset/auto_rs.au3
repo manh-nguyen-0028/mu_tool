@@ -269,7 +269,7 @@ Func changeChar($mainNo)
 	sendKeyDelay("{ESC}")
 	secondWait(1)
 	; Bam chon nhat vat khac
-	_MU_MouseClick_Delay(518, 456)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
 	secondWait(7)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
@@ -277,7 +277,7 @@ Func changeChar($mainNo)
 	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
-		_MU_MouseClick_Delay(518, 456)
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
 		secondWait(7)
 	EndIf
 EndFunc 
@@ -371,17 +371,18 @@ EndFunc
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
 	; Click event icon
-	_MU_Rs_MouseClick_Delay(155, 119)
+	;~ _MU_Rs_MouseClick_Delay(155, 119)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.x"), _JSONGet($jsonPositionConfig,"button.event_icon.y"))
 	; Click map lvl
-	_MU_Rs_MouseClick_Delay(484, 326)
+	;~ _MU_Rs_MouseClick_Delay(484, 326)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_y"))
 	secondWait(3)
 	; Go to center
-	_MU_Rs_MouseClick_Delay(399, 183)
+	;~ _MU_Rs_MouseClick_Delay(399, 183)
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_y"))
 	secondWait(2)
 	; Enable Auto Home
-	Opt("SendKeyDownDelay", 1000)  ;5 second delay
-	Send("{HOME}")
-	Opt("SendKeyDownDelay", 5)  ;reset to default when done
+	sendKeyDelay("{HOME}");
 	; Doi 16p cho het event
 	;~ minuteWait(16)
 EndFunc
