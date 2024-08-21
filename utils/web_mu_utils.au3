@@ -198,6 +198,11 @@ Func getLogReset($sSession, $charName)
 	$sElement = findElement($sSession, "//div[@role='alert']")
 	$charInfoText = getTextElement($sSession, $sElement)
 	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
+	; rs
+	$sResetCount = StringMid($charInfoText, 7, 10)
+	$charRsCount =StringSplit($sResetCount, ' ', 0)
+
+	$nRs = Number($charRsCount[1])
 	; Lvl
 	$array = StringSplit($charInfoText, $charName &' level ', 1)
 	;~ _ArrayDisplay($array)
@@ -207,7 +212,7 @@ Func getLogReset($sSession, $charName)
 	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
 	$array = StringSplit($array[2], ' lượt.', 1)
 	$rsInDay = $array[1]
-	writeLogFile($logFile, "Info $charLvl: "&$charLvl&" - $rsInDay: "&$rsInDay)
+	writeLogFile($logFile, "Info $charLvl: " & $charLvl&" - $rsInDay: " & $rsInDay &" - $nRs: " & $nRs)
 
 	; Xem Nhat ky reset
 	_Demo_NavigateCheckBanner($sSession,combineUrl("web/char/char_info.logreset.shtml"))
@@ -215,11 +220,15 @@ Func getLogReset($sSession, $charName)
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
 	$timeRsText = getTextElement($sSession, $sElement)
 
-	Return Number($rsInDay) & "|" & $timeRsText
+	Return Number($rsInDay) & "|" & $timeRsText & "|" & $nRs
 EndFunc
 
 Func getRsInDay($sLogReset) 
 	Return Number(StringSplit($sLogReset, "|")[1])
+EndFunc
+
+Func getRsCount($sLogReset) 
+	Return Number(StringSplit($sLogReset, "|")[3])
 EndFunc
 
 Func getTimeReset($sLogReset, $hourPerRs) 

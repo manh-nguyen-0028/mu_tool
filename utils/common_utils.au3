@@ -19,7 +19,7 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName
+Global $devilFileName, $accountRsFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -41,6 +41,8 @@ Func init()
 				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
 			ElseIf "devil" == $type Then
 				$devilFileName = $value
+			ElseIf "reset" == $type Then
+				$accountRsFileName = $value
 			EndIf
 		EndIf
 	Next
