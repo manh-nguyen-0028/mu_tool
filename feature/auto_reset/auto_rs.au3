@@ -16,9 +16,14 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $sDate = @YEAR & @MON & @MDAY
 Local $className = @ScriptName
 
-testAa()
+;~ testAa()
 
-Func testAa($abc="x", $abc1="x1", $abc2="x2")
+Func testAa()
+	;~ $charName = "GiamDocSo"
+	$charName = "xTramAnh"
+	$mainNo = getMainNoByChar($charName)
+	activeAndMoveWin($mainNo)
+	checkLvl400($mainNo)
 	;~ Local $pTime = "2023/10/02 18:34:58"
 	;~ Local $amount = 7
 
@@ -27,14 +32,12 @@ Func testAa($abc="x", $abc1="x1", $abc2="x2")
 
 	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
 	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
-	$charInfoText = "Reset 889 lần xxmrgreo xxvxv"
+	;~ $charInfoText = "Reset 889 lần xxmrgreo xxvxv"
 	
-	$sResetCount = StringMid($charInfoText, 7, 10)
-	$charRsCount =StringSplit($sResetCount, ' ', 0)
-	$nRs = Number($charRsCount[1])
+	;~ $sResetCount = StringMid($charInfoText, 7, 10)
+	;~ $charRsCount =StringSplit($sResetCount, ' ', 0)
 
-	writeLog("XXX: " & $nRs)
-	writeLogMethodStart("testAa",@ScriptLineNumber & $charRsCount[0])
+	;~ writeLogMethodStart("testAa",@ScriptLineNumber & $charRsCount[0])
 EndFunc
 
 Func startAutoRs()
@@ -162,18 +165,18 @@ Func processReset($jAccountInfo)
 		; implement them viec check lvl rs theo rs 
 		$lvlCanRs = 400
 		If $rsCount < 50 Then
-			$lvlCanRs = 200 + ($rsCount * 4)
+			$lvlCanRs = 200 + ($rsCount * 5)
 			If $lvlCanRs > 400 Then $lvlCanRs = 400
 		EndIf
 		writeLogFile($logFile, @ScriptLineNumber & "Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 
 		If $nLvl >= $lvlCanRs Then 
 			$mainNo = getMainNoByChar($charName)
-			; Active main no 
-			$activeWin = activeAndMoveWin($mainNo)
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
 			;~ If $activeWin == True Then
 			If $resetOnline == False Then
+				; Active main no 
+				$activeWin = activeAndMoveWin($mainNo)
 				; Click bỏ hết các bảng thông báo
 				handelWhenFinshDevilEvent()
 				secondWait(3)
@@ -313,7 +316,9 @@ Func returnChar($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	While $checkActive == False
-		_MU_Rs_MouseClick_Delay(924, 771)
+		;~ _MU_Rs_MouseClick_Delay(319, 226)
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
+		sendKeyDelay("{Enter}")
 		$checkActive = activeAndMoveWin($mainNo)
 	WEnd
 	writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
@@ -331,7 +336,8 @@ Func goToSportLvl1($mainNo)
 	sendKeyDelay("+h")
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
-	_MU_MouseClick_Delay(501, 423)
+	; 392, 334
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.loren_sport1.x"), _JSONGet($jsonPositionConfig,"button.loren_sport1.y"))
 	secondWait(1)
 	Send("{Tab}")
 	writeLogFile($logFile, "Tat ban do !")

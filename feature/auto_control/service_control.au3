@@ -11,10 +11,12 @@
 start()
 
 Func test()
-    $charName="MonkeyKing"
+    $charName="EasyGamez"
     $mainNo = getMainNoByChar($charName)
-    activeAndMoveWin($mainNo)
-    _MU_followLeader(1)
+    ;~ activeAndMoveWin($mainNo)
+    ;~ _MU_followLeader(1)
+    writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"))
+		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
     Return True
 EndFunc
 
@@ -26,8 +28,8 @@ Func start()
         ;~ If @HOUR <> 23 And checkProcessExists("mu_auction.exe") == FALSE
         If checkProcessExists("mu_auction.exe") == False And @HOUR <> 23 Then 
             writeLog("Start rs")
-            startWithDrawRs()
-            secondWait(10)
+            ;~ startWithDrawRs()
+            ;~ secondWait(10)
             startAutoRs()
         EndIf
         waitToNextHourMinutes(1, 38, 00)

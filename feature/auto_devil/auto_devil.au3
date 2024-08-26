@@ -64,7 +64,7 @@ Func checkThenGoDevilEvent()
 
 	If $nextHour > @HOUR Then $nextMin = 00
 	
-	$nextMin = $nextMin + 1
+	$nextMin = $nextMin + 0
 	
 	$nextTime = createTimeToTicks($nextHour, $nextMin, "05")
 	$diffTime = diffTime(getCurrentTime(), $nextTime) 
@@ -154,7 +154,8 @@ Func goToDevilEvent()
 				minisizeMain($mainNo)
 				ContinueLoop;
 			EndIf
-			handelWhenFinshDevilEvent()
+			; Bo buoc nay di khong can thiet vi da co buoc o phut 26
+			;~ handelWhenFinshDevilEvent()
 			; Neu check ruong K = 0 thi thuc hien mo ruong K ra xem co khong, sau do moi click devil
 			If $checkRuongK == False Then
 				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
@@ -311,6 +312,7 @@ Func _MU_Click_Devil($devilNo)
 	If $devilNo == 4 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_4_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_4_y"))
 	; Dv 5
 	If $devilNo == 5 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_5_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_5_y"))
+	If $devilNo == 6 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_y"))
 EndFunc
 
 Func _MU_handleWhenFinishEvent()

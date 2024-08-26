@@ -11,7 +11,7 @@
 Local $aAccountActiveWithrawRs[0]
 Local $sSession,$sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-startWithDrawRs() 
+;~ startWithDrawRs() 
 
 Func startWithDrawRs()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRutRS_.txt"

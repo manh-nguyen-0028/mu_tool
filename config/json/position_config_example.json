@@ -20,6 +20,7 @@
 		  "x":100,
 		  "y":200
 	   },
+
 	   "icon_event_common":{
 		"x":100,
 		"y":200
@@ -29,24 +30,24 @@
 		  "y":200
 	   },
 	   "event_devil":{
-		  "move_check_npc_x":483,
-		  "move_check_npc_y":371
+		  "move_check_npc_x":379,
+		  "move_check_npc_y":298
 	   },
 	   "event_devil_icon":{
-		  "x":23,
-		  "y":251,
+		  "x":24,
+		  "y":201,
 		  "chap_nhan_x":476,
 		  "chap_nhan_y":476,
 		  "huy_bo_x":554,
 		  "huy_bo_y":475,
-		  "devil_3_x":843,
-		  "devil_3_y":409,
-		  "devil_4_x":789,
-		  "devil_4_y":460,
-		  "devil_5_x":830,
-		  "devil_5_y":515,
-		  "devil_6_x":809,
-		  "devil_6_y":567
+		  "devil_3_x":630,
+		  "devil_3_y":318,
+		  "devil_4_x":631,
+		  "devil_4_y":358,
+		  "devil_5_x":654,
+		  "devil_5_y":404,
+		  "devil_6_x":635,
+		  "devil_6_y":446
 	   },"event_devil_icon_no_had_k":{
 		  "x":37,
 		  "y":171,
@@ -56,6 +57,56 @@
 		  "huy_bo_y":475,
 		  "devil_3_x":843,
 		  "devil_3_y":409
+	   },
+	   "follow_leader":{
+		  "position_1_x":710,
+		  "position_1_y":101
+	   },
+	   "event_icon":{
+		  "x":132,
+		  "y":101,
+		  "map_lvl_x":372,
+		  "map_lvl_y":234,
+		  "map_lvl_center_x":422,
+		  "map_lvl_center_y":194,
+		  "map_stadium_x":374,
+		  "map_stadium_y":404
+	   },
+	   "move":{
+		  "other_map_x":109,
+		  "other_map_y":224
+	   },
+	   "change_char":{
+		  "x":402,
+		  "y":359
+	   },
+	   "switch_char":{
+		  "icon_x":775,
+		  "icon_y":502,
+		  "button_change_x":420,
+		  "button_change_y":421
+	   },
+	   "screen_mouse_move":{
+		  "center_x":389,
+		  "center_y":285
+	   },
+	   "close_shop":{
+		  "x":327,
+		  "y":104
+	   },
+	   "close_chao":{
+		  "x":382,
+		  "y":389
+	   },
+	   "loren_sport1":{
+		  "x":392,
+		  "y":389
+	   },
+	   "check_lvl_400":{
+		  "x":4,
+		  "y":559,
+		  "x1":313,
+		  "y1":623
 	   }
 	},
 	"web":{
@@ -126,45 +177,5 @@
 		  "x":100,
 		  "y":200
 	   }
-	},
-	"follow_leader":{
-	   "position_1_x":995,
-	   "position_1_y":147
-	},
-	"event_icon":{
-	   "x":157,
-	   "y":119,
-	   "map_lvl_x":484,
-	   "map_lvl_y":326,
-	   "map_lvl_center_x":399,
-	   "map_lvl_center_y":183,
-	   "map_stadium_x":503,
-	   "map_stadium_y":493
-	},
-	"move":{
-	   "other_map_x":161,
-	   "other_map_y":297
-	},
-	"change_char":{
-	   "x":518,
-	   "y":456
-	},
-	"switch_char":{
-	   "icon_x":999,
-	   "icon_y":671,
-	   "button_change_x":560,
-	   "button_change_y":512
-	},
-	"screen_mouse_move":{
-	   "center_x":504,
-	   "center_y":361
-	},
-	"close_shop":{
-	   "x":327,
-	   "y":104
-	},
-	"close_chao":{
-	   "x":508,
-	   "y":526
 	}
  }

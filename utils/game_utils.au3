@@ -12,6 +12,8 @@ Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
 	writeLog("Begin follow leader !")
 	If $position == 1 Then
+		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"))
+		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"), _JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
 		secondWait(1)
 		sendKeyDelay("{Enter}")
@@ -25,10 +27,14 @@ EndFunc
 Func checkLvl400($mainNo)
 	$is400Lvl = False
 	secondWait(1)
-	$color = PixelSearch(130, 762, 210, 802, 0x83CD18, 10)
+	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
+	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
+	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
+	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
+	$color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
 	$countSearch = 0
 	While $color = '' And $countSearch < 5
-		$color = PixelSearch(130, 762, 210, 802, 0x83CD18, 10)
+		$color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
 		secondWait(1)
 		$countSearch = $countSearch + 1
 	WEnd
@@ -187,7 +193,8 @@ Func _MU_Join_Event_Devil($checkRuongK)
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.y"))
 	EndIf
 	;~ ; Click button move
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_y"))
+	;~ _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_y"))
+	sendKeyDelay("{Enter}")
 	;~ ; Sleep 4s
 	secondWait(5)
 EndFunc
