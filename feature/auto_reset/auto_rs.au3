@@ -271,8 +271,11 @@ Func processReset($jAccountInfo)
 				writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 			EndIf
 
-			; 10. minisize main 
-			minisizeMain($mainNoMinisize)
+			If $resetOnline == False Then
+				; 10. minisize main 
+				minisizeMain($mainNoMinisize)
+			EndIf
+			
 			; 11. Logout account
 			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 			secondWait(5)
@@ -316,7 +319,6 @@ Func returnChar($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	While $checkActive == False
-		;~ _MU_Rs_MouseClick_Delay(319, 226)
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
 		sendKeyDelay("{Enter}")
 		$checkActive = activeAndMoveWin($mainNo)
@@ -354,7 +356,6 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
-	;~ writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
@@ -371,7 +372,6 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 				EndIf
 			EndIf
 		EndIf
-		;~ writeLogFile($logFile, "Current level: " & $nLvl)
 		; Wait 1 min then retry
 		minuteWait($timeDelay)
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
@@ -400,14 +400,11 @@ EndFunc
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
 	; Click event icon
-	;~ _MU_Rs_MouseClick_Delay(155, 119)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.x"), _JSONGet($jsonPositionConfig,"button.event_icon.y"))
 	; Click map lvl
-	;~ _MU_Rs_MouseClick_Delay(484, 326)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_y"))
 	secondWait(3)
 	; Go to center
-	;~ _MU_Rs_MouseClick_Delay(399, 183)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_y"))
 	secondWait(2)
 	; Enable Auto Home

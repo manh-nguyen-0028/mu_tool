@@ -238,9 +238,6 @@ Func switchOtherChar($currentChar)
 				secondWait(2)
 			WEnd
 
-			;~ $checkActiveMain = activeAndMoveWin($mainNo);
-			;~ writeLog("$checkActiveMain :" & $checkActiveMain)
-
 			If $checkActiveMain == True Then 
 				$resultSwitch = True
 			Else
@@ -248,7 +245,6 @@ Func switchOtherChar($currentChar)
 				; De chuot ra man hinh
 				_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y"))
 				secondWait(2)
-				;~ writeLog("Dong toan bo cua so")
 				writeLogFile($logFile,"Di chuot ra main hinh va minisize Main hien tai: " &$otherMainNo)
 				minisizeMain($otherMainNo)
 			EndIf
