@@ -60,7 +60,9 @@
 	   },
 	   "follow_leader":{
 		  "position_1_x":710,
-		  "position_1_y":101
+		  "position_1_y":101,
+		  "position_2_x":710,
+		  "position_2_y":101
 	   },
 	   "event_icon":{
 		  "x":132,
@@ -107,6 +109,24 @@
 		  "y":559,
 		  "x1":313,
 		  "y1":623
+	   },
+	   "check_active_auto_home":{
+		  "x":0,
+		  "y":0,
+		  "x1":385,
+		  "y1":103
+	   },
+	   "sport_arena_1":{
+		  "x":269,
+		  "y":329
+	   },
+	   "sport_arena_2":{
+		  "x":269,
+		  "y":329
+	   },
+	   "sport_arena_3":{
+		  "x":269,
+		  "y":329
 	   }
 	},
 	"web":{

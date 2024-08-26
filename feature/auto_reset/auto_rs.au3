@@ -131,6 +131,7 @@ Func processReset($jAccountInfo)
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
+	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -235,26 +236,31 @@ Func processReset($jAccountInfo)
 				goToSportLvl1($mainNo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
-				checkLvlInWeb($charName, $lvlStopCheck, 1)
+				checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				; 6. Active main
 				activeAndMoveWin($mainNo)
 				; 7. Go map lvl
 				If $resetInDay <=3 Then 
 					goMapLvl()
 				Else
-					goMapArena()
+					goMapArena($rsCount)
 				EndIf
 				; 8. Check lvl in web
 				writeLogFile($logFile, @ScriptLineNumber & " Bat dau check lvl tren web !")
 				$lvlStopCheck = Number($lvlMove)
-				checkLvlInWeb($charName, $lvlStopCheck, 1)
+				checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				activeAndMoveWin($mainNo)
 				writeLogFile($logFile, @ScriptLineNumber & " Ket thuc check lvl tren web !")
 				; Move other map
 				moveOtherMap()
 				secondWait(8)
 				; 9. Follow leader
-				_MU_followLeader(1)
+				If IsNumber($positionLeader) Then 
+					$positionLeader = Number($positionLeader)
+				Else
+					$positionLeader = 1
+				EndIf
+				_MU_followLeader($positionLeader)
 				; 10. Wait in 1 min
 				minuteWait(1)
 			EndIf
@@ -271,8 +277,11 @@ Func processReset($jAccountInfo)
 				writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 			EndIf
 
-			; 10. minisize main 
-			minisizeMain($mainNoMinisize)
+			If $resetOnline == False Then
+				; 10. minisize main 
+				minisizeMain($mainNoMinisize)
+			EndIf
+			
 			; 11. Logout account
 			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 			secondWait(5)
@@ -316,7 +325,6 @@ Func returnChar($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	While $checkActive == False
-		;~ _MU_Rs_MouseClick_Delay(319, 226)
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
 		sendKeyDelay("{Enter}")
 		$checkActive = activeAndMoveWin($mainNo)
@@ -329,6 +337,10 @@ EndFunc
 	Tim sport de luyen lvl len 20
 #ce
 Func goToSportLvl1($mainNo) 
+	; Enable Auto Home in 3s
+	sendKeyDelay("{HOME}");
+	secondWait(3)
+	; Send Tab button
 	writeLogFile($logFile, "Bat ban do !")
 	Send("{Tab}")
 	secondWait(2)
@@ -345,7 +357,7 @@ Func goToSportLvl1($mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
-Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
+Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	; Vào nhân vật kiểm tra lvl
 	_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 	secondWait(5)
@@ -354,7 +366,6 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
-	;~ writeLogFile($logFile, "Current level: " & $nLvl)
 	$tmpLvl = 0
 	While $nLvl < $lvlStopCheck
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
@@ -367,11 +378,10 @@ Func checkLvlInWeb($charName, $lvlStopCheck, $timeDelay)
 				$activeMain = activeAndMoveWin($mainNo)
 				If $activeMain == True Then 
 					writeLogFile($logFile, @ScriptLineNumber & " Vao map stadium ")
-					goMapArena()
+					goMapArena($rsCount)
 				EndIf
 			EndIf
 		EndIf
-		;~ writeLogFile($logFile, "Current level: " & $nLvl)
 		; Wait 1 min then retry
 		minuteWait($timeDelay)
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
@@ -400,14 +410,11 @@ EndFunc
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
 	; Click event icon
-	;~ _MU_Rs_MouseClick_Delay(155, 119)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.x"), _JSONGet($jsonPositionConfig,"button.event_icon.y"))
 	; Click map lvl
-	;~ _MU_Rs_MouseClick_Delay(484, 326)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_y"))
 	secondWait(3)
 	; Go to center
-	;~ _MU_Rs_MouseClick_Delay(399, 183)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_y"))
 	secondWait(2)
 	; Enable Auto Home
@@ -416,20 +423,40 @@ Func goMapLvl()
 	;~ minuteWait(16)
 EndFunc
 
-Func goMapArena()
+Func goMapArena($rsCount)
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
 	writeLogFile($logFile, "Bat dau map arena ! ")
 	; Click event icon then go arena map
 	clickEventIconThenGoStadium()
+	; Trong truong hop rs count < 30 thi chi toi sport 1 thoi, <50 thi ra port 2, nguoc lai thi ra sport 3
+	$sportArenaNo = 3
+	If ($rsCount < 30) Then
+		$sportArenaNo = 1
+	ElseIf ($rsCount < 50) Then
+		$sportArenaNo = 2
+	EndIf
 	; Go to sport
-	goSportStadium()
+	goSportStadium($sportArenaNo)
 EndFunc
 
-Func goSportStadium() 
+Func goSportStadium($sportNo = 1) 
 	Send("{Tab}")
 	secondWait(2)
-	_MU_Rs_MouseClick_Delay(269, 329)
+	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
+	$sportArenaX = 269 
+	$sportArenaY = 329
+	If ($sportNo == 1) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_1.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_1.y")
+	ElseIf ($sportNo == 2) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_2.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_2.y")
+	ElseIf ($sportNo == 3) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_3.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
+	EndIf
+	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
 	Send("{Tab}")
 	secondWait(2)
 EndFunc
