@@ -177,6 +177,7 @@ Func processReset($jAccountInfo)
 			If $resetOnline == False Then
 				; Active main no 
 				$activeWin = activeAndMoveWin($mainNo)
+				If $activeWin == False Then $activeWin = switchOtherChar($charName)
 				; Click bỏ hết các bảng thông báo
 				handelWhenFinshDevilEvent()
 				secondWait(3)
