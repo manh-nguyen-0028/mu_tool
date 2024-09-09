@@ -16,7 +16,7 @@ Func test()
     ;~ activeAndMoveWin($mainNo)
     ;~ _MU_followLeader(1)
     writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"))
-		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
+    writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
     Return True
 EndFunc
 

@@ -327,8 +327,11 @@ Func _MU_handleWhenFinishEvent()
 
 			; Truong hop main hien tai khong duoc active, active main khac
 			If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+			
+			; Trong truong hop khong duoc active auto home thi moi xu ly sau event + follow leader
+				$checkActiveAutoHome = checkActiveAutoHome()
 
-			If $checkActiveWin == True Then 
+			If $checkActiveWin == True And $checkActiveAutoHome == False Then 
 				handelWhenFinshDevilEvent()
 				_MU_followLeader(1)
 				secondWait(8)

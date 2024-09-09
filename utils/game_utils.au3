@@ -9,15 +9,12 @@
 
 Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
+	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
+	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
+	_MU_MouseClick_Delay($position_x, $position_y)
+	secondWait(1)
 	sendKeyDelay("{Enter}")
-	writeLog("Begin follow leader !")
-	If $position == 1 Then
-		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"))
-		writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"), _JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
-		secondWait(1)
-		sendKeyDelay("{Enter}")
-	EndIf
 EndFunc
 
 Func getMainNoByChar($charName)
@@ -114,7 +111,12 @@ EndFunc
 Func checkActiveAutoHome()
 	$pathImage = $imagePathRoot & "common" & "\not_active_auto_home.bmp"
 	$result = True
-	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 385, 103, 100, True)
+	$x = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x")
+	$y = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y")
+	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
+	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
+
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 100, True)
 	If $imageSearchResult[0] == 1 Then 
 		$result = False
 		writeLogFile($logFile, "Auto Z khong hoat dong")
