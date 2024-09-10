@@ -10,6 +10,8 @@
 ;~ test()
 start()
 
+; Method: test
+; Description: A test function that retrieves the main number associated with a character name and logs the positions for the follow leader button.
 Func test()
     $charName="EasyGamez"
     $mainNo = getMainNoByChar($charName)
@@ -20,6 +22,8 @@ Func test()
     Return True
 EndFunc
 
+; Method: start
+; Description: Main function that deletes log files, checks if the "mu_auction.exe" process is running, and starts the auto reset process if the process is not running and the current hour is not 23.
 Func start()
     ; 1. Delete file in folder log
     deleteFileInFolder($outputPathRoot)
@@ -36,6 +40,8 @@ Func start()
     WEnd
 EndFunc
 
+; Method: startPath
+; Description: Executes the withdraw reset and auto reset processes sequentially, logging the paths and waiting for each process to close before proceeding.
 Func startPath()
     ; withdraw reset
     $exePath = $featurePathRoot &"auto_reset\withdraw_rs.exe"
