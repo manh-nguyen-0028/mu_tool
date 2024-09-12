@@ -1,4 +1,2 @@
-DarkPhonix|TruongThon
-TruongThon|DarkPhonix
-GoldenGirl|Victozia
-Victozia|GoldenGirl
+chenroibo|chensongbo
+chensongbo|chenroibo
