@@ -64,6 +64,9 @@ Func startAutoRs()
 		; close all chrome browser
 		checkThenCloseChrome()
 		$sSession = SetupChrome()
+		; Logout account cho chac, nhieu luc se bi cache account cu
+		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
+		secondWait(5)
 	EndIf
 
 	For $i = 0 To UBound($aAccountActiveRs) - 1
@@ -368,7 +371,10 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tLvl = getTextElement($sSession, $sElement)
 	$nLvl = Number($tLvl)
 	$tmpLvl = 0
+	$timeCheck = 0
+
 	While $nLvl < $lvlStopCheck
+		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl
 		Else
@@ -383,14 +389,48 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 				EndIf
 			EndIf
 		EndIf
-		; Wait 1 min then retry
-		minuteWait($timeDelay)
+		minisizeMain($mainNo)
+		; Xu ly doi voi lvl check = 20; chi can doi 30s
+		If $lvlStopCheck == 20 Then
+			; Wait 30 sec then retry
+			secondWait(30)
+		Else
+			; Wait 1 min then retry
+			minuteWait($timeDelay)
+		EndIf
+		
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 		secondWait(5)
 		; find lvl
 		$sElement = findElement($sSession, "//span[@class='t-level']") 
 		$tLvl = getTextElement($sSession, $sElement)
 		$nLvl = Number($tLvl)
+		
+		; Truong hop $lvlStopCheck= 20 va so lan check ma = 5 thi thuc hien move = web
+		If $timeCheck == 5 And $lvlStopCheck == 20 Then
+			; Dien toa do X
+			$sElement = _WD_GetElementByName($sSession,"tx")
+			_WD_ElementAction($sSession, $sElement, 'value','xxx')
+			_WD_ElementAction($sSession, $sElement, 'CLEAR')
+			secondWait(2)
+			_WD_ElementAction($sSession, $sElement, 'value',"23")
+			; Dien toa do Y
+			$sElement = _WD_GetElementByName($sSession,"ty")
+			_WD_ElementAction($sSession, $sElement, 'value','xxx')
+			_WD_ElementAction($sSession, $sElement, 'CLEAR')
+			secondWait(2)
+			_WD_ElementAction($sSession, $sElement, 'value',"23")
+			; Bam button chay ( submit )
+			$sElement = findElement($sSession, "//input[@type='submit']")
+			clickElement($sSession, $sElement)
+		EndIf
+
+		; Neu check qua 15 lan thi thoat loop la bat buoc
+		If $timeCheck >= 15 Then
+			writeLogFile($logFile, "Da qua so lan duoc phep check lvl: " & $timeCheck)
+			;~ MsgBox(0, "Thông báo", "Thoát khỏi vòng lặp khi i = 5")
+			ExitLoop
+		EndIf
 	WEnd
 	
 	Return True

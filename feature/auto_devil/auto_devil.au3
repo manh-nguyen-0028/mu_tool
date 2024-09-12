@@ -8,6 +8,8 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
 
+; Method: start
+; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
@@ -18,6 +20,8 @@ Func start()
 	Return True
 EndFunc
 
+; Method: processGoDevil
+; Description: Continuously checks and processes the devil event.
 Func processGoDevil()
 	While True
 		checkThenGoDevilEvent()
@@ -25,24 +29,26 @@ Func processGoDevil()
 	Return True
 EndFunc
 
+; Method: checkThenGoDevilEvent
+; Description: Determines the next time to check for the devil event based on the current time and handles the event accordingly.
 Func checkThenGoDevilEvent()
 	; 01 < current hour < 06 => next time = 06h and minute = 00
 	; 06 < current hour < 17 => next time = time /2 and minute = 00
 	; 17 < current hour < 20 => $nextHour =@HOUR+1
-	; 20 < current hour < 22 => if current min < 30 => next time = current hour, min = 30. if current min > 30 => next time = current hour+1, min = 00
+	; 20 < current hour < 22 => if current min < 30 => next time = current hour, min = 30. if current min > 30 => next time = current hour + 1, min = 00
 	Switch @HOUR
 			Case 0 To 2
 					$nextHour = 3
 			Case 3 To 5
 					$nextHour = 6
 			Case 6 To 10
-					$nextHour =@HOUR+1
+					$nextHour = @HOUR + 1
 			Case 11 To 11
 				If @MIN < 30 Then 
 					$nextHour =@HOUR
 					$nextMin = 30
 				Else
-					$nextHour = @HOUR+1
+					$nextHour = @HOUR + 1
 					$nextMin = 00
 				EndIf
 			Case 12 To 19
@@ -113,6 +119,8 @@ EndFunc
 	Xu ly vao event devil.
 	Can check xem da du 400 lvl hay chua. Neu chua du 400 lvl thi thoi khong can vao lam gi
 #ce
+; Method: goToDevilEvent
+; Description: Manages the process of joining the devil event for each active devil account.
 Func goToDevilEvent()
 	; Get account devil
 	$jsonAccountActiveDevil = getArrayActiveDevil()
@@ -258,6 +266,8 @@ Func goToDevilEvent()
 
 EndFunc
 
+; Method: _MU_Search_Localtion
+; Description: Searches for the NPC location during the devil event and clicks on it if found.
 Func _MU_Search_Localtion($checkRuongK, $devilNo)
 	writeLogFile($logFile, "Bat dau tim kiem vi tri cua nhan vat. _MU_Search_Localtion")
 	Local $searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
@@ -284,6 +294,8 @@ Func _MU_Search_Localtion($checkRuongK, $devilNo)
 	clickIntoNpcDevil($searchPixel, $devilNo)
 EndFunc
 
+; Method: clickIntoNpcDevil
+; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
 Func clickIntoNpcDevil($searchPixel, $devilNo)
 	; Kiem tra xem co tim duoc vi tri cua npc khong $searchPixel <> 0
 	If $searchPixel <> 0 Then
@@ -305,6 +317,8 @@ Func clickIntoNpcDevil($searchPixel, $devilNo)
 	EndIf
 EndFunc
 
+; Method: _MU_Click_Devil
+; Description: Clicks on the specific devil event icon based on the devil number.
 Func _MU_Click_Devil($devilNo)
 	; Dv 3
 	If $devilNo == 3 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_3_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_3_y"))
@@ -315,6 +329,8 @@ Func _MU_Click_Devil($devilNo)
 	If $devilNo == 6 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_y"))
 EndFunc
 
+; Method: _MU_handleWhenFinishEvent
+; Description: Handles the actions to be taken after finishing the devil event for each active devil account.
 Func _MU_handleWhenFinishEvent()
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1

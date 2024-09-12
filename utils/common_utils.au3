@@ -26,7 +26,8 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 init()
 
-; init
+; Method: init
+; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
 	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
@@ -55,12 +56,14 @@ Func init()
 	Return True
 EndFunc
 
-; FUNCTION
-; Log
+; Method: writeLog
+; Description: Writes a log message with the current time.
 Func writeLog($textLog)
 	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog &@CRLF)
 EndFunc
 
+; Method: writeLogMethodStart
+; Description: Logs the start of a method with optional parameters.
 Func writeLogMethodStart($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
 	$sText = "INFO  "& "START " & $methodName & "()"
 	If $textLog <> Default Then
@@ -69,6 +72,8 @@ Func writeLogMethodStart($methodName='Khong xac dinh', $line=@ScriptLineNumber, 
 	writeLogFile($logFile,$sText, $line)
 EndFunc
 
+; Method: writeLogMethodEnd
+; Description: Logs the end of a method with optional parameters.
 Func writeLogMethodEnd($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
 	$sText = "INFO  "& "END " & $methodName & "()"
 	If $textLog <> Default Then
@@ -77,10 +82,14 @@ Func writeLogMethodEnd($methodName='Khong xac dinh', $line=@ScriptLineNumber, $t
 	writeLogFile($logFile,$sText, $line)
 EndFunc
 
+; Method: writeLogFile
+; Description: Writes a log message to a specified log file.
 Func writeLogFile($logFile, $sText,$line=Default)
 	logFileCommon($logFile, $sText,$line)
 EndFunc
 
+; Method: logFileCommon
+; Description: Common function to format and write log messages to a file.
 Func logFileCommon($logFile, $sText,$line=Default)
 	$sTextFinal = ''
 	If $line == Default Then
@@ -93,41 +102,54 @@ Func logFileCommon($logFile, $sText,$line=Default)
 	Return True
 EndFunc
 
-; Time
+; Method: minuteWait
+; Description: Pauses execution for a specified number of minutes.
 Func minuteWait($minuteWait)
 	writeLogFile($logFile,"Sleep in: " & $minuteWait & " minute !")
 	Sleep($minuteWait*60*1000)
 EndFunc
 
+; Method: secondWait
+; Description: Pauses execution for a specified number of seconds.
 Func secondWait($secondWait)
 	;~ writeLogFile($logFile,"Sleep in: " & $secondWait & " second !")
 	Sleep($secondWait*1000)
 EndFunc
 
+; Method: createTimeToTicks
+; Description: Converts hours, minutes, and seconds to ticks.
 Func createTimeToTicks($gio,$phut,$giay)
 	If $gio == 24 Then $gio = 0
 	writeLog("Function createTimeToTicks($gio,$phut,$giay) : " & $gio & "-" & $phut & "-" & $giay)
 	Return _TimeToTicks($gio, $phut, $giay)
 EndFunc
 
+; Method: diffTime
+; Description: Calculates the difference in ticks between two times.
 Func diffTime($time1, $time2)
 	Local $sHour, $sMinute, $sSecond
 	_TicksToTime($time2-$time1, $sHour, $sMinute, $sSecond)
 	Return $sHour*60*60*1000 +  $sMinute*60*1000 + $sSecond*1000;
 EndFunc
 
+; Method: timeLeft
+; Description: Returns the time left between two times in hours, minutes, and seconds.
 Func timeLeft($time1, $time2)
 	Local $sHour, $sMinute, $sSecond
 	_TicksToTime($time2-$time1, $sHour, $sMinute, $sSecond)
 	Return $sHour & ": " & $sMinute & ": " & $sSecond;
 EndFunc
 
+; Method: timeToText
+; Description: Converts time in ticks to a formatted string.
 Func timeToText($time)
 	Local $sHour, $sMinute, $sSecond
 	_TicksToTime($time, $sHour, $sMinute, $sSecond)
 	Return $sHour & " h: " & $sMinute & " m: " & $sSecond & " s ";
 EndFunc
 
+; Method: waitToNextHour
+; Description: Pauses execution until the next specified hour.
 Func waitToNextHour($hourPlus = 1)
 	$nextHour = @HOUR + $hourPlus
 	writeLogFile($logFile,"Wait to next hour : " &$nextHour)
@@ -137,6 +159,8 @@ Func waitToNextHour($hourPlus = 1)
 	Sleep($diffTime)
 EndFunc
 
+; Method: waitToNextHourMinutes
+; Description: Pauses execution until the next specified hour and minute.
 Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
 	If @MIN <= $minPlus Then 
 		$nextHour = @HOUR
@@ -157,6 +181,8 @@ Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
 	EndIf
 EndFunc
 
+; Method: waitToNextTime
+; Description: Pauses execution until the next specified time.
 Func waitToNextTime($hourPlus, $minPlus, $secPlus)
 	$nextHour = @HOUR + $hourPlus
 	writeLogFile($logFile,"Wait to next hour : " &$nextHour)
@@ -167,40 +193,54 @@ Func waitToNextTime($hourPlus, $minPlus, $secPlus)
 	Sleep($diffTime)
 EndFunc
 
+; Method: getCurrentTime
+; Description: Returns the current time in ticks.
 Func getCurrentTime()
 	Return createTimeToTicks(@HOUR, @MIN, @SEC)
 EndFunc
 
+; Method: getCurrentDate
+; Description: Returns the current date in ticks.
 Func getCurrentDate()
 	Return createTimeToTicks(@HOUR, @MIN, @SEC)
 EndFunc
 
-; Return format 2023/09/28 09:20:44
+; Method: getTimeNow
+; Description: Returns the current date and time in the format YYYY/MM/DD HH:MM:SS.
 Func getTimeNow()
 	Return _NowCalc()
 EndFunc
 
+; Method: addTimePerRs
+; Description: Adds a specified number of hours and subtracts 20 minutes from a given time.
 Func addTimePerRs($pTime, $amount)
 	$addHour = _DateAdd('h', $amount, $pTime)
 	$addMinute = _DateAdd('n', -20, $addHour)
 	Return $addMinute
 EndFunc
 
+; Method: addTimeSubtractionMinute
+; Description: Adds a specified number of hours and subtracts 10 minutes from a given time.
 Func addTimeSubtractionMinute($pTime, $amount)
     $addHour = _DateAdd('h', $amount, $pTime)
     $addMinute = _DateAdd('n', -10, $addHour)
     Return $addMinute
 EndFunc
 
+; Method: addHour
+; Description: Adds a specified number of hours to a given time.
 Func addHour($pTime, $amount)
 	Return _DateAdd('h', $amount, $pTime)
 EndFunc
 
+; Method: addMin
+; Description: Adds a specified number of minutes to a given time.
 Func addMin($pTime, $amount)
 	Return _DateAdd('n', $amount, $pTime)
 EndFunc
 
-; mouse
+; Method: _MU_Rs_MouseClick_Delay
+; Description: Moves the mouse to specified coordinates, clicks with a delay, and releases the click.
 Func _MU_Rs_MouseClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
@@ -210,6 +250,8 @@ Func _MU_Rs_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 EndFunc
 
+; Method: _MU_MouseClick_Delay
+; Description: Moves the mouse to specified coordinates, clicks with a delay, and releases the click.
 Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
@@ -219,12 +261,16 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 EndFunc
 
+; Method: _MU_MouseClick
+; Description: Moves the mouse to specified coordinates and clicks.
 Func _MU_MouseClick($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
 EndFunc
 
+; Method: _MU_Mouse_RightClick_Delay
+; Description: Moves the mouse to specified coordinates, right-clicks with a delay, and releases the click.
 Func _MU_Mouse_RightClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
@@ -234,29 +280,37 @@ Func _MU_Mouse_RightClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 EndFunc
 
+; Method: mouseMainClick
+; Description: Moves the mouse to specified coordinates, clicks with a delay, and waits for a second.
 Func mouseMainClick($toaDoX, $toaDoY) 
 	_MU_MouseClick_Delay($toaDoX, $toaDoY)
 	secondWait(1)
 EndFunc
 
-; key board
+; Method: sendKeyDelay
+; Description: Sends a key press with a delay.
 Func sendKeyDelay($keyPress)
 	Opt("SendKeyDownDelay", 1000)  ;5 second delay
 	Send($keyPress)
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
 EndFunc
 
-; active
+; Method: activeMain
+; Description: Activates a specified window.
 Func activeMain($mainNo)
 	WinActivate($mainNo,"")
 	secondWait(1)
 EndFunc
 
+; Method: minisizeMain
+; Description: Minimizes a specified window.
 Func minisizeMain($mainNo)
 	writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
+; Method: activeAndMoveWin
+; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($main_i)
 	writeLogFile($logFile,"activeAndMoveWin. Main no: " & $main_i )
 	$isActive = False;
@@ -270,7 +324,8 @@ Func activeAndMoveWin($main_i)
 	Return $isActive
 EndFunc
 
-; text
+; Method: readFileText
+; Description: Reads the contents of a text file and returns it as a string.
 Func readFileText($filePath)
 	writeLogFile($logFile,"Read file : " &$filePath)
 	$rtfhandle = FileOpen($filePath)
@@ -279,6 +334,8 @@ Func readFileText($filePath)
 	Return $convtext
 EndFunc
 
+; Method: getArrayInFileTxt
+; Description: Reads a text file and returns its contents as an array.
 Func getArrayInFileTxt($filePath)
 	Local $arrayTmp 
 	; Đọc nội dung của file .txt vào mảng
@@ -297,11 +354,16 @@ Func getArrayInFileTxt($filePath)
 	Return $arrayTmp
 EndFunc
 
+; Method: convertJsonToString
+; Description: Converts a JSON object to a string representation.
 Func convertJsonToString($json)
-	Return _JSONEncode($json)
+	$result = _JSONEncode($json)
+	writeLogFile($logFile,"convertJsonToString: " & $result)
+	Return $result
 EndFunc
 
-; image search 
+; Method: checkPixelColor
+; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
 	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & $color)
 	$resultCompare = False
@@ -313,7 +375,8 @@ Func checkPixelColor($toaDoX, $toaDoY, $color)
 	Return $resultCompare
 EndFunc
 
-; json
+; Method: setJsonConfigToFile
+; Description: Writes a JSON object to a file in string format.
 Func setJsonConfigToFile($path, $json)
 	$rtfhandle = FileOpen($path, $FO_OVERWRITE)
 	$json_str = convertJsonToString($json)
@@ -322,6 +385,8 @@ Func setJsonConfigToFile($path, $json)
 	FileClose($rtfhandle)
 EndFunc
 
+; Method: setJsonToFileFormat
+; Description: Writes a JSON array to a file in a formatted string.
 Func setJsonToFileFormat($path, $json)
 	$rtfhandle = FileOpen($path, $FO_OVERWRITE)
 	If UBound($json) <> 0 Then
@@ -342,6 +407,8 @@ Func setJsonToFileFormat($path, $json)
 	FileClose($rtfhandle)
 EndFunc
 
+; Method: getJsonFromFile
+; Description: Reads a JSON object from a file.
 Func getJsonFromFile($filePath)
 	writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
 	$rtfhandle = FileOpen($filePath)
@@ -352,14 +419,22 @@ Func getJsonFromFile($filePath)
 	Return $json
 EndFunc
 
+; Method: getPropertyJson
+; Description: Retrieves a property value from a JSON object.
 Func getPropertyJson($json, $propertyName)
-	Return _JSONGet($json, $propertyName)
+	$value = _JSONGet($json, $propertyName)
+	writeLogFile($logFile,"$propertyName: " & $propertyName & " - value: " & $value)
+	Return $value
 EndFunc
 
+; Method: setPropertyJson
+; Description: Sets a property value in a JSON object.
 Func setPropertyJson($json, $propertyName, $value)
 	Return _JSONSet($json, $propertyName, $value)
 EndFunc
 
+; Method: readFileTxtToArray
+; Description: Reads a text file and returns its contents as an array.
 Func readFileTxtToArray($filePath)
 	$aResult = FileReadToArray($filePath)
 	If @error Then
@@ -371,6 +446,8 @@ Func readFileTxtToArray($filePath)
 	Return $aResult
 EndFunc
 
+; Method: checkProcessExists
+; Description: Checks if a process with a specified name is running.
 Func checkProcessExists($exeFileName)
 	$resultCheck = False
 	If ProcessExists($exeFileName) Then
@@ -383,6 +460,8 @@ Func checkProcessExists($exeFileName)
 	Return $resultCheck
 EndFunc
 
+; Method: deleteFileInFolder
+; Description: Deletes files in a specified folder except those containing today's date.
 Func deleteFileInFolder($sFolderPath)
 	Local $sDateToday = @YEAR & @MON & @MDAY
 	;~ Local $sFolderPath = $outputPathRoot ; Đường dẫn thư mục output
@@ -404,6 +483,8 @@ Func deleteFileInFolder($sFolderPath)
 	Return True
 EndFunc
 
+; Method: getOtherChar
+; Description: Finds and returns the name of another character in the account.
 Func getOtherChar($currentChar)
 	$resultSwitch = False
 	$otherCharName = ""
