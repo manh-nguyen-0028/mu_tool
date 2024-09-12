@@ -1,0 +1,5 @@
+[
+    {"active":true,"type":"position","key":"file_name","value":"m1_position_config.json"},
+    {"active":true,"type":"reset","key":"file_name","value":"account_reset.json"},
+    {"active":true,"type":"devil","key":"file_name","value":"devil_config.json"}
+]

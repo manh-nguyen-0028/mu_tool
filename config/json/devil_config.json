@@ -1,9 +1,0 @@
-[
-{"active":false,"have_ruong_k":true,"char_name":"TruongThon","devil_no":5,"ignore_peak_hour":true,"is_fast_join":true, "max_hour_go":23},
-{"active":false,"have_ruong_k":true,"char_name":"DavidRyan","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":23},
-{"active":true,"have_ruong_k":true,"char_name":"DarkPhonix","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":23},
-{"active":false,"have_ruong_k":true,"char_name":"chensongbo","devil_no":5,"ignore_peak_hour":true,"is_fast_join":true, "max_hour_go":23},
-{"active":false,"have_ruong_k":true,"char_name":"DavidRyan","devil_no":5,"ignore_peak_hour":true,"is_fast_join":false, "max_hour_go":18},
-{"active":false,"have_ruong_k":true,"char_name":"MaiyeuPT","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":12},
-{"active":false,"have_ruong_k":true,"char_name":"dwgy5","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":12}
-]

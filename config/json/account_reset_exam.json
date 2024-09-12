@@ -1,0 +1,4 @@
+[
+{"active":false,"user_name":"maha","type":"withdraw","char_name":"Victocy","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":26,"time_rs":0,"limit":5,"is_main_character":true,"next_time_reset":"2023-09-27","last_time_reset":"2024/07/08 22:15:00","password":"manhva02","is_buff":false,"position_leader":1},
+{"active":true,"user_name":"luongmanh2","type":"reset","char_name":"DavidRyan","type_rs":2,"lvl_move":400,"reset_online":false,"hour_per_reset":24,"time_rs":1,"limit":5,"is_main_character":true,"next_time_reset":"2023-09-27","last_time_reset":"2024/08/06 06:40:00","password":"manhva02","is_buff":false,"position_leader":1}
+]

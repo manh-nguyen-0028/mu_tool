@@ -11,7 +11,7 @@
 Local $aAccountActiveWithrawRs[0]
 Local $sSession,$sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
-startWithDrawRs() 
+;~ startWithDrawRs() 
 
 Func startWithDrawRs()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRutRS_.txt"
@@ -20,7 +20,7 @@ Func startWithDrawRs()
 	; get array account need withdraw reset
 	writeLogFile($logFile, "Begin start withdraw reset !")
 	ReDim $aAccountActiveWithrawRs[0]
-	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & "account_reset.json")
+	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
@@ -95,12 +95,12 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-				$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 					For $i =0 To UBound($jsonRsGame) - 1
 						$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 						If $charNameTmp == $charName Then
 							_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-							setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+							setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
 						EndIf
 					Next
 				Return
@@ -129,7 +129,7 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 				clickElement($sSession, $sElement)
 				writeLogFile($logFile, "Rut reset thanh cong !")
 				secondWait(5)
-				$jsonRsGame = getJsonFromFile($jsonPathRoot & "account_reset.json")
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 				For $i =0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
@@ -141,7 +141,7 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 						; last time rs
 						$sTimeReset = getTimeReset($sLogReset,0)
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & "account_reset.json", $jsonRsGame)
+						setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
 					EndIf
 				Next
 			EndIf
