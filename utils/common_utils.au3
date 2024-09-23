@@ -261,6 +261,13 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 EndFunc
 
+Func mouseClickDelayAlt($toadoX, $toadoY)
+	Send("{ALTDOWN}")
+	_MU_MouseClick_Delay($toadoX, $toadoY)
+	Sleep(500)
+	Send("{ALTUP}")
+EndFunc
+
 ; Method: _MU_MouseClick
 ; Description: Moves the mouse to specified coordinates and clicks.
 Func _MU_MouseClick($toadoX, $toadoY)
@@ -367,11 +374,11 @@ EndFunc
 Func checkPixelColor($toaDoX, $toaDoY, $color)
 	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & $color)
 	$resultCompare = False
-	MouseMove($toaDoX, $toaDoY)
+	;~ MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
 	writeLogFile($logFile,"checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & Hex($colorGetPosition,6))
-	If $colorGetPosition = $color Then $resultCompare = True
+	If $colorGetPosition == $color Then $resultCompare = True
 	Return $resultCompare
 EndFunc
 

@@ -162,8 +162,7 @@ Func goToDevilEvent()
 				minisizeMain($mainNo)
 				ContinueLoop;
 			EndIf
-			; Bo buoc nay di khong can thiet vi da co buoc o phut 26
-			;~ handelWhenFinshDevilEvent()
+
 			; Neu check ruong K = 0 thi thuc hien mo ruong K ra xem co khong, sau do moi click devil
 			If $checkRuongK == False Then
 				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
@@ -183,87 +182,56 @@ Func goToDevilEvent()
 
 	secondWait(10)
 	
-	; Kiem tra xem cac acc da vao dc devil chua
-	For $i = 0 To UBound($jsonAccountActiveDevil) -1
-		$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-		$mainNo = getMainNoByChar($charName)
-		$checkActiveWin = activeAndMoveWin($mainNo)
-		secondWait(2)
+	checkAccountsInDevil($jsonAccountActiveDevil)
 
-		; Truong hop main hien tai khong duoc active, active main khac
-		If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
-
-		If $checkActiveWin == True And checkActiveAutoHome() == False Then 
-			handelWhenFinshDevilEvent()
-			_MU_followLeader(1)
-			; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
-			$checkActiveAutoHome = checkActiveAutoHome()
-			$countWaitAutoHome = 0
-			While $checkActiveAutoHome == False And $countWaitAutoHome < 2
-				secondWait(10)
-				$checkActiveAutoHome = checkActiveAutoHome()
-				$countWaitAutoHome += 1
-			WEnd
-		EndIf
-
-		minisizeMain($mainNo)
-	Next
-
-	writeLogFile($logFile, "Da vao event devil tat ca cac acc !");
 	; Kiem tra neu Mod(@HOUR,4) ==0 => thuc hien rut rs  
 	writeLogFile($logFile, "Gia tri check mod Mod(@HOUR,4) : " & Mod(@HOUR,4) ==0)
 
 	;Kiem tra cac truong hop join nhanh, khong can doi het event
-	Local $nextMinMove
+	Local $nextMinMove = 6
 	Local $nextHourMove = @HOUR
 
-	If @MIN >= 30 Then 
-		$nextMinMove = 36
-	Else
-		$nextMinMove = 6
-	EndIf
+	If @MIN >= 30 Then $nextMinMove = 36
 
 	If @HOUR == 0 Or @HOUR == 24 Then
-		$nextMinMove = 6
 		$nextHourMove = 0
 	EndIf
 
 	Local $nextTimeMove = createTimeToTicks($nextHourMove, $nextMinMove, "05")
-	$currentTime = getCurrentTime()
-	$timeLeftGoFastMove = timeLeft($currentTime, $nextTimeMove)
+	$timeLeftGoFastMove = timeLeft(getCurrentTime(), $nextTimeMove)
 	writeLogFile($logFile, "Time left util next fast move: " & $timeLeftGoFastMove )
 	$timeDiffNextMove = diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeMove)
 	writeLogFile($logFile, "Begin sleep util next fast move: " & $timeDiffNextMove )
 	Sleep($timeDiffNextMove)
 
-	For $i = 0 To UBound($jsonAccountFastJoin) -1
-		$charName = _JSONGet($jsonAccountFastJoin[$i], "char_name")
-		$mainNo = getMainNoByChar($charName)
+	processFastJoinAccounts($jsonAccountFastJoin)
+
+EndFunc
+
+Func processFastJoinAccounts($jsonAccountFastJoin)
+    writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($jsonAccountFastJoin))
+    
+    For $i = 0 To UBound($jsonAccountFastJoin) - 1
+        Local $charName = _JSONGet($jsonAccountFastJoin[$i], "char_name")
+        Local $mainNo = getMainNoByChar($charName)
+        
+        Local $checkActiveWin = activeAndMoveWin($mainNo)
+        secondWait(2)
+
+        ; Truong hop main hien tai khong duoc active, active main khac
+        If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+
+        ; Move other map
+        moveOtherMap()
+
+        secondWait(3)
+
+        _MU_followLeader(1)    
+        
+		checkAutoZAfterFollowLead()
 		
-		$checkActiveWin = activeAndMoveWin($mainNo)
-		secondWait(2)
-
-		; Truong hop main hien tai khong duoc active, active main khac
-		If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
-
-		; Move other map
-		moveOtherMap()
-
-		secondWait(3)
-
-		_MU_followLeader(1)	
-		
-		secondWait(5)
-		; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
-		$checkActiveAutoHome = checkActiveAutoHome()
-		$countWaitAutoHome = 0
-		While $checkActiveAutoHome == False And $countWaitAutoHome < 2
-			secondWait(10)
-			$checkActiveAutoHome = checkActiveAutoHome()
-			$countWaitAutoHome += 1
-		WEnd
-	Next
-
+		minisizeMain($mainNo)
+    Next
 EndFunc
 
 ; Method: _MU_Search_Localtion
@@ -302,16 +270,22 @@ Func clickIntoNpcDevil($searchPixel, $devilNo)
 		writeLogFile($logFile, "searchPixel : " & $searchPixel[1]& "-" & $searchPixel[0])
 		$npcX = $searchPixel[0]-10
 		$npcY = $searchPixel[1] + 20
-		MouseMove($npcX,$npcY)
-		Send("{ALTDOWN}")
-		_MU_MouseClick_Delay($npcX, $npcY)
-		Sleep(1000)
-		Send("{ALTUP}")
-		secondWait(2)
-		_MU_Click_Devil($devilNo)
-		secondWait(4)
-		_MU_MouseClick_Delay(512, 477)
-		_MU_Start_AutoZ()
+		mouseClickDelayAlt($npcX, $npcY)
+		secondWait(1)
+		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
+		$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
+		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
+		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
+		
+		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		If $checkOpenDevil Then
+			_MU_Click_Devil($devilNo)
+			secondWait(4)
+			_MU_MouseClick_Delay(512, 477)
+			_MU_Start_AutoZ()
+		Else
+			_MU_followLeader(1)
+		EndIf
 	Else
 		_MU_followLeader(1)
 	EndIf
@@ -348,18 +322,14 @@ Func _MU_handleWhenFinishEvent()
 				$checkActiveAutoHome = checkActiveAutoHome()
 
 			;~ If $checkActiveWin == True And $checkActiveAutoHome == False Then 
-				If $checkActiveWin Then 
+			If $checkActiveWin Then 
 				handelWhenFinshDevilEvent()
 				_MU_followLeader(1)
 				secondWait(8)
-				If $checkRuongK == False Then
-					; Thuc hien check ruong K doi voi cac account chua co ruong K
-					$check = checkRuongK($jsonAccountActiveDevil[$i])
-					If $check == True Then 
-						$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-						_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-						setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
-					EndIf
+				If Not $checkRuongK And checkRuongK($jsonAccountActiveDevil[$i]) Then
+					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
+					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
+					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
 				EndIf
 				; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
 				$checkActiveAutoHome = checkActiveAutoHome()
@@ -373,4 +343,28 @@ Func _MU_handleWhenFinishEvent()
 			EndIf
 		EndIf
 	Next
+EndFunc
+
+Func checkAccountsInDevil($jsonAccountActiveDevil)
+    writeLogFile($logFile, "Start method: checkAccountsInDevil with accounts: " & convertJsonToString($jsonAccountActiveDevil))
+	Local $sCharNotJoinDevil = ""
+    
+    ; Kiem tra xem cac acc da vao dc devil chua
+    For $i = 0 To UBound($jsonAccountActiveDevil) - 1
+        Local $charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
+        Local $mainNo = getMainNoByChar($charName)
+        Local $checkActiveWin = activeAndMoveWin($mainNo)
+        
+        ; Truong hop main hien tai khong duoc active, active main khac
+        If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
+
+        If $checkActiveWin And checkActiveAutoHome() == False Then
+			$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
+            actionWhenCantJoinDevil()
+        EndIf
+
+        minisizeMain($mainNo)
+    Next
+
+	writeLogFile($logFile, "Char not join devil: " & $sCharNotJoinDevil)
 EndFunc

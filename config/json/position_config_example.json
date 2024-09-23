@@ -31,7 +31,10 @@
 	   },
 	   "event_devil":{
 		  "move_check_npc_x":379,
-		  "move_check_npc_y":298
+		  "move_check_npc_y":298,
+		  "check_devil_open_x":64,
+		  "check_devil_open_y":620,
+		  "check_devil_open_color":"0x81C024"
 	   },
 	   "event_devil_icon":{
 		  "x":24,
