@@ -12,7 +12,7 @@ start()
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
-	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	$logFile = FileOpen($sFilePath, $FO_APPEND)
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
 	If UBound($jsonAccountActiveDevil) > 0 Then processGoDevil()
