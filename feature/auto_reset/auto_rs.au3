@@ -78,10 +78,14 @@ Func startAutoRs()
 		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
 		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
-		$resetOnline = getPropertyJson($aAccountActiveRs,"reset_online")
+		$resetOnline = getPropertyJson($aAccountActiveRs[$i],"reset_online")
+		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$mainNo = getMainNoByChar($charName)
+		$currentTime = getTimeNow()
+		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
+		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 		
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. Thoi gian gan nhat co the reset" & $nextTimeRs)
@@ -89,8 +93,22 @@ Func startAutoRs()
 			;~ writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
+
+		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
+		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd30)
+			ContinueLoop
+		EndIf
+
+		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
+		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then 
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd60)
+			ContinueLoop
+		EndIf
+
+		; Neu vuot qua so lan rs duoc phep trong ngay
 		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "Vuot qua so lan rs cho phep trong ngay. So lan RS hien tai => " & $timeRs)
+			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & " - So lan duoc phep: " & $limit)
 			ContinueLoop
 		EndIf
 

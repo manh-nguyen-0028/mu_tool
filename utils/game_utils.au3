@@ -223,18 +223,8 @@ Func _MU_Join_Event_Devil($checkRuongK)
 EndFunc
 
 Func switchOtherChar($currentChar)
-	$resultSwitch = False
-	$otherCharName = ""
-	$otherMainNo = ""
-	For $i = 0 To UBound($aCharInAccount) -1
-		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
-		If $resultCheck Then
-			; Chuyen sang char con lai
-			$otherCharName = StringSplit($aCharInAccount[$i],"|")[2]
-			writeLog("Da tim thay other char: " & $otherCharName)
-			ExitLoop
-		EndIf
-	Next
+	$resultSwitch = False	
+	$otherCharName = getOtherChar($currentChar)
 	If $otherCharName <> '' Then 
 		$otherMainNo = getMainNoByChar($otherCharName)
 		$mainNo = getMainNoByChar($otherCharName)
