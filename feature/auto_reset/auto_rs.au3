@@ -375,7 +375,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tmpLvl = 0
 	$timeCheck = 0
 
-	While $nLvl < $lvlStopCheck
+	While $nLvl < $lvlStopCheck And $timeCheck <= 15
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl

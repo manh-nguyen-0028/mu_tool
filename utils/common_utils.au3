@@ -372,13 +372,13 @@ EndFunc
 ; Method: checkPixelColor
 ; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
-	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & $color)
+	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & "-" & $color)
 	$resultCompare = False
 	;~ MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	writeLogFile($logFile,"checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & Hex($colorGetPosition,6))
-	If $colorGetPosition == $color Then $resultCompare = True
+	writeLogFile($logFile,"checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & $colorGetPosition)
+	If Hex($colorGetPosition, 6) == Hex($color, 6) Then $resultCompare = True
 	Return $resultCompare
 EndFunc
 
