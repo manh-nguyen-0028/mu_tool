@@ -181,12 +181,14 @@ Func processReset($jAccountInfo)
 			If $resetOnline == False Then
 				; Active main no 
 				$activeWin = activeAndMoveWin($mainNo)
-				If $activeWin == False Then $activeWin = switchOtherChar($charName)
+				If Not $activeWin Then $activeWin = switchOtherChar($charName)
 				; Click bỏ hết các bảng thông báo
-				handelWhenFinshDevilEvent()
-				secondWait(3)
-				; 1. Change Char
-				changeChar($mainNo)
+				If $activeWin Then
+					handelWhenFinshDevilEvent()
+					secondWait(3)
+					; 1. Change Char
+					changeChar($mainNo)
+				EndIf
 			EndIf
 			; 2. Reset in web
 			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)

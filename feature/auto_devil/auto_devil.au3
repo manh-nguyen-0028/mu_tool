@@ -70,7 +70,7 @@ Func checkThenGoDevilEvent()
 
 	If $nextHour > @HOUR Then $nextMin = 00
 	
-	$nextMin = $nextMin + 0
+	$nextMin = $nextMin + 1
 	
 	$nextTime = createTimeToTicks($nextHour, $nextMin, "05")
 	$diffTime = diffTime(getCurrentTime(), $nextTime) 
@@ -347,7 +347,8 @@ Func _MU_handleWhenFinishEvent()
 			; Trong truong hop khong duoc active auto home thi moi xu ly sau event + follow leader
 				$checkActiveAutoHome = checkActiveAutoHome()
 
-			If $checkActiveWin == True And $checkActiveAutoHome == False Then 
+			;~ If $checkActiveWin == True And $checkActiveAutoHome == False Then 
+				If $checkActiveWin Then 
 				handelWhenFinshDevilEvent()
 				_MU_followLeader(1)
 				secondWait(8)

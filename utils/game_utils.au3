@@ -9,7 +9,6 @@
 
 Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
-	secondWait(1)
 	sendKeyDelay("{Enter}")
 	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
 	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
