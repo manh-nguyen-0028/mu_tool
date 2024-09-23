@@ -227,8 +227,8 @@ Func switchOtherChar($currentChar)
 	$otherCharName = getOtherChar($currentChar)
 	If $otherCharName <> '' Then 
 		$otherMainNo = getMainNoByChar($otherCharName)
-		$mainNo = getMainNoByChar($otherCharName)
-		If activeAndMoveWin($mainNo) == True Then
+		$currentMainNo = getMainNoByChar($otherCharName)
+		If activeAndMoveWin($otherMainNo) Then
 			; TODO: Thao tac chuyen char
 			; TODO: Click vao icon event
 			;~ clickEventIcon()
@@ -240,21 +240,23 @@ Func switchOtherChar($currentChar)
 			; => Click vao chuyen
 			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.switch_char.button_change_x"), _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y"))
 			; Lay lai mainNo cua current char
-			$mainNo = getMainNoByChar($currentChar)
+			secondWait(5)
+			$currentMainNo = getMainNoByChar($currentChar)
 			; Doi khoang 6s
 			$timeCheck = 1;
-			$checkActiveMain = activeAndMoveWin($mainNo)
-			While $checkActiveMain == False And $timeCheck < 5
-				$checkActiveMain = activeAndMoveWin($mainNo)
+			$checkActiveMain = activeAndMoveWin($currentMainNo)
+			While Not $checkActiveMain And $timeCheck < 5
+				$checkActiveMain = activeAndMoveWin($currentMainNo)
 				$timeCheck += 1
 				writeLogFile($logFile,"$timeCheck: " & $timeCheck)
 				secondWait(2)
 			WEnd
 
-			If $checkActiveMain == True Then 
+			If $checkActiveMain Then 
+				writeLogFile($logFile,"Da tim thay main duoc chuyen: " & $currentChar)
 				$resultSwitch = True
 			Else
-				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " &$mainNo)
+				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " & $currentChar)
 				; De chuot ra man hinh
 				_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y"))
 				secondWait(2)

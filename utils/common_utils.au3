@@ -333,7 +333,7 @@ EndFunc
 ; Method: readFileText
 ; Description: Reads the contents of a text file and returns it as a string.
 Func readFileText($filePath)
-	writeLogFile($logFile,"Read file : " &$filePath)
+	;~ writeLogFile($logFile,"Read file : " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
 	FileClose($rtfhandle)
@@ -429,7 +429,7 @@ EndFunc
 ; Description: Retrieves a property value from a JSON object.
 Func getPropertyJson($json, $propertyName)
 	$value = _JSONGet($json, $propertyName)
-	writeLogFile($logFile,"$propertyName: " & $propertyName & " - value: " & $value)
+	;~ writeLogFile($logFile,"$propertyName: " & $propertyName & " - value: " & $value)
 	Return $value
 EndFunc
 

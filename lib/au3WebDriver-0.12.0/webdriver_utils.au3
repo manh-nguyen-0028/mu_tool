@@ -9,7 +9,7 @@
 Global $baseUrl = $baseMuUrl
 
 Func SetupChrome()
-    _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver-win64\chromedriver.exe')
+    _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver.exe')
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\chrome.log"')
 
@@ -20,7 +20,7 @@ Func SetupChrome()
 	_WD_CapabilitiesAdd('args', 'start-maximized')
 	_WD_CapabilitiesAdd('args', 'disable-infobars')
 	_WD_CapabilitiesAdd('args', 'user-data-dir', $sChromeUserDataPath)
-	_WD_CapabilitiesAdd('args', '--profile-directory', 'Default')
+	_WD_CapabilitiesAdd('args', '--profile-directory', 'Profile 1')
 	_WD_CapabilitiesAdd('binary', "C:\Program Files\Google\Chrome\Application\chrome.exe")
 
 	_WD_Startup()

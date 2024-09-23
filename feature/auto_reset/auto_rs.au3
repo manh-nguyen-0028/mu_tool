@@ -190,7 +190,7 @@ Func processReset($jAccountInfo)
 			$lvlCanRs = 200 + ($rsCount * 5)
 			If $lvlCanRs > 400 Then $lvlCanRs = 400
 		EndIf
-		writeLogFile($logFile, @ScriptLineNumber & "Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
+		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 
 		If $nLvl >= $lvlCanRs Then 
 			$mainNo = getMainNoByChar($charName)
@@ -311,6 +311,7 @@ Func processReset($jAccountInfo)
 			secondWait(5)
 			;~ EndIf
 		EndIf
+		If Not $resetOnline Then minisizeMain($mainNo)
 	EndIf
 	writeLogMethodEnd("processReset",@ScriptLineNumber,$jAccountInfo)
 EndFunc

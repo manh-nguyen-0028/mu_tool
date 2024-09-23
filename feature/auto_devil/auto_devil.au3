@@ -298,8 +298,10 @@ EndFunc
 ; Method: clickPositionByDevilNo
 ; Description: Clicks on the specific devil event icon based on the devil number.
 Func clickPositionByDevilNo($devilNo)
+	writeLogFile($logFile, "Click position by devil no: " & $devilNo)
 	$devil_position_x = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_x")
 	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
+	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,$devil_position_x), _JSONGet($jsonPositionConfig,$devil_position_y))
 EndFunc
 
