@@ -181,12 +181,14 @@ Func processReset($jAccountInfo)
 			If $resetOnline == False Then
 				; Active main no 
 				$activeWin = activeAndMoveWin($mainNo)
-				If $activeWin == False Then $activeWin = switchOtherChar($charName)
+				If Not $activeWin Then $activeWin = switchOtherChar($charName)
 				; Click bỏ hết các bảng thông báo
-				handelWhenFinshDevilEvent()
-				secondWait(3)
-				; 1. Change Char
-				changeChar($mainNo)
+				If $activeWin Then
+					handelWhenFinshDevilEvent()
+					secondWait(3)
+					; 1. Change Char
+					changeChar($mainNo)
+				EndIf
 			EndIf
 			; 2. Reset in web
 			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
@@ -373,7 +375,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tmpLvl = 0
 	$timeCheck = 0
 
-	While $nLvl < $lvlStopCheck
+	While $nLvl < $lvlStopCheck And $timeCheck <= 15
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl
@@ -413,13 +415,13 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 			_WD_ElementAction($sSession, $sElement, 'value','xxx')
 			_WD_ElementAction($sSession, $sElement, 'CLEAR')
 			secondWait(2)
-			_WD_ElementAction($sSession, $sElement, 'value',"23")
+			_WD_ElementAction($sSession, $sElement, 'value',"211")
 			; Dien toa do Y
 			$sElement = _WD_GetElementByName($sSession,"ty")
 			_WD_ElementAction($sSession, $sElement, 'value','xxx')
 			_WD_ElementAction($sSession, $sElement, 'CLEAR')
 			secondWait(2)
-			_WD_ElementAction($sSession, $sElement, 'value',"23")
+			_WD_ElementAction($sSession, $sElement, 'value',"143")
 			; Bam button chay ( submit )
 			$sElement = findElement($sSession, "//input[@type='submit']")
 			clickElement($sSession, $sElement)

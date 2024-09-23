@@ -9,6 +9,7 @@
 
 Func _MU_followLeader($position)
 	sendKeyDelay("{Enter}")
+	sendKeyDelay("{Enter}")
 	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
 	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
 	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
@@ -26,17 +27,20 @@ Func checkLvl400($mainNo)
 	secondWait(1)
 	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
 	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
-	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
-	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
-	$color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
+	;~ $x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
+	;~ $y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
+	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
+	; Day la mau xanh 0x81C024
+	$isNotLvl400 = checkPixelColor($x, $y, 0x81C024)
+	;~ $color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
 	$countSearch = 0
-	While $color = '' And $countSearch < 5
-		$color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
+	While $isNotLvl400 And $countSearch < 5
+		$isNotLvl400 = checkPixelColor($x, $y, 0x81C024)
 		secondWait(1)
 		$countSearch = $countSearch + 1
 	WEnd
 
-	If $color = '' Then $is400Lvl = True
+	If Not $isNotLvl400 Then $is400Lvl = True
 
 	writeLog("Main no: " & $mainNo & " $is400Lvl: " & $is400Lvl)
 
@@ -44,7 +48,6 @@ Func checkLvl400($mainNo)
 EndFunc
 
 Func _MU_Start_AutoZ()
-	;~ MouseClick($MOUSE_CLICK_LEFT, 299, 56,1)
 	sendKeyDelay("{Home}")
 EndFunc
 
@@ -73,10 +76,32 @@ EndFunc
 Func handelWhenFinshDevilEvent()
 	sendKeyDelay("{Enter}")
 	sendKeyDelay("{Enter}")
-	; Click neu dang bat shop
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.close_shop.x"), _JSONGet($jsonPositionConfig,"button.close_shop.y"))
-	; Click vao tat neu dang bat may quay chao
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.close_chao.x"), _JSONGet($jsonPositionConfig,"button.close_chao.y"))
+	; Neu lo dang click vao quay chao thi loai bo
+	$closeChaoX = _JSONGet($jsonPositionConfig,"button.close_chao.x")
+	$closeChaoY = _JSONGet($jsonPositionConfig,"button.close_chao.y")
+	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
+	; Neu dang bat shop thi thuc hien tat shop
+	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
+	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")
+	_MU_MouseClick_Delay($closeShopX, $closeShopY)
+EndFunc
+
+Func actionWhenCantJoinDevil()
+	; Thuc hien send Enter 1 lan de loai bo dialog
+	sendKeyDelay("{Enter}")
+	; Thuc hien follow leader
+	_MU_followLeader(1)
+	checkAutoZAfterFollowLead()
+	Return True
+EndFunc
+
+Func checkAutoZAfterFollowLead()
+	secondWait(10)
+	$countWaitAutoHome = 0
+	While Not checkActiveAutoHome() And $countWaitAutoHome < 2
+		secondWait(10)
+		$countWaitAutoHome += 1
+	WEnd
 EndFunc
 
 Func openConsoleThenClear()
@@ -109,20 +134,16 @@ Func clickEventStadium()
 EndFunc
 
 Func checkActiveAutoHome()
-	$pathImage = $imagePathRoot & "common" & "\not_active_auto_home.bmp"
-	$result = True
+	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
+	$result = False
 	$x = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x")
 	$y = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y")
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 100, True)
-	If $imageSearchResult[0] == 1 Then 
-		$result = False
-		writeLogFile($logFile, "Auto Z khong hoat dong")
-	Else
-		writeLogFile($logFile, "Auto Z dang hoat dong")
-	EndIf
+	If $imageSearchResult[0] == 1 Then $result = True
+	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
 EndFunc
 

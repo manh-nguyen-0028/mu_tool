@@ -31,7 +31,10 @@
 	   },
 	   "event_devil":{
 		  "move_check_npc_x":379,
-		  "move_check_npc_y":298
+		  "move_check_npc_y":298,
+		  "check_devil_open_x":64,
+		  "check_devil_open_y":620,
+		  "check_devil_open_color":"0x81C024"
 	   },
 	   "event_devil_icon":{
 		  "x":24,
@@ -40,6 +43,8 @@
 		  "chap_nhan_y":476,
 		  "huy_bo_x":554,
 		  "huy_bo_y":475,
+		  "devil_2_x":590,
+		  "devil_2_y":279,
 		  "devil_3_x":630,
 		  "devil_3_y":318,
 		  "devil_4_x":631,
