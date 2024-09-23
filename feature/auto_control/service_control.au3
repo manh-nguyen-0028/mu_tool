@@ -30,7 +30,7 @@ Func start()
 
     While True
         ;~ If @HOUR <> 23 And checkProcessExists("mu_auction.exe") == FALSE
-        If checkProcessExists("mu_auction.exe") == False And @HOUR <> 23 Then 
+        If Not checkProcessExists("mu_auction.exe") And (@HOUR <> 23 Or @MIN <=30) Then 
             writeLog("Start rs")
             ;~ startWithDrawRs()
             ;~ secondWait(10)
