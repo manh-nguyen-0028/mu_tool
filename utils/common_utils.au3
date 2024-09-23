@@ -19,7 +19,7 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName
+Global $devilFileName, $accountRsFileName, $charInAccountFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -30,7 +30,9 @@ init()
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
 	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
+
 	For $i =0 To UBound($jsonConfig) - 1
 		$active = getPropertyJson($jsonConfig[$i], "active")
 		$type = getPropertyJson($jsonConfig[$i], "type")
@@ -44,14 +46,11 @@ Func init()
 				$devilFileName = $value
 			ElseIf "reset" == $type Then
 				$accountRsFileName = $value
+			ElseIf "char_in_account" == $type Then
+				$charInAccountFileName = $value
 			EndIf
 		EndIf
 	Next
-	
-	$aCharInAccount=getArrayInFileTxt($textPathRoot & "char_in_account.txt")
-
-	; In ra log giá trị của $jsonPositionConfig
-    ;~ ConsoleWrite("jsonPositionConfig: " & convertJsonToString($jsonPositionConfig))
 	
 	Return True
 EndFunc
@@ -493,9 +492,13 @@ EndFunc
 ; Method: getOtherChar
 ; Description: Finds and returns the name of another character in the account.
 Func getOtherChar($currentChar)
-	$resultSwitch = False
+	writeLogFile($logFile, "getOtherChar($currentChar) : " & $currentChar)
+
+	; load char in account
+	$aCharInAccount = getArrayInFileTxt($textPathRoot & $charInAccountFileName)
+
 	$otherCharName = ""
-	$otherMainNo = ""
+
 	For $i = 0 To UBound($aCharInAccount) -1
 		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
 		If $resultCheck Then
@@ -505,5 +508,8 @@ Func getOtherChar($currentChar)
 			ExitLoop
 		EndIf
 	Next
+
+	If $otherCharName == "" Then writeLogFile($logFile, "Khong tim thay char nao phu hop")
+
 	Return $otherCharName
 EndFunc
