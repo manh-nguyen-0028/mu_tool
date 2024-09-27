@@ -19,7 +19,7 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName
+Global $devilFileName, $accountRsFileName, $charInAccountFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -30,7 +30,9 @@ init()
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
 	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
+
 	For $i =0 To UBound($jsonConfig) - 1
 		$active = getPropertyJson($jsonConfig[$i], "active")
 		$type = getPropertyJson($jsonConfig[$i], "type")
@@ -44,14 +46,11 @@ Func init()
 				$devilFileName = $value
 			ElseIf "reset" == $type Then
 				$accountRsFileName = $value
+			ElseIf "char_in_account" == $type Then
+				$charInAccountFileName = $value
 			EndIf
 		EndIf
 	Next
-	
-	$aCharInAccount=getArrayInFileTxt($textPathRoot & "char_in_account.txt")
-
-	; In ra log giá trị của $jsonPositionConfig
-    ;~ ConsoleWrite("jsonPositionConfig: " & convertJsonToString($jsonPositionConfig))
 	
 	Return True
 EndFunc
@@ -67,7 +66,7 @@ EndFunc
 Func writeLogMethodStart($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
 	$sText = "INFO  "& "START " & $methodName & "()"
 	If $textLog <> Default Then
-		$sText = $sText&" with parameter =>" & $textLog
+		$sText = $sText & " with parameter =>" & $textLog
 	EndIf
 	writeLogFile($logFile,$sText, $line)
 EndFunc
@@ -95,7 +94,7 @@ Func logFileCommon($logFile, $sText,$line=Default)
 	If $line == Default Then
 		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName &" : " & $sText
 	Else
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "["&$line&"]" &" : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "[" & $line & "]" & " : " & $sText
 	EndIf
 	writeLog($sTextFinal)
 	FileWriteLine($logFile, $sTextFinal)
@@ -297,7 +296,7 @@ EndFunc
 ; Method: sendKeyDelay
 ; Description: Sends a key press with a delay.
 Func sendKeyDelay($keyPress)
-	Opt("SendKeyDownDelay", 1000)  ;5 second delay
+	Opt("SendKeyDownDelay", 500)  ;5 second delay
 	Send($keyPress)
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
 EndFunc
@@ -312,21 +311,20 @@ EndFunc
 ; Method: minisizeMain
 ; Description: Minimizes a specified window.
 Func minisizeMain($mainNo)
-	writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
+	;~ writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
-Func activeAndMoveWin($main_i)
-	writeLogFile($logFile,"activeAndMoveWin. Main no: " & $main_i )
+Func activeAndMoveWin($mainName)
 	$isActive = False;
-	If WinActivate($main_i) Then
-		$winActive = WinActivate($main_i)
+	If WinActivate($mainName) Then
+		$winActive = WinActivate($mainName)
 		WinMove($winActive,"",0,0)
 		$isActive = True
 	Else
-		writeLogFile($logFile,"Window not activated : " & $main_i)
+		writeLogFile($logFile,"Window not activated : " & $mainName)
 	EndIf
 	Return $isActive
 EndFunc
@@ -334,7 +332,7 @@ EndFunc
 ; Method: readFileText
 ; Description: Reads the contents of a text file and returns it as a string.
 Func readFileText($filePath)
-	writeLogFile($logFile,"Read file : " &$filePath)
+	;~ writeLogFile($logFile,"Read file : " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
 	FileClose($rtfhandle)
@@ -363,22 +361,26 @@ EndFunc
 
 ; Method: convertJsonToString
 ; Description: Converts a JSON object to a string representation.
-Func convertJsonToString($json)
+Func convertJsonToString($json, $isShow = False)
 	$result = _JSONEncode($json)
-	writeLogFile($logFile,"convertJsonToString: " & $result)
+	If $isShow Then writeLogFile($logFile,"result convert json to string: " & $result)
 	Return $result
 EndFunc
 
 ; Method: checkPixelColor
 ; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
-	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & $toaDoY & "-" & $color)
+	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & "-" & $toaDoY & "-" & $color)
 	$resultCompare = False
 	;~ MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	writeLogFile($logFile,"checkPixelColor -> colorGetPosition : " & $toaDoX & "-" & $toaDoY & "-" & $colorGetPosition)
-	If Hex($colorGetPosition, 6) == Hex($color, 6) Then $resultCompare = True
+	If Hex($colorGetPosition, 6) = Hex($color, 6) Then 
+		$resultCompare = True
+		writeLogFile($logFile,"color compare : " & $resultCompare)
+	Else
+		writeLogFile($logFile,"color compare : " & $resultCompare & " - Hex($colorGetPosition, 6) = " & Hex($colorGetPosition, 6))
+	EndIf 
 	Return $resultCompare
 EndFunc
 
@@ -430,7 +432,7 @@ EndFunc
 ; Description: Retrieves a property value from a JSON object.
 Func getPropertyJson($json, $propertyName)
 	$value = _JSONGet($json, $propertyName)
-	writeLogFile($logFile,"$propertyName: " & $propertyName & " - value: " & $value)
+	;~ writeLogFile($logFile,"$propertyName: " & $propertyName & " - value: " & $value)
 	Return $value
 EndFunc
 
@@ -493,9 +495,13 @@ EndFunc
 ; Method: getOtherChar
 ; Description: Finds and returns the name of another character in the account.
 Func getOtherChar($currentChar)
-	$resultSwitch = False
+	writeLogFile($logFile, "getOtherChar($currentChar) : " & $currentChar)
+
+	; load char in account
+	$aCharInAccount = getArrayInFileTxt($textPathRoot & $charInAccountFileName)
+
 	$otherCharName = ""
-	$otherMainNo = ""
+
 	For $i = 0 To UBound($aCharInAccount) -1
 		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
 		If $resultCheck Then
@@ -505,5 +511,8 @@ Func getOtherChar($currentChar)
 			ExitLoop
 		EndIf
 	Next
+
+	If $otherCharName == "" Then writeLogFile($logFile, "Khong tim thay char nao phu hop")
+
 	Return $otherCharName
 EndFunc

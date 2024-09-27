@@ -8,11 +8,31 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
 
+;~ test2()
+
+Func test2()
+    $charName="SieuXGao"
+
+    $devilNo = 6
+    
+    $mainNo = getMainNoByChar($charName)
+
+    activeAndMoveWin($mainNo)
+
+    clickPositionByDevilNo($devilNo)
+    ;~ 19696 962
+    ;~ 0x0078D4
+    ;~ secondWait(2)
+    ;~ $result = checkPixelColor(579, 208,"0x0E0E0E")
+    ;~ writeLog($result)
+    Return True
+EndFunc
+
 ; Method: start
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
-	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
+	$logFile = FileOpen($sFilePath, $FO_APPEND)
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
 	If UBound($jsonAccountActiveDevil) > 0 Then processGoDevil()
@@ -26,7 +46,6 @@ Func processGoDevil()
 	While True
 		checkThenGoDevilEvent()
 	WEnd
-	Return True
 EndFunc
 
 ; Method: checkThenGoDevilEvent
@@ -79,10 +98,11 @@ Func checkThenGoDevilEvent()
 		; Check exists auto_rs.exe 
 		$processName = "auto_rs.exe"
 		If ProcessExists($processName) Then Exit
-		writeLogFile($logFile, "Wait to go to devil event. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
+		; Write log
+		writeLogFile($logFile, "Chua toi thoi gian vao devil. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
+		; Sleep until next time
 		$diffTime = diffTime(getCurrentTime(), $nextTime) 
 		Sleep($diffTime)
-		writeLogFile($logFile, "Begin go to devil event !")
 		goToDevilEvent()
 		;Sleep 25 minute
 		Local $nextMinFollowLeader = $nextMin + 26
@@ -102,7 +122,7 @@ Func checkThenGoDevilEvent()
 		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "05")
 		writeLogFile($logFile, "Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader) )
 		Sleep(diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeFollowLeader) )
-		_MU_handleWhenFinishEvent()
+		handleAfterDevilEvent()
 		minuteWait(1)
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
@@ -122,6 +142,7 @@ EndFunc
 ; Method: goToDevilEvent
 ; Description: Manages the process of joining the devil event for each active devil account.
 Func goToDevilEvent()
+	writeLogFile($logFile, "Start method: goToDevilEvent")
 	; Get account devil
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 
@@ -139,54 +160,74 @@ Func goToDevilEvent()
 	; Go devil
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		If $jsonAccountActiveDevil[$i] <> '' Then
-			writeLogFile($logFile, "Current account go devil : " & $jsonAccountActiveDevil[$i])
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
 			$devilNo = _JSONGet($jsonAccountActiveDevil[$i], "devil_no")
 			$mainNo = getMainNoByChar($charName)
-			writeLogFile($logFile, "Dang xu ly voi nhan vat " & $charName & " .Main no: " & $mainNo & " . HaveRuongK : " & $checkRuongK)
-			; check active win
-			$checkActiveWin = activeAndMoveWin($mainNo)
+
+			writeLogFile($logFile, "Account: " & $charName & " - Devil No: " & $devilNo)
 
 			; Truong hop main hien tai khong duoc active, active main khac
-			If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+			If Not activeAndMoveWin($mainNo) Then 
+				switchOtherChar($charName)
+			EndIf
+
+			If Not activeAndMoveWin($mainNo) Then 
+				writeLogFile($logFile, "Khong tim thay cua so win")
+				ContinueLoop;
+			EndIf
 
 			$checkLvl400 = checkLvl400($mainNo)
-			$activeStatus = "1"
-			If $activeStatus == "0" Or $checkActiveWin == False Or $checkLvl400 == False Then 
-				$reason = ""
-				If $activeStatus == "0" Then $reason = $reason & "Account khong duoc kich hoat di devil" & @CRLF
-				If $checkActiveWin == False Then $reason = $reason & "Khong tim thay cua so win" & @CRLF
-				If $checkLvl400 == False Then $reason = $reason & "Khong du 400 lvl" & @CRLF
-				writeLogFile($logFile, "Khong du dieu kien di devil. Ly do: " & $reason)
+
+			If Not $checkLvl400 Or (@MIN > 5 And @MIN < 29) Or (@MIN > 35 And @MIN < 59) Then 
+				$reason = "Khong du dieu kien di devil. Ly do: "
+				If Not $checkLvl400 Then $reason = $reason & "Khong du 400 lvl" & @CRLF
+				If (@MIN > 5 And @MIN < 29) Then $reason = $reason & "Da qua 5 phut khong the vao" & @CRLF
+				If (@MIN > 35 And @MIN < 59) Then $reason = $reason & "Da qua 35 phut khong the vao" & @CRLF					
+				writeLogFile($logFile, $reason)
 				minisizeMain($mainNo)
 				ContinueLoop;
 			EndIf
 
 			; Neu check ruong K = 0 thi thuc hien mo ruong K ra xem co khong, sau do moi click devil
-			If $checkRuongK == False Then
+			If Not $checkRuongK Then
 				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
-				If $checkRuongK == True Then 
+				If $checkRuongK Then 
 					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
 					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
 				EndIf
 			EndIf
+
 			$checkActiveWin = activeAndMoveWin($mainNo)
-			_MU_Join_Event_Devil($checkRuongK)
-			_MU_Search_Localtion($checkRuongK, $devilNo)
+
+			; Nhan enter 2 lan de thuc hien loai bo cac dialog
+			sendKeyDelay("{Enter}")
+			sendKeyDelay("{Enter}")
+			clickIconDevil($checkRuongK)
+
+			; Check and click into NPC devil
+			searchNpcDevil($checkRuongK, $devilNo)
+
 			secondWait(1)
+
 			minisizeMain($mainNo)
 		EndIf
 	Next
 
-	secondWait(10)
+	secondWait(5)
 	
+	; Check accounts in devil
 	checkAccountsInDevil($jsonAccountActiveDevil)
 
-	; Kiem tra neu Mod(@HOUR,4) ==0 => thuc hien rut rs  
-	writeLogFile($logFile, "Gia tri check mod Mod(@HOUR,4) : " & Mod(@HOUR,4) ==0)
+	; Process fast join accounts
+	processFastJoinAccounts($jsonAccountFastJoin)
 
+EndFunc
+
+Func processFastJoinAccounts($jsonAccountFastJoin)
+    writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($jsonAccountFastJoin))
+    
 	;Kiem tra cac truong hop join nhanh, khong can doi het event
 	Local $nextMinMove = 6
 	Local $nextHourMove = @HOUR
@@ -198,19 +239,17 @@ Func goToDevilEvent()
 	EndIf
 
 	Local $nextTimeMove = createTimeToTicks($nextHourMove, $nextMinMove, "05")
+
 	$timeLeftGoFastMove = timeLeft(getCurrentTime(), $nextTimeMove)
+
 	writeLogFile($logFile, "Time left util next fast move: " & $timeLeftGoFastMove )
+
 	$timeDiffNextMove = diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeMove)
+
 	writeLogFile($logFile, "Begin sleep util next fast move: " & $timeDiffNextMove )
+
 	Sleep($timeDiffNextMove)
 
-	processFastJoinAccounts($jsonAccountFastJoin)
-
-EndFunc
-
-Func processFastJoinAccounts($jsonAccountFastJoin)
-    writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($jsonAccountFastJoin))
-    
     For $i = 0 To UBound($jsonAccountFastJoin) - 1
         Local $charName = _JSONGet($jsonAccountFastJoin[$i], "char_name")
         Local $mainNo = getMainNoByChar($charName)
@@ -236,40 +275,52 @@ EndFunc
 
 ; Method: _MU_Search_Localtion
 ; Description: Searches for the NPC location during the devil event and clicks on it if found.
-Func _MU_Search_Localtion($checkRuongK, $devilNo)
-	writeLogFile($logFile, "Bat dau tim kiem vi tri cua nhan vat. _MU_Search_Localtion")
-	Local $searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
-	writeLogFile($logFile, "searchPixel : " & $searchPixel)
-	$countSerchPixel = 0;
+Func searchNpcDevil($checkRuongK, $devilNo)
+	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+
+	; Search NPC devil
+	$npcSearchX = 0
+	$npcSearchY = 0
+	$npcSearchX1 = 720
+	$npcSearchY1 = 793
+	$npcSearchColor = 0xB9AA95
+
+	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+	
 	$totalSearch = 0;
 	;~ 671 1050
-	While $searchPixel  = 0 And $totalSearch < 5
-		$searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
-		$countSerchPixel = $countSerchPixel + 1;
-		secondWait(1)
+	While $npcSearch = 0 And $totalSearch < 5
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+
+		$countSearchPixel = 0;
+
 		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $searchPixel  = 0 And $countSerchPixel < 3
-			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x"), _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y"))
-			$searchPixel = PixelSearch(0,0,720, 793,0xB9AA95);
-			$countSerchPixel = $countSerchPixel + 1;
+		While $npcSearch  = 0 And $countSearchPixel < 3
+			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
+			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
+			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+			$countSearchPixel = $countSearchPixel + 1;
 		WEnd
-		If $searchPixel  = 0 And $countSerchPixel > 3 Then
-			_MU_Join_Event_Devil($checkRuongK)
+
+		If $npcSearch  = 0 And $countSearchPixel > 3 Then
+			clickIconDevil($checkRuongK)
 			$totalSearch = $totalSearch + 1
 		EndIf
 	WEnd
+	
 	; Neu tim thay toa do thi click vao npc
-	clickIntoNpcDevil($searchPixel, $devilNo)
+	clickNpcDevil($npcSearch, $devilNo)
 EndFunc
 
-; Method: clickIntoNpcDevil
+; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
-Func clickIntoNpcDevil($searchPixel, $devilNo)
-	; Kiem tra xem co tim duoc vi tri cua npc khong $searchPixel <> 0
-	If $searchPixel <> 0 Then
-		writeLogFile($logFile, "searchPixel : " & $searchPixel[1]& "-" & $searchPixel[0])
-		$npcX = $searchPixel[0]-10
-		$npcY = $searchPixel[1] + 20
+Func clickNpcDevil($npcSearch, $devilNo)
+	; Kiem tra xem co tim duoc vi tri cua npc khong $npcSearch <> 0
+	If $npcSearch <> 0 Then
+		writeLogFile($logFile, "searchPixel : " & $npcSearch[1]& "-" & $npcSearch[0])
+		$npcX = $npcSearch[0]-10
+		$npcY = $npcSearch[1] + 20
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(1)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
@@ -279,7 +330,7 @@ Func clickIntoNpcDevil($searchPixel, $devilNo)
 		
 		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		If $checkOpenDevil Then
-			_MU_Click_Devil($devilNo)
+			clickPositionByDevilNo($devilNo)
 			secondWait(4)
 			_MU_MouseClick_Delay(512, 477)
 			_MU_Start_AutoZ()
@@ -287,41 +338,40 @@ Func clickIntoNpcDevil($searchPixel, $devilNo)
 			_MU_followLeader(1)
 		EndIf
 	Else
+		writeLogFile($logFile, "Khong tim thay vi tri cua NPC devil => Thuc hien len lai bai")
 		_MU_followLeader(1)
 	EndIf
 EndFunc
 
-; Method: _MU_Click_Devil
+; Method: clickPositionByDevilNo
 ; Description: Clicks on the specific devil event icon based on the devil number.
-Func _MU_Click_Devil($devilNo)
-	; Dv 3
-	If $devilNo == 3 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_3_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_3_y"))
-	; Dv 4
-	If $devilNo == 4 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_4_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_4_y"))
-	; Dv 5
-	If $devilNo == 5 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_5_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_5_y"))
-	If $devilNo == 6 Then _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_6_y"))
+Func clickPositionByDevilNo($devilNo)
+	writeLogFile($logFile, "Click position by devil no: " & $devilNo)
+	$devil_position_x = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_x")
+	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
+	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
+	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
 EndFunc
 
-; Method: _MU_handleWhenFinishEvent
+; Method: handleAfterDevilEvent
 ; Description: Handles the actions to be taken after finishing the devil event for each active devil account.
-Func _MU_handleWhenFinishEvent()
+Func handleAfterDevilEvent()
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		If $jsonAccountActiveDevil[$i] <> '' Then
-			writeLogFile($logFile, "Handle when finish event account : " & $jsonAccountActiveDevil[$i])
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
 			$mainNo = getMainNoByChar($charName)
 			$checkActiveWin = activeAndMoveWin($mainNo)
 
+			writeLogFile($logFile, "Xu ly sau khi ket thuc devil voi Char: " & $charName)
+
 			; Truong hop main hien tai khong duoc active, active main khac
-			If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+			If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
 			
 			; Trong truong hop khong duoc active auto home thi moi xu ly sau event + follow leader
-				$checkActiveAutoHome = checkActiveAutoHome()
+			$checkActiveAutoHome = checkActiveAutoHome()
 
-			;~ If $checkActiveWin == True And $checkActiveAutoHome == False Then 
 			If $checkActiveWin Then 
 				handelWhenFinshDevilEvent()
 				_MU_followLeader(1)
@@ -331,16 +381,13 @@ Func _MU_handleWhenFinishEvent()
 					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
 					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
 				EndIf
+
 				; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
-				$checkActiveAutoHome = checkActiveAutoHome()
-				$countWaitAutoHome = 0
-				While $checkActiveAutoHome == False And $countWaitAutoHome < 2
-					secondWait(10)
-					$checkActiveAutoHome = checkActiveAutoHome()
-					$countWaitAutoHome += 1
-				WEnd
+				checkAutoZAfterFollowLead()
+				
 				minisizeMain($mainNo)
 			EndIf
+
 		EndIf
 	Next
 EndFunc
