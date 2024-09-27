@@ -172,7 +172,7 @@ Func goToDevilEvent()
 				switchOtherChar($charName)
 			EndIf
 
-			If Not $checkActiveWin Then 
+			If Not activeAndMoveWin($mainNo) Then 
 				writeLogFile($logFile, "Khong tim thay cua so win")
 				ContinueLoop;
 			EndIf
