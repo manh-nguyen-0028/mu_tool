@@ -66,7 +66,7 @@ EndFunc
 Func writeLogMethodStart($methodName='Khong xac dinh', $line=@ScriptLineNumber, $textLog=Default)
 	$sText = "INFO  "& "START " & $methodName & "()"
 	If $textLog <> Default Then
-		$sText = $sText&" with parameter =>" & $textLog
+		$sText = $sText & " with parameter =>" & $textLog
 	EndIf
 	writeLogFile($logFile,$sText, $line)
 EndFunc
@@ -94,7 +94,7 @@ Func logFileCommon($logFile, $sText,$line=Default)
 	If $line == Default Then
 		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName &" : " & $sText
 	Else
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "["&$line&"]" &" : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "[" & $line & "]" & " : " & $sText
 	EndIf
 	writeLog($sTextFinal)
 	FileWriteLine($logFile, $sTextFinal)
@@ -311,7 +311,7 @@ EndFunc
 ; Method: minisizeMain
 ; Description: Minimizes a specified window.
 Func minisizeMain($mainNo)
-	writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
+	;~ writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
@@ -361,9 +361,9 @@ EndFunc
 
 ; Method: convertJsonToString
 ; Description: Converts a JSON object to a string representation.
-Func convertJsonToString($json)
+Func convertJsonToString($json, $isShow = False)
 	$result = _JSONEncode($json)
-	writeLogFile($logFile,"convertJsonToString: " & $result)
+	If $isShow Then writeLogFile($logFile,"result convert json to string: " & $result)
 	Return $result
 EndFunc
 

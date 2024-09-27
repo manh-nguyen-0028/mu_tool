@@ -37,12 +37,12 @@ Func checkLvl400($mainNo)
 
 	If Not @error Then
 		; Nếu tìm thấy màu
-		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
+		;~ writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
 		$is400Lvl = False
 		writeLogFile($logFile,"Chưa đạt 400 lvl")
 	Else
 		; Nếu không tìm thấy màu
-		writeLogFile($logFile,"Màu không tồn tại trên màn hình.")
+		;~ writeLogFile($logFile,"Màu không tồn tại trên màn hình.")
 		$is400Lvl = True
 		writeLogFile($logFile,"Đã đạt 400 lvl")
 	EndIf
@@ -125,15 +125,11 @@ Func clickEventIcon()
 	secondWait(1)
 EndFunc
 
-Func clickEventIconThenGoStadium() 
-	clickEventIcon() 
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y"))
-	secondWait(5)
-EndFunc
-
 Func clickEventStadium() 
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x"), _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y"))
-	secondWait(1)
+	$mapStadiumX = _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x")
+	$mapStadiumY = _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y")
+	_MU_MouseClick_Delay($mapStadiumX, $mapStadiumY)
+	secondWait(3)
 EndFunc
 
 Func checkActiveAutoHome()
@@ -152,16 +148,22 @@ EndFunc
 
 Func checkAutoOnBuff()
 	$pathImage = $imagePathRoot & "common" & "\check_on_buff.bmp"
-	$result = False
-	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 1056, 789, 100, True)
-	If $imageSearchResult[0] == 1 Then $result = True
-	Return $result
+	Return searchImageFullScreenMu($pathImage)
 EndFunc
 
 Func checkAutoOffBuff()
 	$pathImage = $imagePathRoot & "common" & "\check_off_buff.bmp"
+	Return searchImageFullScreenMu($pathImage)
+EndFunc
+
+Func searchImageFullScreenMu($pathImage) 
 	$result = False
-	$imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 1056, 789, 100, True)
+	$fullScreenX = _JSONGet($jsonPositionConfig,"common.full_screen.x")
+	$fullScreenY = _JSONGet($jsonPositionConfig,"common.full_screen.y")
+	$fullScreenX1 = _JSONGet($jsonPositionConfig,"common.full_screen.x1")
+	$fullScreenY1 = _JSONGet($jsonPositionConfig,"common.full_screen.y1")
+	$imageSearchResult = _ImageSearch_Area($pathImage, $fullScreenX, $fullScreenY, $fullScreenX1, $fullScreenY1, 100, True)
+	;~ $imageSearchResult = _ImageSearch_Area($pathImage, 0, 0, 1056, 789, 100, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	Return $result
 EndFunc
@@ -212,7 +214,7 @@ Func getArrayActiveDevil()
 	Return $jsonAccountActiveDevil
 EndFunc
 
-Func _MU_Join_Event_Devil($checkRuongK)
+Func clickIconDevil($checkRuongK)
 	writeLogFile($logFile,"Click event devil. Check ruong K: " & $checkRuongK)
 	If $checkRuongK Then
 		; Click vao icon event devil

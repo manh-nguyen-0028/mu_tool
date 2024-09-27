@@ -204,7 +204,7 @@ Func goToDevilEvent()
 			; Nhan enter 2 lan de thuc hien loai bo cac dialog
 			sendKeyDelay("{Enter}")
 			sendKeyDelay("{Enter}")
-			_MU_Join_Event_Devil($checkRuongK)
+			clickIconDevil($checkRuongK)
 
 			; Check and click into NPC devil
 			searchNpcDevil($checkRuongK, $devilNo)
@@ -304,7 +304,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 		WEnd
 
 		If $npcSearch  = 0 And $countSearchPixel > 3 Then
-			_MU_Join_Event_Devil($checkRuongK)
+			clickIconDevil($checkRuongK)
 			$totalSearch = $totalSearch + 1
 		EndIf
 	WEnd
