@@ -2,32 +2,27 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
-#include "../auto_devil/auto_devil.au3"
+;~ #include "../auto_devil/auto_devil.au3"
 
 #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
 ;~ startPath()
 ;~ test()
-test2()
+test3()
 ;~ start()
 
-Func test2()
-    $charName="GymerX"
+Func test3()
+    $charName="Louis"
 
     $devilNo = 6
     
     $mainNo = getMainNoByChar($charName)
 
     activeAndMoveWin($mainNo)
+    secondWait(3)
 
-    clickPositionByDevilNo($devilNo)
-    ;~ 19696 962
-    ;~ 0x0078D4
-    ;~ secondWait(2)
-    ;~ $result = checkPixelColor(579, 208,"0x0E0E0E")
-    ;~ writeLog($result)
-    Return True
+    checkLvl400($mainNo)
 EndFunc
 
 Func test()

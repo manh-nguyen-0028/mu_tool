@@ -8,6 +8,26 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
 
+;~ test2()
+
+Func test2()
+    $charName="SieuXGao"
+
+    $devilNo = 6
+    
+    $mainNo = getMainNoByChar($charName)
+
+    activeAndMoveWin($mainNo)
+
+    clickPositionByDevilNo($devilNo)
+    ;~ 19696 962
+    ;~ 0x0078D4
+    ;~ secondWait(2)
+    ;~ $result = checkPixelColor(579, 208,"0x0E0E0E")
+    ;~ writeLog($result)
+    Return True
+EndFunc
+
 ; Method: start
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
@@ -302,7 +322,7 @@ Func clickPositionByDevilNo($devilNo)
 	$devil_position_x = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_x")
 	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
 	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,$devil_position_x), _JSONGet($jsonPositionConfig,$devil_position_y))
+	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
 EndFunc
 
 ; Method: _MU_handleWhenFinishEvent

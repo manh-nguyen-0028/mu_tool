@@ -191,9 +191,8 @@ Func processReset($jAccountInfo)
 			If $lvlCanRs > 400 Then $lvlCanRs = 400
 		EndIf
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
-
+		$mainNo = getMainNoByChar($charName)
 		If $nLvl >= $lvlCanRs Then 
-			$mainNo = getMainNoByChar($charName)
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
 			;~ If $activeWin == True Then
 			If $resetOnline == False Then
@@ -394,7 +393,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tmpLvl = 0
 	$timeCheck = 0
 
-	While $nLvl < $lvlStopCheck And $timeCheck <= 15
+	While $nLvl < $lvlStopCheck And $timeCheck <= 25
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl
@@ -447,7 +446,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		EndIf
 
 		; Neu check qua 15 lan thi thoat loop la bat buoc
-		If $timeCheck >= 15 Then
+		If $timeCheck >= 25 Then
 			writeLogFile($logFile, "Da qua so lan duoc phep check lvl: " & $timeCheck)
 			;~ MsgBox(0, "Thông báo", "Thoát khỏi vòng lặp khi i = 5")
 			ExitLoop

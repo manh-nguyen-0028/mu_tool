@@ -27,18 +27,31 @@ Func checkLvl400($mainNo)
 	secondWait(1)
 	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
 	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
-	;~ $x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
-	;~ $y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
+	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
+	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
+	$color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
+
 	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
 	; Day la mau xanh 0x81C024
-	$isNotLvl400 = checkPixelColor($x, $y, 0x81C024)
-	;~ $color = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
-	$countSearch = 0
-	While $isNotLvl400 And $countSearch < 5
-		$isNotLvl400 = checkPixelColor($x, $y, 0x81C024)
-		secondWait(1)
-		$countSearch = $countSearch + 1
-	WEnd
+	Local $pos = PixelSearch($x, $y, $x1, $y1, $color)
+
+	If Not @error Then
+		; Nếu tìm thấy màu
+		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
+		$isNotLvl400 = True
+	Else
+		; Nếu không tìm thấy màu
+		writeLogFile($logFile,"Màu không tồn tại trên màn hình.")
+		$isNotLvl400 = False
+	EndIf
+
+	;~ $isNotLvl400 = checkPixelColor($x, $y, $color)
+	;~ $countSearch = 0
+	;~ While $isNotLvl400 And $countSearch < 5
+	;~ 	$isNotLvl400 = checkPixelColor($x, $y, $color)
+	;~ 	secondWait(1)
+	;~ 	$countSearch = $countSearch + 1
+	;~ WEnd
 
 	If Not $isNotLvl400 Then $is400Lvl = True
 
