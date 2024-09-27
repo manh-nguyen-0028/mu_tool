@@ -24,7 +24,7 @@ EndFunc
 
 Func checkLvl400($mainNo)
 	$is400Lvl = False
-	secondWait(1)
+	secondWait(3)
 	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
 	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
@@ -38,24 +38,14 @@ Func checkLvl400($mainNo)
 	If Not @error Then
 		; Nếu tìm thấy màu
 		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
-		$isNotLvl400 = True
+		$is400Lvl = False
+		writeLogFile($logFile,"Chưa đạt 400 lvl")
 	Else
 		; Nếu không tìm thấy màu
 		writeLogFile($logFile,"Màu không tồn tại trên màn hình.")
-		$isNotLvl400 = False
+		$is400Lvl = True
+		writeLogFile($logFile,"Đã đạt 400 lvl")
 	EndIf
-
-	;~ $isNotLvl400 = checkPixelColor($x, $y, $color)
-	;~ $countSearch = 0
-	;~ While $isNotLvl400 And $countSearch < 5
-	;~ 	$isNotLvl400 = checkPixelColor($x, $y, $color)
-	;~ 	secondWait(1)
-	;~ 	$countSearch = $countSearch + 1
-	;~ WEnd
-
-	If Not $isNotLvl400 Then $is400Lvl = True
-
-	writeLog("Main no: " & $mainNo & " $is400Lvl: " & $is400Lvl)
 
 	Return $is400Lvl
 EndFunc
@@ -223,66 +213,81 @@ Func getArrayActiveDevil()
 EndFunc
 
 Func _MU_Join_Event_Devil($checkRuongK)
-	If $checkRuongK == True Then
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.y"))
+	writeLogFile($logFile,"Click event devil. Check ruong K: " & $checkRuongK)
+	If $checkRuongK Then
+		; Click vao icon event devil
+		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
+		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
+		_MU_MouseClick_Delay($devilIconX, $devilIconY)
 	Else
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.y"))
+		; Click vao icon event devil khi ruong K khong co
+		$devilIconNoHadKX = _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.x")
+		$devilIconNoHadKY = _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.y")
+		_MU_MouseClick_Delay($devilIconNoHadKX, $devilIconNoHadKY)
 	EndIf
-	;~ ; Click button move
-	;~ _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_x"), _JSONGet($jsonPositionConfig,"button.event_devil_icon.chap_nhan_y"))
+	; Nhap enter de vao devil
 	sendKeyDelay("{Enter}")
 	;~ ; Sleep 4s
-	secondWait(5)
+	secondWait(4)
 EndFunc
 
 Func switchOtherChar($currentChar)
+	writeLogFile($logFile,"Bat dau tim kiem nhan vat khac cung tai khoan cua: " & $currentChar)
+
 	$resultSwitch = False	
+
 	$otherCharName = getOtherChar($currentChar)
+	
 	If $otherCharName <> '' Then 
 		$otherMainNo = getMainNoByChar($otherCharName)
-		$currentMainNo = getMainNoByChar($otherCharName)
+
 		If activeAndMoveWin($otherMainNo) Then
-			; TODO: Thao tac chuyen char
-			; TODO: Click vao icon event
-			;~ clickEventIcon()
-			; TODO: Click vao vi tri trieu hoi ( theo tung acc)
-			; TODO: Click vao nhan vat can trieu hoi
-			; TODO: Bam vao nut tat ( truong hop nhan vat da dc trieu hoi roi)
+			writeLogFile($logFile,"Da tim thay main khac cung tai khoan: " & $otherCharName)
+			$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
+			$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
+			$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
+			$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
+
+			writeLogFile($logFile,"Bat dau chuyen vao main chinh: " & $currentChar)
+
 			; => Click vao icon chuyen
-			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.switch_char.icon_x"), _JSONGet($jsonPositionConfig,"button.switch_char.icon_y"))
+			_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
 			; => Click vao chuyen
-			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.switch_char.button_change_x"), _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y"))
+			_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 			; Lay lai mainNo cua current char
-			secondWait(5)
+			secondWait(6)
 			$currentMainNo = getMainNoByChar($currentChar)
 			; Doi khoang 6s
 			$timeCheck = 1;
-			$checkActiveMain = activeAndMoveWin($currentMainNo)
-			While Not $checkActiveMain And $timeCheck < 5
-				$checkActiveMain = activeAndMoveWin($currentMainNo)
+
+			While Not activeAndMoveWin($currentMainNo) And $timeCheck < 5
 				$timeCheck += 1
-				writeLogFile($logFile,"$timeCheck: " & $timeCheck)
-				secondWait(2)
 			WEnd
 
-			If $checkActiveMain Then 
-				writeLogFile($logFile,"Da tim thay main duoc chuyen: " & $currentChar)
+			If activeAndMoveWin($currentMainNo) Then 
 				$resultSwitch = True
+				writeLogFile($logFile,"Da chuyen thanh cong vao main chinh: " & $currentChar)
 			Else
-				writeLogFile($logFile,"Khong tim thay main duoc chuyen. Main can check: " & $currentChar)
+				writeLogFile($logFile,"Khong chuyen duoc vao main chinh: " & $currentChar & " sau " & $timeCheck & " lan thu")
 				; De chuot ra man hinh
-				_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y"))
-				secondWait(2)
-				writeLogFile($logFile,"Di chuot ra main hinh va minisize Main hien tai: " &$otherMainNo)
+				$mouseMoveCenterX =_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x")
+				$mouseMoveCenterY =_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y")
+				_MU_MouseClick_Delay($mouseMoveCenterX, $mouseMoveCenterY)
+				secondWait(1)
+				; Minisize main
+				writeLogFile($logFile,"Minisize main: " & $otherMainNo)
 				minisizeMain($otherMainNo)
 			EndIf
-			; Kiem tra title xem dung la title cua minh khong
+
 		EndIf
 	EndIf
 	Return $resultSwitch
 EndFunc
 
 Func moveOtherMap()
+	writeLogFile($logFile,"Bat dau chuyen map khac")
 	sendKeyDelay("m")
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.move.other_map_x"), _JSONGet($jsonPositionConfig,"button.move.other_map_y"))
+	$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
+	$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
+	_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
 EndFunc

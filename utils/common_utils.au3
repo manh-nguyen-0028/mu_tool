@@ -296,7 +296,7 @@ EndFunc
 ; Method: sendKeyDelay
 ; Description: Sends a key press with a delay.
 Func sendKeyDelay($keyPress)
-	Opt("SendKeyDownDelay", 1000)  ;5 second delay
+	Opt("SendKeyDownDelay", 500)  ;5 second delay
 	Send($keyPress)
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
 EndFunc
@@ -317,15 +317,14 @@ EndFunc
 
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
-Func activeAndMoveWin($main_i)
-	writeLogFile($logFile,"activeAndMoveWin. Main no: " & $main_i )
+Func activeAndMoveWin($mainName)
 	$isActive = False;
-	If WinActivate($main_i) Then
-		$winActive = WinActivate($main_i)
+	If WinActivate($mainName) Then
+		$winActive = WinActivate($mainName)
 		WinMove($winActive,"",0,0)
 		$isActive = True
 	Else
-		writeLogFile($logFile,"Window not activated : " & $main_i)
+		writeLogFile($logFile,"Window not activated : " & $mainName)
 	EndIf
 	Return $isActive
 EndFunc
