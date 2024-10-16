@@ -373,6 +373,7 @@ Func goToSportLvl1($mainNo)
 	; An nhan vat
 	sendKeyDelay("+h")
 	secondWait(1)
+	; Khi bat dau se xuat hien tai 182 - 128
 	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
 	; 392, 334
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.loren_sport1.x"), _JSONGet($jsonPositionConfig,"button.loren_sport1.y"))

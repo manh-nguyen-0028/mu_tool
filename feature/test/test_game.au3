@@ -13,20 +13,37 @@ test3()
 ;~ start()
 
 Func test3()
-    $charName="Louis"
+    $charName="GymerX"
 
     $devilNo = 6
     
     $mainNo = getMainNoByChar($charName)
 
     activeAndMoveWin($mainNo)
-    secondWait(3)
 
-    checkLvl400($mainNo)
+    secondWait(2)
+
+    checkActiveAutoHome()
+    ;~ clickEventIcon()
+    ;~ checkLvl400($mainNo)
+    ;~ clickEventStadium() 
+
+    ;~ $rsCount = 99
+    ;~ ; Trong truong hop rs count < 30 thi chi toi sport 1 thoi, <50 thi ra port 2, nguoc lai thi ra sport 3
+	;~ $sportArenaNo = 3
+	;~ If ($rsCount < 30) Then
+	;~ 	$sportArenaNo = 1
+	;~ ElseIf ($rsCount < 50) Then
+	;~ 	$sportArenaNo = 2
+	;~ EndIf
+	; Go to sport
+	;~ goSportStadium($sportArenaNo)
+
+    minisizeMain($mainNo)
 EndFunc
 
 Func test()
-    $charName="Louis"
+    $charName="Cuongkd"
     
     $mainNo = getMainNoByChar($charName)
 
@@ -47,7 +64,7 @@ Func test()
     ;~ EndIf
     ;~ Send("{F8}") ; Send the F8 key
     ;~ activeAndMoveWin($mainNo)
-    ;~ _MU_followLeader(1)
+    _MU_followLeader(1)
     ;~ writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_x"))
 	;~ writeLog(_JSONGet($jsonPositionConfig,"button.follow_leader.position_1_y"))
     Return True

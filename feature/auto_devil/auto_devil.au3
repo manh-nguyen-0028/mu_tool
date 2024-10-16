@@ -7,6 +7,7 @@
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 
 start()
+;~ goToDevilEvent()
 
 ;~ test2()
 
@@ -295,7 +296,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 		$countSearchPixel = 0;
 
 		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $npcSearch  = 0 And $countSearchPixel < 3
+		While $npcSearch  = 0 And $countSearchPixel < 2
 			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
 			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
 			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
@@ -303,7 +304,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 			$countSearchPixel = $countSearchPixel + 1;
 		WEnd
 
-		If $npcSearch  = 0 And $countSearchPixel > 3 Then
+		If $npcSearch  = 0 Then
 			clickIconDevil($checkRuongK)
 			$totalSearch = $totalSearch + 1
 		EndIf
