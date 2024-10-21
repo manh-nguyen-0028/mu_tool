@@ -128,9 +128,10 @@ Func checkThenGoDevilEvent()
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
 	Else
-		writeLogFile($logFile, "Current time > Next Time. Begin sleep 1h. Time left: " & timeToText(60*60*1000)& @CRLF)
+		writeLogFile($logFile, "Current time > Next Time. Cho toi gio tiep theo" & @CRLF)
 		;Sleep 1h
-		minuteWait(60)
+		waitToNextHourMinutes(1, 00, 00)
+		;~ minuteWait(60)
 		writeLogFile($logFile, "Sleep 1h finish")
 		writeLogFile($logFile, "Next While Loop  >>> ")
 	EndIf

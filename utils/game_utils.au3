@@ -33,18 +33,25 @@ Func checkLvl400($mainNo)
 
 	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
 	; Day la mau xanh 0x81C024
-	Local $pos = PixelSearch($x, $y, $x1, $y1, $color)
+	Local $pos = PixelSearch($x, $y, $x1, $y1, $color,50)
 
 	If Not @error Then
 		; Nếu tìm thấy màu
-		;~ writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
-		$is400Lvl = False
-		writeLogFile($logFile,"Chưa đạt 400 lvl")
+		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
+		writeLogFile($logFile,"CHUA DAT 400 lvl")
 	Else
 		; Nếu không tìm thấy màu
-		;~ writeLogFile($logFile,"Màu không tồn tại trên màn hình.")
-		$is400Lvl = True
-		writeLogFile($logFile,"Đã đạt 400 lvl")
+		writeLogFile($logFile,"Màu không tồn tại trên màn hình. Thu lai lan nua.")
+		$pos = PixelSearch($x, $y, $x1, $y1, $color,50) 
+		If Not @error Then
+			; Nếu tìm thấy màu
+			writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
+			writeLogFile($logFile,"CHUA DAT 400 lvl")
+		Else
+			; Nếu không tìm thấy màu
+			$is400Lvl = True
+			writeLogFile($logFile,"DA DAT 400 lvl")
+		EndIf
 	EndIf
 
 	Return $is400Lvl

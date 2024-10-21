@@ -1,4 +1,4 @@
 chenroibo|chensongbo
 chensongbo|chenroibo
-GymerX|Origner
-Origner|GymerX
+XXXX001|GameCenter
+GameCenter|XXXX001
