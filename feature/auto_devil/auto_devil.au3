@@ -115,7 +115,7 @@ Func checkThenGoDevilEvent()
 		$processName = "auto_rs.exe"
 		If ProcessExists($processName) Then Exit
 		; Write log
-		writeLogFile($logFile, "Chua toi thoi gian vao devil. Time left: " & timeToText(timeLeft(getCurrentTime() ,$nextTime)) & @CRLF)
+		writeLogFile($logFile, "Chua toi thoi gian vao devil. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
 		; Sleep until next time
 		$diffTime = diffTime(getCurrentTime(), $nextTime) 
 		Sleep($diffTime)
@@ -136,7 +136,7 @@ Func checkThenGoDevilEvent()
 		EndIf
 
 		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "05")
-		writeLogFile($logFile, "Time left util next time follow leader: " & timeToText(timeLeft(getCurrentTime(), $nextTimeFollowLeader)))
+		writeLogFile($logFile, "Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader))
 		Sleep(diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeFollowLeader) )
 		handleAfterDevilEvent()
 		minuteWait(1)
