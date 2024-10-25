@@ -19,7 +19,7 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName, $charInAccountFileName
+Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -48,6 +48,10 @@ Func init()
 				$accountRsFileName = $value
 			ElseIf "char_in_account" == $type Then
 				$charInAccountFileName = $value
+			ElseIf "buy_gold" == $type Then
+				$buySvGoldFileName = $value
+			ElseIf "auto_login" == $type Then
+				$autoLoginFileName = $value
 			EndIf
 		EndIf
 	Next
