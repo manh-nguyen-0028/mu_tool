@@ -16,6 +16,9 @@ Func _MU_followLeader($position)
 	_MU_MouseClick_Delay($position_x, $position_y)
 	secondWait(1)
 	sendKeyDelay("{Enter}")
+	secondWait(1)
+	; Di chuot ra giua man hinh
+	MouseMove(402, 289)
 EndFunc
 
 Func getMainNoByChar($charName)
