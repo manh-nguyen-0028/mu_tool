@@ -5,6 +5,7 @@
 #RequireAdmin
 
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
+Local $sCharNotJoinDevil = ""
 
 start()
 ;~ goToDevilEvent()
@@ -83,15 +84,29 @@ Func checkThenGoDevilEvent()
 				EndIf
 				;~ $nextHour = 23
 			Case 23 To 23
-				$nextHour =@HOUR+1
+				$nextHour = @HOUR+1
 			Case Else
 				$nextHour = @HOUR
 	EndSwitch
 
 	If $nextHour > @HOUR Then $nextMin = 00
-	
-	$nextMin = $nextMin + 1
-	
+
+	; Danh sách các giờ cần kiểm tra, cách nhau bởi dấu phẩy
+	Local $validHours = ",7,10,12,14,16,18,20,21,22,23,"
+
+	; Kiểm tra xem giờ hiện tại có nằm trong danh sách không
+	If StringInStr($validHours, "," & $nextHour & ",") Then
+		; Truong hop ma dung trong CC thi doi them 1 phut
+		$nextMin = $nextMin + 1
+	EndIf
+
+	; Truong hop next hour = 24 thi thuc hien cho toi 00h
+	If $nextHour == 24 Then
+		$nextHour = 0
+		minuteWait(60 - @MIN)
+		$nextMin = @MIN + 1
+	EndIf
+
 	$nextTime = createTimeToTicks($nextHour, $nextMin, "05")
 	$diffTime = diffTime(getCurrentTime(), $nextTime) 
 
@@ -100,7 +115,7 @@ Func checkThenGoDevilEvent()
 		$processName = "auto_rs.exe"
 		If ProcessExists($processName) Then Exit
 		; Write log
-		writeLogFile($logFile, "Chua toi thoi gian vao devil. Time left: " & timeLeft(getCurrentTime() ,$nextTime) & @CRLF)
+		writeLogFile($logFile, "Chua toi thoi gian vao devil. Time left: " & timeToText(timeLeft(getCurrentTime() ,$nextTime)) & @CRLF)
 		; Sleep until next time
 		$diffTime = diffTime(getCurrentTime(), $nextTime) 
 		Sleep($diffTime)
@@ -121,7 +136,7 @@ Func checkThenGoDevilEvent()
 		EndIf
 
 		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "05")
-		writeLogFile($logFile, "Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader) )
+		writeLogFile($logFile, "Time left util next time follow leader: " & timeToText(timeLeft(getCurrentTime(), $nextTimeFollowLeader)))
 		Sleep(diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeFollowLeader) )
 		handleAfterDevilEvent()
 		minuteWait(1)
@@ -130,7 +145,7 @@ Func checkThenGoDevilEvent()
 	Else
 		writeLogFile($logFile, "Current time > Next Time. Cho toi gio tiep theo" & @CRLF)
 		;Sleep 1h
-		waitToNextHourMinutes(1, 00, 00)
+		waitToNextMinutes(58)
 		;~ minuteWait(60)
 		writeLogFile($logFile, "Sleep 1h finish")
 		writeLogFile($logFile, "Next While Loop  >>> ")
@@ -363,10 +378,26 @@ Func handleAfterDevilEvent()
 		If $jsonAccountActiveDevil[$i] <> '' Then
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
+			$isFastMove = _JSONGet($jsonAccountActiveDevil[$i], "is_fast_join")
 			$mainNo = getMainNoByChar($charName)
-			$checkActiveWin = activeAndMoveWin($mainNo)
 
 			writeLogFile($logFile, "Xu ly sau khi ket thuc devil voi Char: " & $charName)
+
+			; Truong hop la $isFastMove = True thi hien continue sang record tiep theo
+			If $isFastMove Then 
+				writeLogFile($logFile, "Char: " & $charName & " - Fast move khong can xu ly sau khi ket thuc devil")
+				minisizeMain($mainNo)
+				ContinueLoop
+			EndIf
+
+			; Truong hop nam trong $charNotJoinDevil thi khong can xu ly
+			If StringInStr($sCharNotJoinDevil, $charName) Then
+				writeLogFile($logFile, "Char: " & $charName & " - Khong join devil nen khong can xu ly sau khi ket thuc devil")
+				minisizeMain($mainNo)
+				ContinueLoop
+			EndIf
+
+			$checkActiveWin = activeAndMoveWin($mainNo)
 
 			; Truong hop main hien tai khong duoc active, active main khac
 			If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
@@ -407,7 +438,7 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
         ; Truong hop main hien tai khong duoc active, active main khac
         If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
 
-        If $checkActiveWin And checkActiveAutoHome() == False Then
+        If $checkActiveWin And Not checkActiveAutoHome() Then
 			$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
             actionWhenCantJoinDevil()
         EndIf

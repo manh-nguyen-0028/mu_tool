@@ -123,7 +123,7 @@ EndFunc
 ; Description: Converts hours, minutes, and seconds to ticks.
 Func createTimeToTicks($gio,$phut,$giay)
 	If $gio == 24 Then $gio = 0
-	writeLog("Function createTimeToTicks($gio,$phut,$giay) : " & $gio & "-" & $phut & "-" & $giay)
+	;~ writeLog("Function createTimeToTicks($gio,$phut,$giay) : " & $gio & "-" & $phut & "-" & $giay)
 	Return _TimeToTicks($gio, $phut, $giay)
 EndFunc
 
@@ -182,6 +182,20 @@ Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
 		writeLogFile($logFile,"time diff: " & timeToText($diffTime))
 		Sleep($diffTime)
 	EndIf
+EndFunc
+
+Func waitToNextMinutes($nextMin)
+	writeLogFile($logFile,"Wait to next minutes : " &$nextMin)
+	If @MIN <= $nextMin Then 
+		$nextHour = @HOUR
+	Else
+		$nextHour = @HOUR + 1
+	EndIf
+	$nextTime = createTimeToTicks($nextHour, $nextMin , 45)
+	$currentTime = createTimeToTicks(@HOUR, @MIN, @SEC)
+	$diffTime = diffTime($currentTime, $nextTime)
+	writeLogFile($logFile,"Thoi gian can cho: " & timeToText($diffTime))
+	Sleep($diffTime)
 EndFunc
 
 ; Method: waitToNextTime
@@ -303,6 +317,11 @@ Func sendKeyDelay($keyPress)
 	Opt("SendKeyDownDelay", 500)  ;5 second delay
 	Send($keyPress)
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
+EndFunc
+
+; Send key enter
+Func sendKeyEnter()
+	sendKeyDelay("{Enter}")
 EndFunc
 
 ; Method: activeMain
