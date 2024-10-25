@@ -90,8 +90,8 @@ Func getConfigByName($jsonName)
 EndFunc
 
 Func handelWhenFinshDevilEvent()
-	sendKeyDelay("{Enter}")
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
+	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")
@@ -104,7 +104,7 @@ EndFunc
 
 Func actionWhenCantJoinDevil()
 	; Thuc hien send Enter 1 lan de loai bo dialog
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
 	; Thuc hien follow leader
 	_MU_followLeader(1)
 	checkAutoZAfterFollowLead()
@@ -241,7 +241,7 @@ Func clickIconDevil($checkRuongK)
 		_MU_MouseClick_Delay($devilIconNoHadKX, $devilIconNoHadKY)
 	EndIf
 	; Nhap enter de vao devil
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
 	;~ ; Sleep 4s
 	secondWait(4)
 EndFunc

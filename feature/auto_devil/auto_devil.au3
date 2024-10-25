@@ -219,8 +219,8 @@ Func goToDevilEvent()
 			$checkActiveWin = activeAndMoveWin($mainNo)
 
 			; Nhan enter 2 lan de thuc hien loai bo cac dialog
-			sendKeyDelay("{Enter}")
-			sendKeyDelay("{Enter}")
+			sendKeyEnter()
+			sendKeyEnter()
 			clickIconDevil($checkRuongK)
 
 			; Check and click into NPC devil

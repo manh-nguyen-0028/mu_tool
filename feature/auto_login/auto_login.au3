@@ -48,8 +48,8 @@ Func processAutoLogin()
                     Return False
                 Else
                     writeLogFile($logFile, "Tim thay main no: " & $mainName)
-                    sendKeyDelay("{ENTER}")
-                    sendKeyDelay("{ENTER}")
+                    sendKeyEnter()
+                    sendKeyEnter()
                     If Not activeAndMoveWin($charName) Then $needLogin = True
                 EndIf
 
@@ -137,7 +137,7 @@ Func chonServer()
     secondWait(5)
 
     ; Send enter để vào game
-    sendKeyDelay("{ENTER}")
+    sendKeyEnter()
 
     Return True
 EndFunc
