@@ -352,7 +352,7 @@ Func returnChar($mainNo)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	While $checkActive == False
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
-		sendKeyDelay("{Enter}")
+		sendKeyEnter()
 		$checkActive = activeAndMoveWin($mainNo)
 	WEnd
 	writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
@@ -487,8 +487,8 @@ Func goMapLvl()
 EndFunc
 
 Func goMapArena($rsCount)
-	sendKeyDelay("{Enter}")
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
+	sendKeyEnter()
 	writeLogFile($logFile, "Bat dau map event arena ! ")
 	; Click event icon then go arena map
 	clickEventIcon()

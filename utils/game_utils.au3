@@ -8,17 +8,19 @@
 #include "common_utils.au3"
 
 Func _MU_followLeader($position)
-	sendKeyDelay("{Enter}")
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
+	sendKeyEnter()
 	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
 	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
 	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 	_MU_MouseClick_Delay($position_x, $position_y)
 	secondWait(1)
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
 	secondWait(1)
 	; Di chuot ra giua man hinh
-	MouseMove(402, 289)
+	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
+	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
+	MouseMove($position_char_x, $position_char_y)
 EndFunc
 
 Func getMainNoByChar($charName)
@@ -38,23 +40,24 @@ Func checkLvl400($mainNo)
 	; Day la mau xanh 0x81C024
 	Local $pos = PixelSearch($x, $y, $x1, $y1, $color,50)
 
+	; Neu tim thay mau thi ghi log va dung lai, neu khong thi thu lai them 2 lan
+	$countCheck = 0
+	While @error And $countCheck < 2
+		$countCheck += 1
+		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Thu lai lan thu " & $countCheck)
+		secondWait(1)
+		$pos = PixelSearch($x, $y, $x1, $y1, $color,50)
+	WEnd
+
 	If Not @error Then
 		; Nếu tìm thấy màu
-		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
+		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: [" & $pos[0] & ", " & $pos[1] & "] sau " & $countCheck & " lan thu")
 		writeLogFile($logFile,"CHUA DAT 400 lvl")
 	Else
 		; Nếu không tìm thấy màu
-		writeLogFile($logFile,"Màu không tồn tại trên màn hình. Thu lai lan nua.")
-		$pos = PixelSearch($x, $y, $x1, $y1, $color,50) 
-		If Not @error Then
-			; Nếu tìm thấy màu
-			writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: " & $pos[0] & ", " & $pos[1])
-			writeLogFile($logFile,"CHUA DAT 400 lvl")
-		Else
-			; Nếu không tìm thấy màu
-			$is400Lvl = True
-			writeLogFile($logFile,"DA DAT 400 lvl")
-		EndIf
+		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ) sau "  & $countCheck & " lan thu")
+		$is400Lvl = True
+		writeLogFile($logFile,"DA DAT 400 lvl")
 	EndIf
 
 	Return $is400Lvl
@@ -87,21 +90,21 @@ Func getConfigByName($jsonName)
 EndFunc
 
 Func handelWhenFinshDevilEvent()
-	sendKeyDelay("{Enter}")
-	sendKeyDelay("{Enter}")
-	; Neu lo dang click vao quay chao thi loai bo
-	$closeChaoX = _JSONGet($jsonPositionConfig,"button.close_chao.x")
-	$closeChaoY = _JSONGet($jsonPositionConfig,"button.close_chao.y")
-	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
+	sendKeyEnter()
+	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")
 	_MU_MouseClick_Delay($closeShopX, $closeShopY)
+	; Neu lo dang click vao quay chao thi loai bo
+	$closeChaoX = _JSONGet($jsonPositionConfig,"button.close_chao.x")
+	$closeChaoY = _JSONGet($jsonPositionConfig,"button.close_chao.y")
+	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
 EndFunc
 
 Func actionWhenCantJoinDevil()
 	; Thuc hien send Enter 1 lan de loai bo dialog
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
 	; Thuc hien follow leader
 	_MU_followLeader(1)
 	checkAutoZAfterFollowLead()
@@ -238,7 +241,7 @@ Func clickIconDevil($checkRuongK)
 		_MU_MouseClick_Delay($devilIconNoHadKX, $devilIconNoHadKY)
 	EndIf
 	; Nhap enter de vao devil
-	sendKeyDelay("{Enter}")
+	sendKeyEnter()
 	;~ ; Sleep 4s
 	secondWait(4)
 EndFunc

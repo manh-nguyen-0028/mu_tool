@@ -103,7 +103,9 @@
 	   },
 	   "screen_mouse_move":{
 		  "center_x":389,
-		  "center_y":285
+		  "center_y":285,
+		  "center_char_x":402,
+		  "center_char_y":289
 	   },
 	   "close_shop":{
 		  "x":327,
