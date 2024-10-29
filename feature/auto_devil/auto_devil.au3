@@ -168,7 +168,7 @@ Func goToDevilEvent()
 	; Get account devil fast move
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		$isFastMove = _JSONGet($jsonAccountActiveDevil[$i], "is_fast_join")
-		If $isFastMove == True Then
+		If $isFastMove Then
 			Redim $jsonAccountFastJoin[UBound($jsonAccountFastJoin) + 1]
 			$jsonAccountFastJoin[UBound($jsonAccountFastJoin) - 1] = $jsonAccountActiveDevil[$i]
 		EndIf

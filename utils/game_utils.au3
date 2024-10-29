@@ -187,7 +187,7 @@ Func checkRuongK($charInfo)
 	$activeWin = activeAndMoveWin($title)
 	secondWait(3)
 	$result = False
-	If $activeWin == True Then
+	If $activeWin Then
 		; mouse move to top
 		MouseMove(0,0)
 
@@ -215,8 +215,8 @@ Func getArrayActiveDevil()
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
 		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
 		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil == True And $maxHourGo >= @HOUR Then 
-			If $ignorePeakHour == True And @HOUR >= 20 And @HOUR <= 22 Then
+		If $activeDevil And $maxHourGo >= @HOUR Then 
+			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
 				writeLog("Peak hour can't go devil. Wait to 23h")
 			Else
 				Redim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]

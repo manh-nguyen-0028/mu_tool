@@ -41,7 +41,7 @@ EndFunc
 Func startPostZalo()
     getJsonConfigTime()
 
-    If isCanPost() == True Then
+    If isCanPost() Then
         $sSession = SetupGecko()
         
         _WD_Navigate($sSession, "https://chat.zalo.me/")

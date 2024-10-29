@@ -51,7 +51,7 @@ Func processBuySvGold()
         ; Duyet qua tung account de mua sv gold
         For $i = 0 To UBound($jAccountActive) - 1
             $active = getPropertyJson($jAccountActive[$i], "active")
-            If $active == True Then
+            If $active Then
                 $username = getPropertyJson($jAccountActive[$i], "username")
                 $password = getPropertyJson($jAccountActive[$i], "password")
                 ; Login

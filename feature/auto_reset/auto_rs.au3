@@ -65,7 +65,7 @@ Func startAutoRs()
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
-		If $active == True And "reset" == $type Then
+		If $active And "reset" == $type Then
 			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
 			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
@@ -102,38 +102,36 @@ Func startAutoRs()
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 		
 		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. Thoi gian gan nhat co the reset" & $nextTimeRs)
-			;~ writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
-			;~ writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
 
 		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
 		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd30)
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
 			ContinueLoop
 		EndIf
 
 		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
 		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd60)
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
 			ContinueLoop
 		EndIf
 
 		; Neu vuot qua so lan rs duoc phep trong ngay
 		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & " - So lan duoc phep: " & $limit)
+			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
 			ContinueLoop
 		EndIf
 
 		; Neu la rs online thi can thuc hien active main
-		If $resetOnline == False Then
+		If Not $resetOnline Then
 			; Begin reset
 			$activeMain = activeAndMoveWin($mainNo)
 
 			; Truong hop main hien tai khong duoc active, active main khac
-			If $activeMain == False Then $activeMain = switchOtherChar($charName)
-			If $activeMain == True Then 
+			If Not $activeMain Then $activeMain = switchOtherChar($charName)
+			If $activeMain Then 
 				processReset($aAccountActiveRs[$i])
 			EndIf
 		Else
@@ -171,15 +169,14 @@ Func processReset($jAccountInfo)
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
-	If $isLoginSuccess == True Then
+	If $isLoginSuccess Then
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		If $timeNow < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
-			writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
+			writeLogFile($logFile, "Chua den thoi gian reset.")
 			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 				For $i =0 To UBound($jsonRsGame) - 1
@@ -209,8 +206,7 @@ Func processReset($jAccountInfo)
 		$mainNo = getMainNoByChar($charName)
 		If $nLvl >= $lvlCanRs Then 
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
-			;~ If $activeWin == True Then
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; Active main no 
 				$activeWin = activeAndMoveWin($mainNo)
 				If Not $activeWin Then $activeWin = switchOtherChar($charName)
@@ -228,7 +224,7 @@ Func processReset($jAccountInfo)
 			; Click radio rs vip
 			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
 			secondWait(2)
-			If $resetOnline == True Then
+			If $resetOnline Then
 				; Click radio online
 				_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
 				secondWait(2)
@@ -266,7 +262,7 @@ Func processReset($jAccountInfo)
 				EndIf
 			Next
 			; If reset online = true => withow handle in game
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; 3. Return game
 				returnChar($mainNo)
 				; 4. Go to sport
@@ -306,17 +302,17 @@ Func processReset($jAccountInfo)
 
 			$mainNoMinisize = $mainNo
 
-			If $isMainCharacter == False Then
+			If Not $isMainCharacter Then
 				writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
 				$otherChar = getOtherChar($charName)
 				If $otherChar <> "" Then 
 					$resultWwithChar = switchOtherChar($otherChar)
-					If $resultWwithChar == True Then $mainNoMinisize = getMainNoByChar($otherChar)
+					If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
 				EndIf
 				writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 			EndIf
 
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; 10. minisize main 
 				minisizeMain($mainNoMinisize)
 			EndIf
@@ -348,7 +344,7 @@ Func changeChar($mainNo)
 	secondWait(7)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
-	if $checkActive == True Then
+	if $checkActive Then
 	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
@@ -364,7 +360,7 @@ Func returnChar($mainNo)
 	$checkActive = activeAndMoveWin($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	While $checkActive == False
+	While Not $checkActive
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
 		sendKeyEnter()
 		$checkActive = activeAndMoveWin($mainNo)

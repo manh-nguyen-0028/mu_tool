@@ -17,16 +17,16 @@ Func onOffBuffExp($charName, $isOnBuff)
     $checkActiveWin = activeAndMoveWin($mainNo)
 
     ; Truong hop main hien tai khong duoc active, active main khac
-    If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+    If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
 
-    If $checkActiveWin == False Then 
+    If Not $checkActiveWin Then 
         writeLogFile($logFile, "Khong tim duoc main active voi char: " & $charName)
     Else
         ; Bat phim Z
         sendKeyDelay("z")
 
         secondWait(2)
-        If $isOnBuff == True Then 
+        If $isOnBuff Then 
             ; Kiem tra xem co phai o trang thai CHUA BAT ( off ) buff hay khong
             $checkOffBuff = checkAutoOffBuff()
         Else
@@ -36,7 +36,7 @@ Func onOffBuffExp($charName, $isOnBuff)
         
         writeLogFile($logFile,"checkOffBuff: " & $checkOffBuff)
 
-        If $checkOffBuff == True Then
+        If $checkOffBuff Then
             ; Click vao vi tri bat/tat auto buff
             _MU_MouseClick_Delay($toaDoBuffX, $toaDoBuffY)
             ; Click vao button Save auto

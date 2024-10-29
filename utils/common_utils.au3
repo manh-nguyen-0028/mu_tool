@@ -38,7 +38,7 @@ Func init()
 		$type = getPropertyJson($jsonConfig[$i], "type")
 		$key = getPropertyJson($jsonConfig[$i], "key")
 		$value = getPropertyJson($jsonConfig[$i], "value")
-		If $active == True Then
+		If $active Then
 			If "position" == $type Then
 				$jsonPositionConfig = getJsonFromFile($jsonPathRoot & $value)
 				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
@@ -64,7 +64,7 @@ EndFunc
 ; Method: writeLog
 ; Description: Writes a log message with the current time.
 Func writeLog($textLog)
-	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog &@CRLF)
+	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog & @CRLF)
 EndFunc
 
 ; Method: writeLogMethodStart

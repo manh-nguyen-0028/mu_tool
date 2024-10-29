@@ -68,9 +68,35 @@ Func login($sSession, $username, $password)
 	; get title
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
+
+	; Truong hop $sTitle = $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
+	; Neu khong dung thi thuc hien logout va lay lai $sTitle
+	If $sTitle == $sTitleLoginSuccess Then
+		;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
+		; <div class="t-account-title">
+
+        ;~                   <h4 id="t-account_name_title">maka</h4>
+        ;~       <h7>(Hà Nội 2003)</h7>
+            
+
+        ;~   </div>
+		$sElement = findElement($sSession, "//h4[@id='t-account_name_title']")		
+		$sValue = getTextElement($sSession, $sElement)
+		writeLogFile($logFile, "$sValue account login: " & $sValue)
+		If $sValue == $username Then
+			writeLogFile($logFile, "Login success with account: " & $username)
+			Return True
+		Else
+			writeLogFile($logFile, "Username is different with account login: " & $username & " - " & $sValue)
+			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
+			secondWait(5)
+			$sTitle = getTitleWebsite($sSession)
+			writeLogFile($logFile, "Logout success!")
+		EndIf
+	EndIf
 	
 	While $sTitle <> $sTitleLoginSuccess
-		If $timeLoginFail > 10 Then ExitLoop
+		If $timeLoginFail > 6 Then ExitLoop
 		closeDiaglogConfim($sSession)
 		loginWebsite($sSession,$username, $password)
 		$sTitle = getTitleWebsite($sSession)
@@ -97,7 +123,7 @@ EndFunc
 Func loginWebsite($sSession,$username, $password)
 	$isSuccess = False
 
-	writeLog("$username: "&$username & " $password: "&$password)
+	writeLog("$username: " & $username & " $password: " & $password)
 
 	_WD_Window($sSession,"MINIMIZE")
 
@@ -108,7 +134,7 @@ Func loginWebsite($sSession,$username, $password)
 	$sElement = _WD_GetElementByName($sSession,"username")
 	_WD_ElementAction($sSession, $sElement, 'value','xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-	secondWait(2)
+	;~ secondWait(1)
 	_WD_ElementAction($sSession, $sElement, 'value',$username)
 	writeLog("$sValue: " & _WD_ElementAction($sSession, $sElement, 'value'))
 	
@@ -116,7 +142,7 @@ Func loginWebsite($sSession,$username, $password)
 	$sElement = _WD_GetElementByName($sSession,"password") 
 	_WD_ElementAction($sSession, $sElement, 'value','xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-	secondWait(2)
+	;~ secondWait(1)
 	_WD_ElementAction($sSession, $sElement, 'value',$password)
 
 	; Save captcha
@@ -146,7 +172,7 @@ Func loginWebsite($sSession,$username, $password)
 			$sElement = findElement($sSession, "//body")
 			$idCaptcha = getTextElement($sSession, $sElement)
 			$idCaptcha = StringReplace($idCaptcha, "OK|", "")
-			secondWait(2)
+			secondWait(1)
 
 			; Get captcha buoc 2
 			$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
@@ -163,16 +189,18 @@ Func loginWebsite($sSession,$username, $password)
 		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
 
 		; Chuyen lai tab ve gamethuvn.net
-		writeLog("Chuyen lai tab ve "&$baseMuUrl)
+		writeLog("Chuyen lai tab ve " & $baseMuUrl)
 		_WD_Attach($sSession, $baseMuUrl, "URL")
 		
 		_WD_Window($sSession,"MINIMIZE")
 
-		writeLog("wd_demo.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
+		writeLog("web_mu_utils.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
+
 		; set input captcha
 		$sElement = findElement($sSession, "//input[@name='captcha']") 
 		_WD_ElementAction($sSession, $sElement, 'value',$idCaptchaFinal)
 		secondWait(1)
+
 		; Submit to login
 		$sElement = findElement($sSession, "//button[@type='submit']") 
 		clickElement($sSession, $sElement)

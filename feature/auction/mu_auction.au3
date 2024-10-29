@@ -94,9 +94,9 @@ Func startAuction()
 		writeLogFile($logFile, "Begin process login")
 		$isLoginSuccess = login($sSession, $username, $password)
 		secondWait(5)
-		If $isLoginSuccess == True Then 
+		If $isLoginSuccess Then 
 			$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
-			If $isHaveIP == False Then ExitLoop
+			If Not $isHaveIP Then ExitLoop
 		Else
 			; Login khong thanh cong => exit
 			ExitLoop
@@ -130,7 +130,7 @@ Func startAuction()
 					$canAuction = True
 				EndIf
 
-				If $canAuction == True Then 
+				If $canAuction Then 
 					auction($idUrl, $maxPrice, $adminIDs)
 				Else
 					writeLogFile($logFile, "Thời gian đấu giá trong tương lai hoặc đã qua !")
@@ -233,7 +233,7 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 
 		If Number($numPriceAuctionAllow) > Number($maxPriceTmp) Then $checkMatchMaxPrice = False
 
-		If $isCheckTimeOk == True And $bFound == False And $checkMatchMaxPrice == True Then
+		If $isCheckTimeOk And $bFound == False And $checkMatchMaxPrice Then
 			Local $sScript = "document.querySelector('input[name=price]').value = '"& ($numPriceAuctionAllow + 1) &"';"
 			_WD_ExecuteScript($sSession, $sScript)
 			secondWait(1)
@@ -251,7 +251,7 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 		Else
 			$reason = "Không đủ điều kiện đấu giá ! Nguyên nhân: " & @CRLF
 			If $isCheckTimeOk == False Then $reason &= "Thời gian chưa đủ để đấu giá ! Thời gian kết thúc: " & $timeFinish  & @CRLF
-			If $bFound == True Then $reason &= "Nhân vật đang đấu giá là chính bạn. Nhân vật đang đấu giá: " & $currentCharAuction & @CRLF
+			If $bFound Then $reason &= "Nhân vật đang đấu giá là chính bạn. Nhân vật đang đấu giá: " & $currentCharAuction & @CRLF
 			If $checkMatchMaxPrice == False Then $reason &= "Giá cho phép đã vượt qua ngưỡng tối đa. Max giá: " & $maxPrice & " ! Giá hiện tại: " & $numPriceAuctionAllow & @CRLF
 			writeLogFile($logFile, $reason)
 		EndIf	

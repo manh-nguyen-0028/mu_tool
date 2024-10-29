@@ -24,7 +24,7 @@ Func startWithDrawRs()
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
-		If $active == True And "withdraw" == $type Then
+		If $active And "withdraw" == $type Then
 			Redim $aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) + 1]
 			$aAccountActiveWithrawRs[UBound($aAccountActiveWithrawRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
@@ -84,9 +84,9 @@ EndFunc
 Func withdrawRs($username, $password, $charName,$hourPerRs)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
-	If $isLoginSuccess == True Then
+	If $isLoginSuccess Then
 		$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
-		If $isHaveIP == True Then
+		If $isHaveIP Then
 			$timeNow = getTimeNow()
 			$sLogReset = getLogReset($sSession, $charName)
 			$lastTimeRs = getTimeReset($sLogReset,0)
