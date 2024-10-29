@@ -19,7 +19,7 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName
+Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -52,6 +52,8 @@ Func init()
 				$buySvGoldFileName = $value
 			ElseIf "auto_login" == $type Then
 				$autoLoginFileName = $value
+			ElseIf "reset_update_info" == $type Then
+				$autoRsUpdateInfoFileName = $value
 			EndIf
 		EndIf
 	Next
@@ -538,4 +540,59 @@ Func getOtherChar($currentChar)
 	If $otherCharName == "" Then writeLogFile($logFile, "Khong tim thay char nao phu hop")
 
 	Return $otherCharName
+EndFunc
+
+Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+	; Trong file $aRsUpdateInfo chua thong tin update
+	; Trong file $aRsConfig chua thong tin active, type, time rs per hour
+	; Merge 2 file lai voi nhau dua tren thong tin char_name
+	; Tham khao trong 2 file auto_rs_update_info_exam.json va account_reset.json
+	;~ writeLogFile($logFile, "mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo) : " & $aRsConfig & " - " & $aRsUpdateInfo)
+	Local $mergeInfo
+
+	For $i = 0 To UBound($aRsConfig) - 1
+		$charName = getPropertyJson($aRsConfig[$i], "char_name")
+		Local $mergedRecord = convertJsonToString($aRsConfig[$i]) ; Sao chép dữ liệu từ $aRsConfig để làm nền tảng cho bản ghi hợp nhất
+		; xoa bo ky tu cuoi cung
+		$mergedRecord = StringTrimRight($mergedRecord, 1)
+		
+		 ; Tìm bản ghi tương ứng trong $aRsUpdateInfo
+		For $j = 0 To UBound($aRsUpdateInfo) - 1
+			$charNameCheck = getPropertyJson($aRsUpdateInfo[$j], "char_name")
+			;~ writeLogFile($logFile, "charNameCheck : " & $charNameCheck)
+			If $charNameCheck = $charName Then
+				$valueTmp = convertJsonToString($aRsUpdateInfo[$j])
+				; Xoa bo ky tu dau tien
+				$valueTmp = StringTrimLeft($valueTmp, 1)
+				; loai bo chuoi "char_name":"DavidRyan' trong $valueTmp
+				$valueTmp = StringReplace($valueTmp, '"char_name":"' & $charName & '",', "")
+
+				; ket hop 2 chuoi
+				$jsonString = $mergedRecord & "," & $valueTmp
+				
+				; Xoa bo toan bo dau \ hoac dau xuong dong
+				$jsonString = StringReplace($jsonString, "\\", "")
+				; Loại bỏ dấu gạch chéo ngược \
+				$jsonString = StringReplace($jsonString, "\", "")
+
+				; Loại bỏ dấu xuống dòng nếu có (ký tự newline hoặc CRLF)
+				$jsonString = StringReplace($jsonString, @CRLF, "")
+				$jsonString = StringReplace($jsonString, @LF, "")
+				$jsonString = StringReplace($jsonString, @CR, "")
+				; Thay the dau " thanh dau '
+				$jsonString = StringReplace($jsonString, '"', "'")
+				; In chuỗi đã được xử lý
+				If $i == UBound($aRsConfig) - 1 Then
+					$mergeInfo = $mergeInfo & $jsonString
+				Else
+					$mergeInfo = $mergeInfo & $jsonString & ","
+				EndIf
+				ExitLoop
+			EndIf
+		Next
+	Next
+
+	$textConvert = "[" & $mergeInfo & "]"
+	$result = _JSONDecode($textConvert)
+	Return $result
 EndFunc

@@ -38,6 +38,18 @@ Func testAa()
 	;~ $charRsCount =StringSplit($sResetCount, ' ', 0)
 
 	;~ writeLogMethodStart("testAa",@ScriptLineNumber & $charRsCount[0])
+	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+	;~ writeLogFile($logFile, "aRsConfig: " & convertJsonToString($aRsConfig))
+	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	;~ writeLogFile($logFile, "aRsUpdateInfo: " & convertJsonToString($aRsUpdateInfo))
+	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+
+	For $i = 0 To UBound($jAccountWithdrawRs) - 1
+		writeLogFile($logFile, "jAccountWithdrawRs - " & $i & " : " & convertJsonToString($jAccountWithdrawRs[$i]))
+		$charName = getPropertyJson($jAccountWithdrawRs[$i],"char_name")
+		writeLogFile($logFile, "jAccountWithdrawRs - charName: " & $charName)
+	Next
+	
 EndFunc
 
 Func startAutoRs()
@@ -47,7 +59,9 @@ Func startAutoRs()
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
 	ReDim $aAccountActiveRs[0]
-	$jAccountWithdrawRs = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
@@ -167,12 +181,12 @@ Func processReset($jAccountInfo)
 			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 			writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-			$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 				For $i =0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
 						_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
 				Next
 			Return
@@ -228,7 +242,7 @@ Func processReset($jAccountInfo)
 			; close diaglog confirm
 			closeDiaglogConfim($sSession)
 			; Update info account json config
-			$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 			For $i = 0 To UBound($jsonRsGame) - 1
 				$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 				If $charNameTmp == $charName Then
@@ -238,7 +252,7 @@ Func processReset($jAccountInfo)
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset,0)
 					_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
-					setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					If $resetInDay == 1 And $isBuff Then
 						; https://hn.mugamethuvn.info/web/char/charbuff.shtml
 						writeLogFile($logFile, "Begin buff char: " & $charName)

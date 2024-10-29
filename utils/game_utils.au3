@@ -16,11 +16,11 @@ Func _MU_followLeader($position)
 	_MU_MouseClick_Delay($position_x, $position_y)
 	secondWait(1)
 	sendKeyEnter()
-	secondWait(1)
 	; Di chuot ra giua man hinh
 	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
 	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
 	MouseMove($position_char_x, $position_char_y)
+	secondWait(1)
 EndFunc
 
 Func getMainNoByChar($charName)
