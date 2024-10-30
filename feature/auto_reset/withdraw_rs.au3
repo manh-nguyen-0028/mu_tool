@@ -85,7 +85,7 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess Then
-		$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
+		$isHaveIP = checkIp($sSession)
 		If $isHaveIP Then
 			$timeNow = getTimeNow()
 			$sLogReset = getLogReset($sSession, $charName)

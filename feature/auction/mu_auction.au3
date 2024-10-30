@@ -95,7 +95,7 @@ Func startAuction()
 		$isLoginSuccess = login($sSession, $username, $password)
 		secondWait(5)
 		If $isLoginSuccess Then 
-			$isHaveIP = checkIp($sSession, $_WD_LOCATOR_ByXPath)
+			$isHaveIP = checkIp($sSession)
 			If Not $isHaveIP Then ExitLoop
 		Else
 			; Login khong thanh cong => exit
