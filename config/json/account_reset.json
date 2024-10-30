@@ -1,7 +1,8 @@
 [
-{"active":true,"type":"reset","char_name":"DavidRyan","type_rs":2,"lvl_move":400,"reset_online":false,"hour_per_reset":24,"is_buff":false,"position_leader":1},
-{"active":true,"type":"reset","char_name":"TruongThon","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false,"position_leader":1},
-{"active":true,"type":"reset","char_name":"chensongbo","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"is_buff":true,"position_leader":1},
-{"active":true,"type":"reset","char_name":"MaiyeuPT","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":true,"position_leader":1},
-{"active":false,"type":"reset","char_name":"DarkPhonix","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"is_buff":false,"position_leader":1}
-]
+    {"active":false,"type":"withdraw","char_name":"Victocy","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":26,"is_buff":false,"position_leader":1, "active_move_rs": false},
+    {"active":true,"type":"reset","char_name":"TruongThon","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false,"position_leader":1, "active_move_rs": false},
+    {"active":true,"type":"reset","char_name":"chensongbo","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"is_buff":true,"position_leader":1, "active_move_rs": false},
+    {"active":true,"type":"reset","char_name":"MaiyeuPT","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":true,"position_leader":1, "active_move_rs": false},
+    {"active":false,"type":"reset","char_name":"DarkPhonix","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"is_buff":false,"position_leader":1, "active_move_rs": false}
+    ]
+    
