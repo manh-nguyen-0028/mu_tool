@@ -30,7 +30,7 @@ init()
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
-	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+	;~ $jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
 
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
 
