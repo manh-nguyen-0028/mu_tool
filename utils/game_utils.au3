@@ -29,7 +29,7 @@ EndFunc
 
 Func checkLvl400($mainNo)
 	$is400Lvl = False
-	secondWait(3)
+	secondWait(1)
 	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
 	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
@@ -38,15 +38,15 @@ Func checkLvl400($mainNo)
 
 	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
 	; Day la mau xanh 0x81C024
-	Local $pos = PixelSearch($x, $y, $x1, $y1, $color,50)
+	Local $pos = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
 
 	; Neu tim thay mau thi ghi log va dung lai, neu khong thi thu lai them 2 lan
 	$countCheck = 0
-	While @error And $countCheck < 2
+	While @error And $countCheck < 5
 		$countCheck += 1
 		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Thu lai lan thu " & $countCheck)
 		secondWait(1)
-		$pos = PixelSearch($x, $y, $x1, $y1, $color,50)
+		$pos = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
 	WEnd
 
 	If Not @error Then
