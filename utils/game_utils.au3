@@ -34,22 +34,23 @@ Func checkLvl400($mainNo)
 	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
 	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
-	$color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
+	;~ $color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
+	$color = 0x83CD18
 
 	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
 	; Day la mau xanh 0x81C024
-	Local $pos = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
+	Local $pos = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 50)
 
 	; Neu tim thay mau thi ghi log va dung lai, neu khong thi thu lai them 2 lan
 	$countCheck = 0
-	While @error And $countCheck < 5
+	While ($pos == '') And ($countCheck < 5)
 		$countCheck += 1
-		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Thu lai lan thu " & $countCheck)
+		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Mau: " & $color & " .Thu lai lan thu " & $countCheck)
 		secondWait(1)
-		$pos = PixelSearch($x, $y, $x1, $y1, 0x83CD18, 10)
+		$pos = PixelSearch($x, $y, $x1, $y1, $color, 50)
 	WEnd
 
-	If Not @error Then
+	If Not ($pos == '') Then
 		; Nếu tìm thấy màu
 		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: [" & $pos[0] & ", " & $pos[1] & "] sau " & $countCheck & " lan thu")
 		writeLogFile($logFile,"CHUA DAT 400 lvl")
