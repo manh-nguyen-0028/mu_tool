@@ -76,6 +76,8 @@ Func start()
                         ;~ moveToMapInWeb($sSession, $mapName)
                     Else
                         moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+                        ; Doi khoang 1 phut
+                        minuteWait(1)
                     EndIf
                     ; 3.2.1.4. Thuc hien logout
                     _WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
