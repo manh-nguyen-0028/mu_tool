@@ -120,11 +120,10 @@
 		  "y":338
 	   },
 	   "check_lvl_400":{
-		  "x":51,
-		  "y":614,
-		  "x1":123,
-		  "y1":643,
-		  "color":"0x81C520"
+		  "x":59,
+		  "y":619,
+		  "color_master_3":"0x7E2FA2",
+		  "color_master_4":"0xB8A228"
 	   },
 	   "check_active_auto_home":{
 		  "x":0,
