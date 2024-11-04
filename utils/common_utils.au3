@@ -400,12 +400,13 @@ EndFunc
 ; Method: checkPixelColor
 ; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
-	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & "-" & $toaDoY & "-" & $color)
+	;~ writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & "-" & $toaDoY & "-" & $color)
 	$resultCompare = False
 	;~ MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	If Hex($colorGetPosition, 6) = Hex($color, 6) Then 
+	Local $isClose = IsColorClose(Hex($colorGetPosition, 6), Hex($color, 6), 20)
+	If $isClose Then 
 		$resultCompare = True
 		writeLogFile($logFile,"color compare : " & $resultCompare)
 	Else
@@ -600,4 +601,21 @@ Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
 	$textConvert = "[" & $mergeInfo & "]"
 	$result = _JSONDecode($textConvert)
 	Return $result
+EndFunc
+
+Func IsColorClose($color1, $color2, $threshold = 10)
+    Local $r1 = BitShift($color1, 16) ; Lấy thành phần Red của color1
+    Local $g1 = BitAND(BitShift($color1, 8), 0xFF) ; Lấy thành phần Green của color1
+    Local $b1 = BitAND($color1, 0xFF) ; Lấy thành phần Blue của color1
+
+    Local $r2 = BitShift($color2, 16) ; Lấy thành phần Red của color2
+    Local $g2 = BitAND(BitShift($color2, 8), 0xFF) ; Lấy thành phần Green của color2
+    Local $b2 = BitAND($color2, 0xFF) ; Lấy thành phần Blue của color2
+
+    ; Kiểm tra nếu mỗi thành phần RGB trong khoảng sai số cho phép
+    If Abs($r1 - $r2) <= $threshold And Abs($g1 - $g2) <= $threshold And Abs($b1 - $b2) <= $threshold Then
+        Return True
+    Else
+        Return False
+    EndIf
 EndFunc

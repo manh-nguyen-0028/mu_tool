@@ -31,34 +31,44 @@ Func checkLvl400($mainNo)
 	writeLogFile($logFile,"checkLvl400 cho nhan vat:" & $mainNo)
 	$is400Lvl = False
 	secondWait(1)
-	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
-	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
-	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
-	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
-	$color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
+	;~ $x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
+	;~ $y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
+	;~ $x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
+	;~ $y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
+	;~ $color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
 	;~ $color = 0x83CD18
 
-	writeLogFile($logFile,"Toa do check: x-y:" & $x & "-" & $y & " x1-y1: " & $x1 & "-" & $y1)
+	$devil_open_x = 59
+	$devil_open_y = 619
+	; mau tim cua master 4
+	$devil_open_color = 0x7E2FA2
+	; mau vang cua master 3
+	$devil_open_color_2 = 0xB8A228
+	
+	$checkOpenDevil = False
+	If(checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color) Or checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color_2)) Then $checkOpenDevil = True
+
+	;~ writeLogFile($logFile,"Toa do check: x-y:" & $x & "-" & $y & " x1-y1: " & $x1 & "-" & $y1)
 	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
 	; Day la mau xanh 0x81C024
-	Local $pos = PixelSearch($x, $y, $x1, $y1, $color, 100)
+	;~ Local $pos = PixelSearch($x, $y, $x1, $y1, $color, 20)
 
 	; Neu tim thay mau thi ghi log va dung lai, neu khong thi thu lai them 2 lan
 	$countCheck = 0
-	While @error And ($countCheck < 5)
+	While Not $checkOpenDevil And ($countCheck < 5)
 		$countCheck += 1
-		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Mau: " & $color & " .Thu lai lan thu " & $countCheck)
+		;~ writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Mau: " & $color & " .Thu lai lan thu " & $countCheck)
 		secondWait(1)
-		$pos = PixelSearch($x, $y, $x1, $y1, $color, 100)
+		If(checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color) Or checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color_2)) Then $checkOpenDevil = True
 	WEnd
 
-	If Not @error Then
+	If Not $checkOpenDevil Then
 		; Nếu tìm thấy màu
-		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: [" & $pos[0] & ", " & $pos[1] & "] sau " & $countCheck & " lan thu")
+		;~ writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: [" & $pos[0] & ", " & $pos[1] & "] sau " & $countCheck & " lan thu")
 		writeLogFile($logFile,"CHUA DAT 400 lvl")
 	Else
 		; Nếu không tìm thấy màu
-		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ) sau "  & $countCheck & " lan thu")
+		;~ writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ) sau "  & $countCheck & " lan thu")
 		$is400Lvl = True
 		writeLogFile($logFile,"DA DAT 400 lvl")
 	EndIf

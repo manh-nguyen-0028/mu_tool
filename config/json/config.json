@@ -1,10 +1,10 @@
 [
     {"active":true,"type":"position","key":"file_name","value":"m1_position_config.json"},
-    {"active":true,"type":"reset","key":"file_name","value":"account_reset.json"},
-    {"active":true,"type":"devil","key":"file_name","value":"devil_config.json"},
+    {"active":true,"type":"reset","key":"file_name","value":"m1_account_reset.json"},
+    {"active":true,"type":"devil","key":"file_name","value":"m1_devil_config.json"},
     {"active":true,"type":"char_in_account","key":"file_name","value":"char_in_account.txt"},
-    {"active":true,"type":"buy_gold","key":"file_name","value":"buy_sv_gold_config.json"},
-    {"active":true,"type":"reset_update_info","key":"file_name","value":"auto_rs_update_info_exam.json"},
+    {"active":true,"type":"buy_gold","key":"file_name","value":"m1_buy_sv_gold_config.json"},
+    {"active":true,"type":"reset_update_info","key":"file_name","value":"m1_auto_rs_update_info.json"},
     {"active":true,"type":"account_password","key":"file_name","value":"account_password_exam.json"},
     {"active":true,"type":"auto_move","key":"file_name","value":"auto_move_config_exam.json"}
 ]
