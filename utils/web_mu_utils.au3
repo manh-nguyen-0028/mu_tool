@@ -20,6 +20,7 @@ Global $sChromeUserDataPath = StringRegExpReplace($sAppDataPath, "Roaming", "Loc
 ;~ Global $baseMuUrl = "https://hn.gamethuvn.net/"
 
 Global $sTitleLoginSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Thông báo"
+Global $sTitleLoginSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Notifications"
 
 Func checkThenCloseChrome()
 	Local $chromeProcessName = "chrome.exe"
@@ -29,10 +30,10 @@ Func checkThenCloseChrome()
 		; Đóng tất cả các tiến trình trình duyệt Chrome
 		ProcessClose($chromeProcessName)
 		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Đã đóng tất cả các trình duyệt Chrome.")
-		writeLog("Đã đóng tất cả các trình duyệt Chrome.")
+		writeLogFile($logFile, "Đã đóng tất cả các trình duyệt Chrome.")
 	Else
 		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Không tìm thấy trình duyệt Chrome đang chạy.")
-		writeLog("Không tìm thấy trình duyệt Chrome đang chạy.")
+		writeLogFile($logFile, "Không tìm thấy trình duyệt Chrome đang chạy.")
 	EndIf
 	
 	Return True
@@ -47,7 +48,7 @@ Func getTitleWebsite($sSession)
 
 	; Trích xuất giá trị từ chuỗi JSON
 	Local $value = StringMid($jsonString, $startIndex, $endIndex - $startIndex)
-	writeLog("getTitleWebsite($sSession): " & $value)
+	writeLogFile($logFile, "getTitleWebsite($sSession): " & $value)
 	Return $value
 EndFunc
 
@@ -71,7 +72,7 @@ Func login($sSession, $username, $password)
 
 	; Truong hop $sTitle = $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
 	; Neu khong dung thi thuc hien logout va lay lai $sTitle
-	If $sTitle == $sTitleLoginSuccess Then
+	If ($sTitle == $sTitleLoginSuccess) Or ($sTitle == $sTitleLoginSuccess_EN) Then
 		;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
 		; <div class="t-account-title">
 
@@ -95,7 +96,7 @@ Func login($sSession, $username, $password)
 		EndIf
 	EndIf
 	
-	While $sTitle <> $sTitleLoginSuccess
+	While ($sTitle <> $sTitleLoginSuccess) And ($sTitle <> $sTitleLoginSuccess_EN)
 		If $timeLoginFail > 6 Then ExitLoop
 		closeDiaglogConfim($sSession)
 		loginWebsite($sSession,$username, $password)
@@ -103,7 +104,7 @@ Func login($sSession, $username, $password)
 		$timeLoginFail = $timeLoginFail + 1
 	WEnd
 
-	If $sTitle <> $sTitleLoginSuccess Then
+	If ($sTitle <> $sTitleLoginSuccess) And ($sTitle <> $sTitleLoginSuccess_EN) Then
 		Return False
 	Else
 		writeLogFile($logFile, "Đăng nhập thành công !")
@@ -123,7 +124,7 @@ EndFunc
 Func loginWebsite($sSession,$username, $password)
 	$isSuccess = False
 
-	writeLog("$username: " & $username & " $password: " & $password)
+	writeLogFile($logFile, "$username: " & $username & " $password: " & $password)
 
 	_WD_Window($sSession,"MINIMIZE")
 
@@ -136,7 +137,7 @@ Func loginWebsite($sSession,$username, $password)
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
 	;~ secondWait(1)
 	_WD_ElementAction($sSession, $sElement, 'value',$username)
-	writeLog("$sValue: " & _WD_ElementAction($sSession, $sElement, 'value'))
+	writeLogFile($logFile, "$sValue: " & _WD_ElementAction($sSession, $sElement, 'value'))
 	
 	; Fill password
 	$sElement = _WD_GetElementByName($sSession,"password") 
@@ -172,29 +173,37 @@ Func loginWebsite($sSession,$username, $password)
 			$sElement = findElement($sSession, "//body")
 			$idCaptcha = getTextElement($sSession, $sElement)
 			$idCaptcha = StringReplace($idCaptcha, "OK|", "")
-			secondWait(1)
-
-			; Get captcha buoc 2
-			$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
-			_Demo_NavigateCheckBanner($sSession, $serverCaptcha)
-			_WD_Window($sSession,"MINIMIZE")
-			; get text
-			$sElement = findElement($sSession, "//body")
-			$idCaptchaFinal = getTextElement($sSession, $sElement)
-			$idCaptchaFinal = StringReplace($idCaptchaFinal, "OK|", "")
-			writeLog("Captcha value: " & $idCaptchaFinal)
-			secondWait(1)
+			; $idCaptcha phai la dang so, neu khong thi Chuyen lai tab ve $baseMuUrl va set $isSuccess = False sau do ket thuc method
+			If Not checkIsNumber($idCaptcha) Then
+				writeLogFile($logFile, "Captcha value is not number: " & $idCaptcha)
+				writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
+				_WD_Attach($sSession, $baseMuUrl, "URL")
+				_WD_Window($sSession,"MINIMIZE")
+				$isSuccess = False
+				ExitLoop
+			Else
+				; Get captcha buoc 2
+				$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
+				_Demo_NavigateCheckBanner($sSession, $serverCaptcha)
+				_WD_Window($sSession,"MINIMIZE")
+				; get text
+				$sElement = findElement($sSession, "//body")
+				$idCaptchaFinal = getTextElement($sSession, $sElement)
+				$idCaptchaFinal = StringReplace($idCaptchaFinal, "OK|", "")
+				writeLogFile($logFile, "Captcha value: " & $idCaptchaFinal)
+				secondWait(1)
+			EndIf
 		WEnd
 		
 		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
 
 		; Chuyen lai tab ve gamethuvn.net
-		writeLog("Chuyen lai tab ve " & $baseMuUrl)
+		writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
 		_WD_Attach($sSession, $baseMuUrl, "URL")
 		
 		_WD_Window($sSession,"MINIMIZE")
 
-		writeLog("web_mu_utils.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
+		writeLogFile($logFile, "web_mu_utils.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
 
 		; set input captcha
 		$sElement = findElement($sSession, "//input[@name='captcha']") 

@@ -619,3 +619,8 @@ Func IsColorClose($color1, $color2, $threshold = 10)
         Return False
     EndIf
 EndFunc
+
+; Hàm kiểm tra chuỗi có phải là số
+Func checkIsNumber($sString)
+    Return StringRegExp($sString, "^\d+$") = 1
+EndFunc
