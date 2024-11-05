@@ -8,10 +8,15 @@
 #RequireAdmin
 
 
-$charName="Gamez"
+;~ $charName="Porsche718"
 
 ;~ startPath()
 ;~ test()\
+;~ test3()
+$charName="HaGiangOi"
+test3()
+
+$charName="ThuTuong"
 test3()
 ;~ start()
 
@@ -25,9 +30,11 @@ EndFunc
 Func test3()
     ;~ $charName="RunOrDie"
 	;~ $charName="Gamez"
-	$charName="Porsche718"
+	;~ $charName="Porsche718"
 	;~ $charName="MieMie"
 	;~ $charName="GameCenter"
+	;~ $charName="HaGiangOi"
+	;~ $charName="ThuTuong"
 
     $devilNo = 6
     
@@ -38,6 +45,7 @@ Func test3()
     secondWait(2)
 
     checkLvl400($mainNo)
+	
 	;~ $devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
 	;~ $devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
 	;~ $devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")

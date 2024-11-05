@@ -168,7 +168,7 @@ Func goToDevilEvent()
 	; Get account devil fast move
 	For $i = 0 To UBound($jsonAccountActiveDevil) -1
 		$isFastMove = _JSONGet($jsonAccountActiveDevil[$i], "is_fast_join")
-		If $isFastMove == True Then
+		If $isFastMove Then
 			Redim $jsonAccountFastJoin[UBound($jsonAccountFastJoin) + 1]
 			$jsonAccountFastJoin[UBound($jsonAccountFastJoin) - 1] = $jsonAccountActiveDevil[$i]
 		EndIf
@@ -191,6 +191,7 @@ Func goToDevilEvent()
 
 			If Not activeAndMoveWin($mainNo) Then 
 				writeLogFile($logFile, "Khong tim thay cua so win")
+				writeLogFile($logFile, "Ket thuc xu ly: " & $charName)
 				ContinueLoop;
 			EndIf
 
@@ -433,12 +434,11 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
     For $i = 0 To UBound($jsonAccountActiveDevil) - 1
         Local $charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
         Local $mainNo = getMainNoByChar($charName)
-        Local $checkActiveWin = activeAndMoveWin($mainNo)
         
         ; Truong hop main hien tai khong duoc active, active main khac
-        If Not $checkActiveWin Then $checkActiveWin = switchOtherChar($charName)
+        If Not activeAndMoveWin($mainNo) Then switchOtherChar($charName)
 
-        If $checkActiveWin And Not checkActiveAutoHome() Then
+        If activeAndMoveWin($mainNo) And Not checkActiveAutoHome() Then
 			$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
             actionWhenCantJoinDevil()
         EndIf

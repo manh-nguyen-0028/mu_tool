@@ -28,39 +28,37 @@ Func getMainNoByChar($charName)
 EndFunc
 
 Func checkLvl400($mainNo)
-	$is400Lvl = False
-	secondWait(3)
-	$x = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x")
-	$y = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y")
-	$x1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.x1")
-	$y1 = _JSONGet($jsonPositionConfig,"button.check_lvl_400.y1")
-	$color = _JSONGet($jsonPositionConfig,"button.check_lvl_400.color")
-
-	; Check xem co thay mau xanh khong ? neu co thi chua phai la 400 lvl 
-	; Day la mau xanh 0x81C024
-	Local $pos = PixelSearch($x, $y, $x1, $y1, $color,50)
-
-	; Neu tim thay mau thi ghi log va dung lai, neu khong thi thu lai them 2 lan
-	$countCheck = 0
-	While @error And $countCheck < 2
-		$countCheck += 1
-		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ). Thu lai lan thu " & $countCheck)
-		secondWait(1)
-		$pos = PixelSearch($x, $y, $x1, $y1, $color,50)
-	WEnd
-
-	If Not @error Then
-		; Nếu tìm thấy màu
-		writeLogFile($logFile,"Màu đã được tìm thấy tại tọa độ: [" & $pos[0] & ", " & $pos[1] & "] sau " & $countCheck & " lan thu")
-		writeLogFile($logFile,"CHUA DAT 400 lvl")
-	Else
-		; Nếu không tìm thấy màu
-		writeLogFile($logFile,"Khong tim thay mau cua lvl < 400 ( mau xanh ) sau "  & $countCheck & " lan thu")
-		$is400Lvl = True
-		writeLogFile($logFile,"DA DAT 400 lvl")
-	EndIf
-
-	Return $is400Lvl
+    writeLogFile($logFile, "Start method: checkLvl400 with mainNo: " & $mainNo)
+    
+    Local $is400Lvl = False
+    Local $x = _JSONGet($jsonPositionConfig, "button.check_lvl_400.x")
+    Local $y = _JSONGet($jsonPositionConfig, "button.check_lvl_400.y")
+    Local $color = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_3")
+    Local $color_2 = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_4")
+    
+    ; Check initial pixel color
+    If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
+        $is400Lvl = True
+    Else
+        ; Retry checking pixel color up to 5 times
+        Local $countCheck = 0
+        While Not $is400Lvl And ($countCheck < 5)
+            $countCheck += 1
+            secondWait(1)
+            If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
+                $is400Lvl = True
+            EndIf
+        WEnd
+    EndIf
+    
+    ; Log the result
+    If $is400Lvl Then
+        writeLogFile($logFile, "DA DAT 400 lvl")
+    Else
+        writeLogFile($logFile, "CHUA DAT 400 lvl")
+    EndIf
+    
+    Return $is400Lvl
 EndFunc
 
 Func _MU_Start_AutoZ()
@@ -187,7 +185,7 @@ Func checkRuongK($charInfo)
 	$activeWin = activeAndMoveWin($title)
 	secondWait(3)
 	$result = False
-	If $activeWin == True Then
+	If $activeWin Then
 		; mouse move to top
 		MouseMove(0,0)
 
@@ -215,8 +213,8 @@ Func getArrayActiveDevil()
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
 		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
 		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil == True And $maxHourGo >= @HOUR Then 
-			If $ignorePeakHour == True And @HOUR >= 20 And @HOUR <= 22 Then
+		If $activeDevil And $maxHourGo >= @HOUR Then 
+			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
 				writeLog("Peak hour can't go devil. Wait to 23h")
 			Else
 				Redim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]

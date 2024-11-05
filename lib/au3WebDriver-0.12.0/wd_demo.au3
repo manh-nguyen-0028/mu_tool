@@ -1169,7 +1169,7 @@ Func SetupChrome($bHeadless)
 EndFunc   ;==>SetupChrome
 
 Func SetupEdge($bHeadless)
-	_WD_Option('Driver', 'msedgedriver.exe')
+	_WD_Option('Driver', 'D:\Project\AutoIT\mu_tool\driver\msedgedriver\edgedriver_win64\msedgedriver.exe')
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\msedge.log"')
 

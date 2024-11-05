@@ -19,7 +19,8 @@ Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ;
 
 Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName
+Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
+Global $autoMoveConfigFileName
 
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
@@ -29,7 +30,7 @@ init()
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
-	$jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
+	;~ $jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
 
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
 
@@ -38,7 +39,7 @@ Func init()
 		$type = getPropertyJson($jsonConfig[$i], "type")
 		$key = getPropertyJson($jsonConfig[$i], "key")
 		$value = getPropertyJson($jsonConfig[$i], "value")
-		If $active == True Then
+		If $active Then
 			If "position" == $type Then
 				$jsonPositionConfig = getJsonFromFile($jsonPathRoot & $value)
 				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
@@ -54,6 +55,10 @@ Func init()
 				$autoLoginFileName = $value
 			ElseIf "reset_update_info" == $type Then
 				$autoRsUpdateInfoFileName = $value
+			ElseIf "account_password" == $type Then
+				$accountPasswordFileName = $value
+			ElseIf "auto_move" == $type Then
+				$autoMoveConfigFileName = $value
 			EndIf
 		EndIf
 	Next
@@ -64,7 +69,7 @@ EndFunc
 ; Method: writeLog
 ; Description: Writes a log message with the current time.
 Func writeLog($textLog)
-	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog &@CRLF)
+	ConsoleWrite(@HOUR & "-" &@MIN & "-" &@SEC & " : " & $textLog & @CRLF)
 EndFunc
 
 ; Method: writeLogMethodStart
@@ -395,12 +400,13 @@ EndFunc
 ; Method: checkPixelColor
 ; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
-	writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & "-" & $toaDoY & "-" & $color)
+	;~ writeLogFile($logFile,"checkPixelColor($toaDoX, $toaDoY, $color) : " & $toaDoX & "-" & $toaDoY & "-" & $color)
 	$resultCompare = False
 	;~ MouseMove($toaDoX, $toaDoY)
 	secondWait(1)
 	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	If Hex($colorGetPosition, 6) = Hex($color, 6) Then 
+	Local $isClose = IsColorClose(Hex($colorGetPosition, 6), Hex($color, 6), 20)
+	If $isClose Then 
 		$resultCompare = True
 		writeLogFile($logFile,"color compare : " & $resultCompare)
 	Else
@@ -595,4 +601,21 @@ Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
 	$textConvert = "[" & $mergeInfo & "]"
 	$result = _JSONDecode($textConvert)
 	Return $result
+EndFunc
+
+Func IsColorClose($color1, $color2, $threshold = 10)
+    Local $r1 = BitShift($color1, 16) ; Lấy thành phần Red của color1
+    Local $g1 = BitAND(BitShift($color1, 8), 0xFF) ; Lấy thành phần Green của color1
+    Local $b1 = BitAND($color1, 0xFF) ; Lấy thành phần Blue của color1
+
+    Local $r2 = BitShift($color2, 16) ; Lấy thành phần Red của color2
+    Local $g2 = BitAND(BitShift($color2, 8), 0xFF) ; Lấy thành phần Green của color2
+    Local $b2 = BitAND($color2, 0xFF) ; Lấy thành phần Blue của color2
+
+    ; Kiểm tra nếu mỗi thành phần RGB trong khoảng sai số cho phép
+    If Abs($r1 - $r2) <= $threshold And Abs($g1 - $g2) <= $threshold And Abs($b1 - $b2) <= $threshold Then
+        Return True
+    Else
+        Return False
+    EndIf
 EndFunc

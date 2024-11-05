@@ -15,6 +15,7 @@ Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $sDate = @YEAR & @MON & @MDAY
 Local $className = @ScriptName
+Local $haveIP = False
 
 ;~ testAa()
 
@@ -65,7 +66,7 @@ Func startAutoRs()
 	For $i =0 To UBound($jAccountWithdrawRs) - 1
 		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
 		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
-		If $active == True And "reset" == $type Then
+		If $active And "reset" == $type Then
 			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
 			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
@@ -102,38 +103,36 @@ Func startAutoRs()
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 		
 		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. Thoi gian gan nhat co the reset" & $nextTimeRs)
-			;~ writeLogFile($logFile, "Thoi gian hien tai: " & getTimeNow())
-			;~ writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
 
 		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
 		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd30)
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
 			ContinueLoop
 		EndIf
 
 		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
 		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & " - Thoi gian gan nhat co the reset: " & $lastTimeRsAdd60)
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
 			ContinueLoop
 		EndIf
 
 		; Neu vuot qua so lan rs duoc phep trong ngay
 		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & " - So lan duoc phep: " & $limit)
+			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
 			ContinueLoop
 		EndIf
 
 		; Neu la rs online thi can thuc hien active main
-		If $resetOnline == False Then
+		If Not $resetOnline Then
 			; Begin reset
 			$activeMain = activeAndMoveWin($mainNo)
 
 			; Truong hop main hien tai khong duoc active, active main khac
-			If $activeMain == False Then $activeMain = switchOtherChar($charName)
-			If $activeMain == True Then 
+			If Not $activeMain Then $activeMain = switchOtherChar($charName)
+			If $activeMain Then 
 				processReset($aAccountActiveRs[$i])
 			EndIf
 		Else
@@ -167,19 +166,23 @@ Func processReset($jAccountInfo)
 	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
+	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
+	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
+	$postionMoveY = getPropertyJson($jAccountInfo,"postion_move_y")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
-	If $isLoginSuccess == True Then
+	If $isLoginSuccess Then
+		; Check IP
+		$haveIP = checkIP($sSession)
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		If $timeNow < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
-			writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
+			writeLogFile($logFile, "Chua den thoi gian reset.")
 			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 				For $i =0 To UBound($jsonRsGame) - 1
@@ -209,8 +212,7 @@ Func processReset($jAccountInfo)
 		$mainNo = getMainNoByChar($charName)
 		If $nLvl >= $lvlCanRs Then 
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
-			;~ If $activeWin == True Then
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; Active main no 
 				$activeWin = activeAndMoveWin($mainNo)
 				If Not $activeWin Then $activeWin = switchOtherChar($charName)
@@ -221,6 +223,12 @@ Func processReset($jAccountInfo)
 					; 1. Change Char
 					changeChar($mainNo)
 				EndIf
+			Else
+				; Neu co active move va co toa do thi thuc hien move
+				If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+					moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+					writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+				EndIf
 			EndIf
 			; 2. Reset in web
 			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
@@ -228,7 +236,7 @@ Func processReset($jAccountInfo)
 			; Click radio rs vip
 			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
 			secondWait(2)
-			If $resetOnline == True Then
+			If $resetOnline Then
 				; Click radio online
 				_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
 				secondWait(2)
@@ -266,57 +274,59 @@ Func processReset($jAccountInfo)
 				EndIf
 			Next
 			; If reset online = true => withow handle in game
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; 3. Return game
 				returnChar($mainNo)
 				; 4. Go to sport
 				goToSportLvl1($mainNo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
-				checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				; 6. Active main
 				activeAndMoveWin($mainNo)
-				; 7. Go map lvl
-				If $resetInDay <=3 Then 
-					writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
-					goMapLvl()
-				Else
-					goMapArena($rsCount)
+				If $lvlCheckInWeb >= 20 Then
+					; 7. Go map lvl
+					If $resetInDay <= 3 Then 
+						writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
+						goMapLvl()
+					Else
+						goMapArena($rsCount)
+					EndIf
+
+					; 8. Check lvl in web
+					$lvlStopCheck = Number($lvlMove)
+					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+					activeAndMoveWin($mainNo)
+
+					; Move other map
+					moveOtherMap()
+					secondWait(6)
+
+					; 9. Follow leader
+					If IsNumber($positionLeader) Then 
+						$positionLeader = Number($positionLeader)
+					Else
+						$positionLeader = 1
+					EndIf
+					_MU_followLeader($positionLeader)
+					; 10. Wait in 1 min
+					minuteWait(1)
 				EndIf
-
-				; 8. Check lvl in web
-				$lvlStopCheck = Number($lvlMove)
-				checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-				activeAndMoveWin($mainNo)
-
-				; Move other map
-				moveOtherMap()
-				secondWait(6)
-
-				; 9. Follow leader
-				If IsNumber($positionLeader) Then 
-					$positionLeader = Number($positionLeader)
-				Else
-					$positionLeader = 1
-				EndIf
-				_MU_followLeader($positionLeader)
-				; 10. Wait in 1 min
-				minuteWait(1)
 			EndIf
 
 			$mainNoMinisize = $mainNo
 
-			If $isMainCharacter == False Then
+			If Not $isMainCharacter Then
 				writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
 				$otherChar = getOtherChar($charName)
 				If $otherChar <> "" Then 
 					$resultWwithChar = switchOtherChar($otherChar)
-					If $resultWwithChar == True Then $mainNoMinisize = getMainNoByChar($otherChar)
+					If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
 				EndIf
 				writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 			EndIf
 
-			If $resetOnline == False Then
+			If Not $resetOnline Then
 				; 10. minisize main 
 				minisizeMain($mainNoMinisize)
 			EndIf
@@ -348,7 +358,7 @@ Func changeChar($mainNo)
 	secondWait(7)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
-	if $checkActive == True Then
+	if $checkActive Then
 	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
@@ -364,7 +374,7 @@ Func returnChar($mainNo)
 	$checkActive = activeAndMoveWin($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	While $checkActive == False
+	While Not $checkActive
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
 		sendKeyEnter()
 		$checkActive = activeAndMoveWin($mainNo)
@@ -389,12 +399,12 @@ Func goToSportLvl1($mainNo)
 	secondWait(1)
 	; Khi bat dau se xuat hien tai 182 - 128
 	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
-	; 392, 334
+	; 533, 338
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.loren_sport1.x"), _JSONGet($jsonPositionConfig,"button.loren_sport1.y"))
 	secondWait(1)
 	Send("{Tab}")
 	writeLogFile($logFile, "Tat ban do !")
-	secondWait(2)
+	secondWait(1)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
@@ -429,7 +439,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		; Xu ly doi voi lvl check = 20; chi can doi 30s
 		If $lvlStopCheck == 20 Then
 			; Wait 30 sec then retry
-			secondWait(30)
+			secondWait(35)
 		Else
 			; Wait 1 min then retry
 			minuteWait($timeDelay)
@@ -443,22 +453,12 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		$nLvl = Number($tLvl)
 		
 		; Truong hop $lvlStopCheck= 20 va so lan check ma = 5 thi thuc hien move = web
-		If $timeCheck == 10 And $lvlStopCheck == 20 Then
-			; Dien toa do X
-			$sElement = _WD_GetElementByName($sSession,"tx")
-			_WD_ElementAction($sSession, $sElement, 'value','xxx')
-			_WD_ElementAction($sSession, $sElement, 'CLEAR')
-			secondWait(2)
-			_WD_ElementAction($sSession, $sElement, 'value',"211")
-			; Dien toa do Y
-			$sElement = _WD_GetElementByName($sSession,"ty")
-			_WD_ElementAction($sSession, $sElement, 'value','xxx')
-			_WD_ElementAction($sSession, $sElement, 'CLEAR')
-			secondWait(2)
-			_WD_ElementAction($sSession, $sElement, 'value',"143")
-			; Bam button chay ( submit )
-			$sElement = findElement($sSession, "//input[@type='submit']")
-			clickElement($sSession, $sElement)
+		If $timeCheck == 15 And $lvlStopCheck == 20 Then
+			; Dien toa do X - vi tri cua sport 1 
+			;~ 174, 65
+			$positionX = 174
+			$positionY = 65
+			moveToPostionInWeb($sSession, $charName, $positionX, $positionY)
 		EndIf
 
 		; Neu check qua 15 lan thi thoat loop la bat buoc
@@ -469,7 +469,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		;~ EndIf
 	WEnd
 	
-	Return True
+	Return $nLvl
 EndFunc
 
 #cs
