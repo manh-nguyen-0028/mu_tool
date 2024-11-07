@@ -133,6 +133,8 @@ Func startAutoRs()
 			; Truong hop main hien tai khong duoc active, active main khac
 			If Not $activeMain Then $activeMain = switchOtherChar($charName)
 			If $activeMain Then 
+				; Thuc hien minize main
+				minisizeMain($mainNo)
 				processReset($aAccountActiveRs[$i])
 			EndIf
 		Else
@@ -277,6 +279,11 @@ Func processReset($jAccountInfo)
 			If Not $resetOnline Then
 				; 3. Return game
 				returnChar($mainNo)
+				; Thuc hien enter 2 lan de thoat khoi bang thong bao
+				sendKeyEnter()
+				sendKeyEnter()
+				; 3.1. Check xem cua so enter co ton tai khong
+				checkEnterChat()
 				; 4. Go to sport
 				goToSportLvl1($mainNo)
 				; 5. Check lvl in web
@@ -308,6 +315,7 @@ Func processReset($jAccountInfo)
 					Else
 						$positionLeader = 1
 					EndIf
+
 					_MU_followLeader($positionLeader)
 					; 10. Wait in 1 min
 					minuteWait(1)

@@ -298,9 +298,22 @@ Func switchOtherChar($currentChar)
 EndFunc
 
 Func moveOtherMap()
+	secondWait(1)
 	writeLogFile($logFile,"Bat dau chuyen map khac")
 	sendKeyDelay("m")
 	$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
 	$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
 	_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
+	writeLogFile($logFile,"Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
+EndFunc
+
+Func checkEnterChat()
+	$x = _JSONGet($jsonPositionConfig,"button.check_enter_chat.x")
+	$y = _JSONGet($jsonPositionConfig,"button.check_enter_chat.y")
+	$color = _JSONGet($jsonPositionConfig,"button.check_enter_chat.color")
+	; Truong hop ton tai cua so chat, thuc hien enter 1 lan nua
+	If checkPixelColor($x, $y, $color) Then
+		sendKeyEnter()
+	EndIf
+	Return True
 EndFunc

@@ -125,6 +125,11 @@
 		  "color_master_3":"0x7E2FA2",
 		  "color_master_4":"0xB8A228"
 	   },
+	   "check_enter_chat":{
+		  "x":387,
+		  "y":619,
+		  "color":"0x8B2323"
+	   },
 	   "check_active_auto_home":{
 		  "x":0,
 		  "y":0,

@@ -5,7 +5,7 @@
 ;~ #include "../auto_devil/auto_devil.au3"
 
 #include "../auto_reset/withdraw_rs.au3"
-#RequireAdmin
+;~ #RequireAdmin
 
 
 ;~ $charName="Porsche718"
@@ -13,13 +13,27 @@
 ;~ startPath()
 ;~ test()\
 ;~ test3()
-$charName="HaGiangOi"
-test3()
+;~ $charName="HaGiangOi"
+;~ test3()
 
-$charName="ThuTuong"
-test3()
+;~ $charName="ThuTuong"
+;~ test3()
 ;~ start()
 
+Func testControlClick()
+	; Lấy handle của cửa sổ
+	Local $hWnd = WinGetHandle("Untitled - Notepad") ; "Calculator" là tên cửa sổ. Bạn có thể thay bằng tên cửa sổ khác.
+
+	; Kiểm tra nếu handle có tồn tại
+	If Not @error Then
+		; Di chuyển cửa sổ đến vị trí (x = 200, y = 100) với kích thước rộng 800 và cao 600
+		WinMove($hWnd, "", 200, 100)
+		ConsoleWrite("Di chuyển cửa sổ thành công!" & @CRLF)
+	Else
+		ConsoleWrite("Không tìm thấy cửa sổ!" & @CRLF)
+	EndIf
+	Return True
+EndFunc
 
 Func testChrome()
     $sSession = SetupChrome()
