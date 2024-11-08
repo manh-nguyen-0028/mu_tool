@@ -23,10 +23,6 @@ Func _MU_followLeader($position)
 	secondWait(1)
 EndFunc
 
-Func getMainNoByChar($charName)
-	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
-EndFunc
-
 Func checkLvl400($mainNo)
     writeLogFile($logFile, "Start method: checkLvl400 with mainNo: " & $mainNo)
     

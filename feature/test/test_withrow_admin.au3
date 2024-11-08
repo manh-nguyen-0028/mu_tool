@@ -2,8 +2,8 @@
 #include "../../utils/common_utils.au3"
 ;~ #include "../../utils/game_utils.au3"
 
-;~ testControlClick() 
-start()
+testControlClick() 
+;~ start()
 
 Func start()
     $idCaptcha = ""
@@ -23,12 +23,12 @@ EndFunc
 
 Func testControlClick()
 	; Lấy handle của cửa sổ Q-Dir
-    Local $hWnd = WinGetHandle("[TITLE:Zalo]")
+    Local $hWnd = WinGetHandle("xstraetl – SvgUtil.java [export-pdf]")
 
     ; Kiểm tra nếu cửa sổ có tồn tại
     If Not @error Then
         ; Thực hiện click tại tọa độ (186, 11) của control SysTabControl32, Instance 4
-        ControlClick($hWnd, "", "[CLASS:Intermediate D3D Window; INSTANCE:1]", "left", 1, 200, 303)
+        ControlClick($hWnd, "", "", "Left", 1, 1786, 100)
     Else
         ConsoleWrite("Không tìm thấy cửa sổ Q-Dir!" & @CRLF)
     EndIf

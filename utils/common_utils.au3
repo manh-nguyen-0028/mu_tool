@@ -25,6 +25,12 @@ Global $autoMoveConfigFileName
 Global $aCharInAccount
 Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
+; Khai báo hằng số
+Global Const $WM_MOUSEMOVE = 0x0200
+Global Const $WM_LBUTTONDOWN = 0x0201
+Global Const $WM_LBUTTONUP = 0x0202
+
+
 init()
 
 ; Method: init
@@ -283,6 +289,14 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
 	Sleep(500)
+EndFunc
+
+Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)
+	; Sử dụng hàm
+	Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
+	ControlMouseMove($hWnd, "", $toadoX, $toadoY) ; Di chuyển chuột đến tọa độ (100, 50) trong control
+	secondWait(1)
+	ControlClick_NoFocus($hWnd, "", $toadoX, $toadoY) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
 EndFunc
 
 Func mouseClickDelayAlt($toadoX, $toadoY)
@@ -623,4 +637,47 @@ EndFunc
 ; Hàm kiểm tra chuỗi có phải là số
 Func checkIsNumber($sString)
     Return StringRegExp($sString, "^\d+$") = 1
+EndFunc
+
+; Hàm giả lập click không chiếm chuột
+; Sử dụng hàm
+;~ Local $hWnd = WinGetHandle("Tên của cửa sổ") ; Thay "Tên của cửa sổ" bằng tên cửa sổ thật sự
+;~ ControlClick_NoFocus($hWnd, "ControlID", 100, 50) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
+Func ControlClick_NoFocus($hWnd, $ControlID, $toadoX, $toadoY)
+    ; Lấy handle của control
+    Local $hControl = ControlGetHandle($hWnd, "", $ControlID)
+    If $hControl = "" Then
+        MsgBox(0, "Lỗi", "Không tìm thấy control!")
+        Return
+    EndIf
+
+    ; Tạo `lParam` từ tọa độ x và y
+    Local $lParam = BitOR($toadoY * 0x10000, $toadoX)
+
+    ; Gửi thông điệp nhấn chuột trái (LBUTTONDOWN)
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONDOWN, "wparam", 0, "lparam", $lParam)
+    Sleep(500) ; Khoảng nghỉ để mô phỏng nhấn giữ
+
+    ; Gửi thông điệp nhả chuột trái (LBUTTONUP)
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONUP, "wparam", 0, "lparam", $lParam)
+EndFunc
+
+; Hàm di chuyển chuột đến một tọa độ xác định trong control
+Func ControlMouseMove($hWnd, $ControlID, $toadoX, $toadoY)
+    ; Lấy handle của control
+    Local $hControl = ControlGetHandle($hWnd, "", $ControlID)
+    If $hControl = "" Then
+        MsgBox(0, "Lỗi", "Không tìm thấy control!")
+        Return
+    EndIf
+
+    ; Tọa độ x và y sẽ được kết hợp thành một giá trị `lParam`
+    Local $lParam = BitOR($toadoY * 0x10000, $toadoX)
+
+    ; Gửi thông điệp WM_MOUSEMOVE đến control
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_MOUSEMOVE, "wparam", 0, "lparam", $lParam)
+EndFunc
+
+Func getMainNoByChar($charName)
+	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
 EndFunc
