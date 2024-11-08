@@ -251,6 +251,7 @@ Func getLogReset($sSession, $charName)
 	; Get element
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
 	$timeRsText = getTextElement($sSession, $sElement)
+	writeLogFile($logFile, "$timeRsText: " & $timeRsText)
 
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[3]")
 	$sRsCount = getTextElement($sSession, $sElement)
@@ -269,13 +270,19 @@ Func getRsCount($sLogReset)
 EndFunc
 
 Func getTimeReset($sLogReset, $hourPerRs) 
+	; $sLogReset loi = "3|07/07/2021 00:00:00|99"
+	; $sLogReset dung = "5|14h39 08/11|631 - 0"
+	writeLogFile($logFile, "getTimeReset($sLogReset, $hourPerRs): " & $sLogReset & " - " & $hourPerRs)
 	$timeRsText = StringSplit($sLogReset, "|")[2]
-	$month = StringLeft($timeRsText,2)
-	$day = StringMid($timeRsText,4,2)
-	$hour = StringMid($timeRsText,7,2)
-	$min = StringMid($timeRsText,10,2)
+	; 14h39 08/11
+	$month = StringRight($timeRsText,2)
+	$day = StringMid($timeRsText,7,2)
+	$hour = StringLeft($timeRsText,2)
+	$min = StringMid($timeRsText,4,2)
 
+	writeLogFile($logFile, "month: " & $month & " - day: " & $day & " - hour: " & $hour & " - min: " & $min)
 	$nextTimeRs = _DateAdd('h', $hourPerRs, @YEAR &"/"& $month &"/"& $day &" "& $hour &":"& $min &":00")
+	writeLogFile($logFile, "nextTimeRs: " & $nextTimeRs)
 	Return $nextTimeRs
 EndFunc
 
