@@ -359,6 +359,12 @@ Func minisizeMain($mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
+Func minisizeAllMain()
+	While WinExists("GamethuVN.net - MU Online Season 15 part 2*")
+		WinSetState("GamethuVN.net - MU Online Season 15 part 2*", "", @SW_MINIMIZE)
+	WEnd
+EndFunc
+
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
