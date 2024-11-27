@@ -1,6 +1,4 @@
-chenroibo|chensongbo
-chensongbo|chenroibo
-XXXX001|GameCenter
-GameCenter|XXXX001
-Gamez|HaGiangOi
-HaGiangOi|Gamez
+zGaming|GameX
+GameX|zGaming
+AliceX|ThieuTuong
+ThieuTuong|AliceX

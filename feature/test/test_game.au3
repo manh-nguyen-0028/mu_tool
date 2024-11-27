@@ -17,14 +17,18 @@
 ;~ test3()
 ;~ testControlClick()
 
-$charName="ThuTuong"
+$charName="zGaming"
 
 
 ; Sử dụng hàm
-Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
-ControlMouseMove($hWnd, "", 732, 95) ; Di chuyển chuột đến tọa độ (100, 50) trong control
-secondWait(1)
-ControlClick_NoFocus($hWnd, "", 732, 95) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
+;~ Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
+;~ ControlMouseMove($hWnd, "", 732, 95) ; Di chuyển chuột đến tọa độ (100, 50) trong control
+;~ secondWait(1)
+;~ ControlClick_NoFocus($hWnd, "", 732, 95) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
+
+; Thuc hien swith sang main chinh
+$jsonAccountActiveDevil = getArrayActiveDevil()
+switchToMainChar($jsonAccountActiveDevil)
 
 
 Func testControlClick()

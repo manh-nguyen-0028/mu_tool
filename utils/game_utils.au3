@@ -337,13 +337,16 @@ Func switchToMainChar($jsonAccountActiveDevil)
 			$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
 			$mainNo = getMainNoByChar($charName)
 			If $active And activeAndMoveWin($mainNo) Then
-				; Send enter 2 times
-				sendKeyEnter()
-				sendKeyEnter()
-				; Thuc hien click sang nhan vat khac
-				clickOtherChar()
-				; Thuc hien minisize cua so toan bo game
-				minisizeAllMain()
+				; Lay ten cua main cung tai khoan
+				$otherCharName = getOtherChar($charName)
+				; Thuc hien swith
+				$resultSwitch = switchOtherChar($otherCharName)
+				; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
+				If $resultSwitch Then
+					minisizeMain(getMainNoByChar($otherCharName))
+				Else
+					minisizeMain($mainNo)
+				EndIf
 			EndIf
 		EndIf
 	Next
