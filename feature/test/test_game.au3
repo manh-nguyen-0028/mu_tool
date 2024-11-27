@@ -5,7 +5,7 @@
 ;~ #include "../auto_devil/auto_devil.au3"
 
 #include "../auto_reset/withdraw_rs.au3"
-;~ #RequireAdmin
+#RequireAdmin
 
 
 ;~ $charName="Porsche718"
@@ -15,25 +15,54 @@
 ;~ test3()
 ;~ $charName="HaGiangOi"
 ;~ test3()
+;~ testControlClick()
 
-;~ $charName="ThuTuong"
-;~ test3()
-;~ start()
+$charName="zGaming"
+
+
+; Sử dụng hàm
+;~ Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
+;~ ControlMouseMove($hWnd, "", 732, 95) ; Di chuyển chuột đến tọa độ (100, 50) trong control
+;~ secondWait(1)
+;~ ControlClick_NoFocus($hWnd, "", 732, 95) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
+
+; Thuc hien swith sang main chinh
+$jsonAccountActiveDevil = getArrayActiveDevil()
+switchToMainChar($jsonAccountActiveDevil)
+
 
 Func testControlClick()
-	; Lấy handle của cửa sổ
-	Local $hWnd = WinGetHandle("Untitled - Notepad") ; "Calculator" là tên cửa sổ. Bạn có thể thay bằng tên cửa sổ khác.
+	; Lấy handle của cửa sổ Q-Dir
+	$charName="ThuTuong"
+	$mainNo = getMainNoByChar($charName)
+    Local $hWnd = WinGetHandle($mainNo)
 
-	; Kiểm tra nếu handle có tồn tại
-	If Not @error Then
-		; Di chuyển cửa sổ đến vị trí (x = 200, y = 100) với kích thước rộng 800 và cao 600
-		WinMove($hWnd, "", 200, 100)
-		ConsoleWrite("Di chuyển cửa sổ thành công!" & @CRLF)
-	Else
-		ConsoleWrite("Không tìm thấy cửa sổ!" & @CRLF)
-	EndIf
+    ; Kiểm tra nếu cửa sổ có tồn tại
+    If Not @error Then
+        ; Thực hiện click tại tọa độ (186, 11) của control SysTabControl32, Instance 4
+        ControlMouseDown($hWnd,727, 101)
+		Sleep(500) ; Tạm dừng 500ms để đảm bảo thực hiện xong
+		ControlMouseUp($hWnd, 727, 101)
+		;~ ControlSend($hWnd, "", "","{Enter}")
+    Else
+        ConsoleWrite("Không tìm thấy cửa sổ Q-Dir!" & @CRLF)
+    EndIf
+
+	
 	Return True
 EndFunc
+
+Func ControlMouseDown($hWnd, $toadoX, $toadoY)
+	; Nhấn chuột mà không nhả ra
+	ControlClick($hWnd, "", "", "Left", 10, $toadoX, $toadoY)
+	Sleep(1000) ; Thời gian nhấn giữ
+EndFunc
+
+Func ControlMouseUp($hWnd, $toadoX, $toadoY)
+	; Nhả chuột bằng một lần nhấn tiếp theo
+	ControlClick($hWnd, "", "", "Left", 10, $toadoX, $toadoY)
+EndFunc
+
 
 Func testChrome()
     $sSession = SetupChrome()

@@ -17,14 +17,17 @@ Func _MU_followLeader($position)
 	secondWait(1)
 	sendKeyEnter()
 	; Di chuot ra giua man hinh
+	mouseMoveCenterChar()
+EndFunc
+
+Func mouseMoveCenterChar()
+	; Di chuot ra giua man hinh
+	writeLogFile($logFile,"Di chuot ra giua man hinh nhan vat")
 	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
 	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
 	MouseMove($position_char_x, $position_char_y)
 	secondWait(1)
-EndFunc
-
-Func getMainNoByChar($charName)
-	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+	Return True
 EndFunc
 
 Func checkLvl400($mainNo)
@@ -256,24 +259,15 @@ Func switchOtherChar($currentChar)
 
 		If activeAndMoveWin($otherMainNo) Then
 			writeLogFile($logFile,"Da tim thay main khac cung tai khoan: " & $otherCharName)
-			$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
-			$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
-			$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
-			$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
-
-			writeLogFile($logFile,"Bat dau chuyen vao main chinh: " & $currentChar)
-
-			; => Click vao icon chuyen
-			_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
-			; => Click vao chuyen
-			_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
-			; Lay lai mainNo cua current char
-			secondWait(6)
+			; Thuc hien click chuyen nhan vat cung tai khoan
+			clickOtherChar()
+			; check current char
 			$currentMainNo = getMainNoByChar($currentChar)
-			; Doi khoang 6s
+
 			$timeCheck = 1;
 
 			While Not activeAndMoveWin($currentMainNo) And $timeCheck < 5
+				secondWait(1)
 				$timeCheck += 1
 			WEnd
 
@@ -283,10 +277,7 @@ Func switchOtherChar($currentChar)
 			Else
 				writeLogFile($logFile,"Khong chuyen duoc vao main chinh: " & $currentChar & " sau " & $timeCheck & " lan thu")
 				; De chuot ra man hinh
-				$mouseMoveCenterX =_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_x")
-				$mouseMoveCenterY =_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_y")
-				_MU_MouseClick_Delay($mouseMoveCenterX, $mouseMoveCenterY)
-				secondWait(1)
+				mouseMoveCenterChar()
 				; Minisize main
 				writeLogFile($logFile,"Minisize main: " & $otherMainNo)
 				minisizeMain($otherMainNo)
@@ -295,6 +286,25 @@ Func switchOtherChar($currentChar)
 		EndIf
 	EndIf
 	Return $resultSwitch
+EndFunc
+
+Func clickOtherChar()
+	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
+	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
+	$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
+	$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
+
+	;~ writeLogFile($logFile,"Bat dau chuyen vao main chinh: " & $currentChar)
+
+	; => Click vao icon chuyen
+	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
+	; => Click vao chuyen
+	_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+	; Lay lai mainNo cua current char
+	secondWait(6)
+	; De chuot ra man hinh
+	mouseMoveCenterChar()
+	Return True
 EndFunc
 
 Func moveOtherMap()
@@ -316,4 +326,28 @@ Func checkEnterChat()
 		sendKeyEnter()
 	EndIf
 	Return True
+EndFunc
+
+Func switchToMainChar($jsonAccountActiveDevil)
+	; Thuc hien check trong $jsonAccountActiveDevil xem acc nao can chuyen sang main chinh hay khong ?
+	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
+		$switch_other_main = _JSONGet($jsonAccountActiveDevil[$i], "switch_other_main")
+		If $switch_other_main Then
+			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
+			$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
+			$mainNo = getMainNoByChar($charName)
+			If $active And activeAndMoveWin($mainNo) Then
+				; Lay ten cua main cung tai khoan
+				$otherCharName = getOtherChar($charName)
+				; Thuc hien swith
+				$resultSwitch = switchOtherChar($otherCharName)
+				; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
+				If $resultSwitch Then
+					minisizeMain(getMainNoByChar($otherCharName))
+				Else
+					minisizeMain($mainNo)
+				EndIf
+			EndIf
+		EndIf
+	Next
 EndFunc

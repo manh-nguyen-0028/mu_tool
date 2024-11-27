@@ -120,12 +120,12 @@ Func checkThenGoDevilEvent()
 		$diffTime = diffTime(getCurrentTime(), $nextTime) 
 		Sleep($diffTime)
 		goToDevilEvent()
-		;Sleep 25 minute
+		;Sleep 26 minute
 		Local $nextMinFollowLeader = $nextMin + 26
 		Local $nextHourFollowLeader = $nextHour
 
 		If @MIN >= 30 Then 
-			$nextMinFollowLeader = 56
+			$nextMinFollowLeader = 55
 		Else
 			$nextMinFollowLeader = 26
 		EndIf
@@ -135,11 +135,16 @@ Func checkThenGoDevilEvent()
 			$nextHourFollowLeader = 0
 		EndIf
 
-		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "05")
+		Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, "20")
 		writeLogFile($logFile, "Time left util next time follow leader: " & timeLeft(getCurrentTime(), $nextTimeFollowLeader))
 		Sleep(diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeFollowLeader) )
+
 		handleAfterDevilEvent()
+
 		minuteWait(1)
+		; Thuc hien swith sang main chinh
+		$jsonAccountActiveDevil = getArrayActiveDevil()
+		switchToMainChar($jsonAccountActiveDevil)
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
 	Else
@@ -237,9 +242,13 @@ Func goToDevilEvent()
 	
 	; Check accounts in devil
 	checkAccountsInDevil($jsonAccountActiveDevil)
+	minuteWait(1)
+	switchToMainChar($jsonAccountActiveDevil)
 
 	; Process fast join accounts
 	processFastJoinAccounts($jsonAccountFastJoin)
+	minuteWait(1)
+	switchToMainChar($jsonAccountActiveDevil)
 
 EndFunc
 
