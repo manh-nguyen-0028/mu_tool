@@ -1,0 +1,36 @@
+[
+    {
+      "active": false,
+      "char_name": "Victocy",
+      "reset_online": false,
+      "hour_per_reset": 26,
+      "lvl_move": 400,
+      "type": "withdraw",
+      "type_rs": 1,
+      "is_buff": false,
+      "position_leader": 1,
+      "limit": 5,
+      "password": "manhva02",
+      "is_main_character": true,
+      "active_move_rs": false,
+      "postion_move_x": 100,
+      "postion_move_y": 100
+    },
+    {
+      "active": true,
+      "char_name": "TruongThon",
+      "reset_online": true,
+      "hour_per_reset": 8,
+      "lvl_move": 400,
+      "type": "reset",
+      "type_rs": 1,
+      "is_buff": false,
+      "position_leader": 1,
+      "limit": 5,
+      "password": "manhva02",
+      "is_main_character": true,
+      "active_move_rs": false,
+      "postion_move_x": 100,
+      "postion_move_y": 100
+    }
+  ]
