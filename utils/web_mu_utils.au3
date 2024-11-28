@@ -290,7 +290,7 @@ Func getUrlAuction($sId)
 	Return $baseMuUrl&"web/event/boss-item-bid.item.shtml?id="&$sId
 EndFunc
 
-Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
+Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y, $isSwithMap = False, $mapName = "")
 	; Chuyen den trang web $baseMuUrl
 	_WD_Navigate($sSession, $baseMuUrl)
 	secondWait(5)
@@ -318,11 +318,82 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		$cmdText = StringSplit($cmdText, " lệnh.")[1]
 		writeLogFile($logFile, "cmdText: " & $cmdText)
 		$cmdAmount = Number($cmdText)
-		If $cmdAmount < 5 Then
+		If $cmdAmount < 20 Then
 			writeLogFile($logFile, "Khong du lenh de thuc hien chuyen dong. So lenh con lai: " & $cmdAmount)
 			Return False
 		EndIf
 	
+		; Neu isSwithMap = True thi thuc hien chuyen map sau do doi 20s
+		If $isSwithMap Then
+			;~ <div class="row">
+			;~ 			<div class="col-md-6 pb-2">
+			;~ 				<button class="btn btn-info btn-block" href="/web/char/control.sel_map.shtml?char=0966899458" target="$popup">Chuyển MAP</button>
+			;~ 			</div>
+			;~ 			<div class="col-md-6 pb-4">
+			;~ 				<button class="btn btn-danger btn-block" href="/web/char/control.cmd_out.shtml?char=0966899458" target="$hidden" data-confirm="Hành động này sẽ tốn phí 30 lệnh, bạn có muốn tiếp tục ?">Thoát</button>
+			;~ 			</div>
+			;~ 			<div class="col-md-12 pb-2">
+			;~ 				<form method="GET" action="/web/char/control.cmd_move_pos.shtml" id="t-move_pos">
+			;~ 					<div class="input-group">							
+			;~ 						<button type="button" class="btn btn-light btn-ladda">Toạ độ</button>	
+			;~ 						<input type="text" class="form-control" name="tx">
+			;~ 						<div class="input-group-append">
+			;~ 							<button type="button" class="btn btn-light">x</button>
+			;~ 						</div>
+			;~ 						<input type="text" class="form-control" name="ty">
+															
+			;~ 						<input type="hidden" class="form-control" name="char" value="0966899458">
+			;~ 						<div class="input-group-append">
+			;~ 							<button type="submit" class="btn btn-info btn-ladda">Chạy</button>
+			;~ 						</div>
+			;~ 					</div>					
+								
+			;~ 				</form>
+			;~ 			</div>
+			;~ 		</div>
+			; Click vao button chuyen map btn btn-info btn-block
+			$sElement = findElement($sSession, "//button[contains(text(),'Chuyển MAP')]")
+			; Mot popup se hien ra nhu sau:
+		;~ 	<div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">    <div class="modal-content">      <div class="modal-header">        <h5 class="modal-title">GamethuVN (0966899458)</h5>        <button type="button" class="close" data-dismiss="modal" aria-label="Close">          <span aria-hidden="true">×</span>        </button>      </div>      <div class="modal-body"><div class="row container-fluid">
+		;~ 	<div class="table-responsive">
+		;~ 		<table class="table table-striped table-sm table-hover w-100">
+		;~ 			<thead>
+		;~ 				<tr>
+		;~ 					<th class="text-nowrap">STT</th>
+		;~ 					<th class="text-center text-nowrap">Bản đồ</th>
+		;~ 					<th class="text-right text-nowrap">Cấp độ</th>
+		;~ 					<th class="text-right text-nowrap">Chi phí</th>
+		;~ 					<th class="text-right text-nowrap">Lệnh</th>
+		;~ 			</tr></thead><tbody>
+		;~ 														<tr>
+		;~ 						<td>1</td>
+		;~ 						<td class="text-center">Arena</td>
+		;~ 						<td class="text-right font-weight-bold">
+		;~ 														80.lv
+		;~ 													</td>
+		;~ 						<td class="text-right">3 Lệnh</td>
+		;~ 						<td class="text-right text-nowrap">
+		;~ 							<button class="btn btn-sm btn-secondary py-0 px-2" href="/web/char/control.cmd_move_map.shtml?char=0966899458&amp;map=arena" target="$hidden">
+		;~ 								Di chuyển
+		;~ 							</button>
+		;~ 						</td>
+		;~ 					</tr>
+		;~ 													</tbody>
+		;~ 		</table>
+		;~ 	</div>
+		
+		
+		
+		;~ </div></div>    </div>  </div>
+			; Lay thong tin map trong class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered"
+			; Thuc ra cho nay toi nghi rang khong can phai bat open popup ma thuc hien move luon theo link duoi
+			$sElement = findElement($sSession, "//button[@href='/web/char/control.cmd_move_map.shtml?char=0966899458&amp;map=" & $mapName & "']")
+			; Sau khi move xong thi close popup
+			closeDiaglogConfim($sSession)
+			clickElement($sSession, $sElement)
+			secondWait(15)
+		EndIf
+
 		; Thuc hien di toi toa do X
 		$sElement = _WD_GetElementByName($sSession,"tx")
 		_WD_ElementAction($sSession, $sElement, 'CLEAR')
