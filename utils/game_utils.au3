@@ -52,6 +52,7 @@ Func checkLvl400($mainNo)
                 $is400Lvl = True
             EndIf
         WEnd
+		writeLogFile($logFile, "Check 400 lvl after " & $countCheck & " times")
     EndIf
     
     ; Log the result
@@ -68,18 +69,72 @@ Func _MU_Start_AutoZ()
 	sendKeyDelay("{Home}")
 EndFunc
 
-Func checkEmptyMinuteStadium($mainNo)
-	writeLog("checkEmptyMinuteStadium($mainNo)")
-	$isEmptyMinute = False
-	; Click vao icon event
-	clickEventIcon()
-	$color = 0x262626
-	; TODO: Doan nay check chuyen thanh check pixel
-	If checkPixelColor(528, 494,$color) = True Then
-		writeLog("Het phut vao stadium roi !")
-		$isEmptyMinute = True
+Func checkEmptyMapStadium($mainNo)
+	writeLogFile($logFile, "Start method: checkEmptyMapStadium with mainNo: " & $mainNo)
+	
+	Local $isEmptyMap = False
+	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.x")
+	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.y")
+	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.color")
+	
+	; Check initial pixel color
+	If checkPixelColor($x, $y, $color) Then
+		$isEmptyMap = True
+	Else
+		; Retry checking pixel color up to 5 times
+		Local $countCheck = 0
+		While Not $isEmptyMap And ($countCheck < 5)
+			$countCheck += 1
+			secondWait(1)
+			If checkPixelColor($x, $y, $color) Then
+				$isEmptyMap = True
+			EndIf
+		WEnd
+		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
 	EndIf
-	Return $isEmptyMinute
+	
+	; Log the result
+	If $isEmptyMap Then
+		writeLogFile($logFile, "Da het luot di map stadium")
+	Else
+		writeLogFile($logFile, "Van con luot di map stadium")
+	EndIf
+	
+	Return $isEmptyMap
+EndFunc
+
+Func checkEmptyMapLvl($mainNo)
+	writeLogFile($logFile, "Start method: checkEmptyMapLvl with mainNo: " & $mainNo)
+	
+	Local $isEmptyMap = False
+	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.x")
+	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.y")
+	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.color")
+	
+	; Check initial pixel color
+	If checkPixelColor($x, $y, $color) Then
+		$isEmptyMap = True
+	Else
+		; Retry checking pixel color up to 5 times
+		Local $countCheck = 0
+		While Not $isEmptyMap And ($countCheck < 5)
+			$countCheck += 1
+			secondWait(1)
+			If checkPixelColor($x, $y, $color) Then
+				$isEmptyMap = True
+			EndIf
+		WEnd
+		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
+	EndIf
+	
+	; Log the result
+	If $isEmptyMap Then
+		writeLogFile($logFile, "Da het luot di map lvl")
+	Else
+		writeLogFile($logFile, "Van con luot di map lvl")
+	EndIf
+	
+	Return $isEmptyMap
 EndFunc
 
 Func getjsonPositionConfig()

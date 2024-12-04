@@ -429,10 +429,12 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$nLvl = Number($tLvl)
 	$tmpLvl = 0
 	$timeCheck = 0
+	$timeCheckMax = 50
+	If $lvlStopCheck == 20 Then $timeCheckMax = 25
 
-	While $nLvl < $lvlStopCheck And $timeCheck <= 50
+	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
 		; Neu > 200 thi moi thuc hien ghi log
-		If $nLvl > 200 Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
+		If ($nLvl > 200 Or $timeCheck > 10) Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
 
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
@@ -447,7 +449,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		; Xu ly doi voi lvl check = 20; chi can doi 30s
 		If $lvlStopCheck == 20 Then
 			; Wait 30 sec then retry
-			secondWait(35)
+			secondWait(30)
 		Else
 			; Wait 1 min then retry
 			minuteWait($timeDelay)
@@ -460,22 +462,18 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		$tLvl = getTextElement($sSession, $sElement)
 		$nLvl = Number($tLvl)
 		
-		; Truong hop $lvlStopCheck= 20 va so lan check ma = 5 thi thuc hien move = web
-		If $timeCheck == 15 And $lvlStopCheck == 20 Then
+		; Truong hop $lvlStopCheck= 20 va so lan check ma = 10 thi thuc hien move = web
+		If ($timeCheck == 10 Or $timeCheck == 20) And $lvlStopCheck == 20 Then
+			writeLogFile($logFile, "So lan check = 10, thuc hien move = web")
 			; Dien toa do X - vi tri cua sport 1 
 			;~ 174, 65
 			$positionX = 174
 			$positionY = 65
 			moveToPostionInWeb($sSession, $charName, $positionX, $positionY)
 		EndIf
-
-		; Neu check qua 15 lan thi thoat loop la bat buoc
-		;~ If $timeCheck >= 30 Then
-		;~ 	writeLogFile($logFile, "Da qua so lan duoc phep check lvl: " & $timeCheck)
-		;~ 	;~ MsgBox(0, "Thông báo", "Thoát khỏi vòng lặp khi i = 5")
-		;~ 	ExitLoop
-		;~ EndIf
 	WEnd
+
+	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
 	
 	Return $nLvl
 EndFunc

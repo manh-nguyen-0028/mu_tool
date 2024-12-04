@@ -125,6 +125,16 @@
 		  "color_master_3":"0x7E2FA2",
 		  "color_master_4":"0xB8A228"
 	   },
+	   "check_empty_map_lvl":{
+		  "x":59,
+		  "y":619,
+		  "color":"0x7E2FA2"
+	   },
+	   "check_empty_map_stadium":{
+		  "x":59,
+		  "y":619,
+		  "color":"0x7E2FA2"
+	   },
 	   "check_enter_chat":{
 		  "x":387,
 		  "y":619,
