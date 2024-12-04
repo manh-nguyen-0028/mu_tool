@@ -19,6 +19,8 @@ Local $className = @ScriptName
 
 Local $sFilePath = $outputPathRoot & "File_Log_Auto_Move.txt"
 
+; Chức năng này dành cho chủ PT để kéo team lên map
+
 Func start()
     writeLogFile($logFile, "Begin start auto move !")
     ; 1. Thuc hien lay danh sach account can auto move, chi lay nhung account co active = true
