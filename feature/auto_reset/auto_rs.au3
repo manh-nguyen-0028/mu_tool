@@ -440,10 +440,20 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl
 		Else
-			If activeAndMoveWin($mainNo) And Not checkActiveAutoHome() Then
-				writeLogFile($logFile, "Auto Home not active !")
-				goMapArena($rsCount)
+			; Truong hop lvl khong thay doi thi thuc hien move den stadium
+			writeLogFile($logFile, "Lvl khong thay doi gi goMapArena. $nLvl = "  & $nLvl & " - $tmpLvl = " & $tmpLvl)
+			
+			If activeAndMoveWin($mainNo) Then
+				If Not checkActiveAutoHome() Then
+					writeLogFile($logFile, "Auto Home not active !")
+					goMapArena($rsCount)
+				Else
+					writeLogFile($logFile, "Auto Home active ! Khong can lam gi nua")
+				EndIf
+			Else
+				writeLogFile($logFile, "Main khong active !")
 			EndIf
+
 		EndIf
 		minisizeMain($mainNo)
 		; Xu ly doi voi lvl check = 20; chi can doi 30s

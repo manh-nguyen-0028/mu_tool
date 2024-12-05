@@ -202,6 +202,9 @@ Func clickEventStadium()
 EndFunc
 
 Func checkActiveAutoHome()
+	; can phai doi 5s de check auto home
+	secondWait(5)
+	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
 	$result = False
 	$x = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x")

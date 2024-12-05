@@ -221,6 +221,7 @@ EndFunc
 
 ; Format: $rsInDay|$timeReset
 Func getLogReset($sSession, $charName)
+	Local $charLvl, $rsInDay, $aMatch
 	; Chuyen den site nay de thuc hien check thong tin
 	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
 	;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
@@ -237,14 +238,30 @@ Func getLogReset($sSession, $charName)
 	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
 
 	; Lvl
-	$array = StringSplit($charInfoText, $charName &' level ', 1)
+	$aMatch = StringRegExp($charInfoText, "level (\d+)\s*\(", 1)
+
+    If @error Then
+        ConsoleWrite("Không tìm thấy level!" & @CRLF)
+    Else
+        ConsoleWrite("Lvl: " & $aMatch[0] & @CRLF)
+		$charLvl = $aMatch[0]
+    EndIf
+
+	;~ $array = StringSplit($charInfoText, $charName &' level ', 1)
 	;~ _ArrayDisplay($array)
-	$charLvl = Number(StringLeft ($array[2], 3))
+	;~ $charLvl = Number(StringLeft ($array[2], 3))
 	
 	; Rs trong ngay
-	$array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
-	$array = StringSplit($array[2], ' lượt.', 1)
-	$rsInDay = $array[1]
+	;~ $array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
+	;~ $array = StringSplit($array[2], ' lượt.', 1)
+	;~ $rsInDay = $array[1]
+	$aMatch = StringRegExp($charInfoText, "reset (\d+)\s*lượt", 1)
+	If @error Then
+		ConsoleWrite("Không tìm lượt rs!" & @CRLF)
+	Else
+		ConsoleWrite("Số cần lấy là: " & $aMatch[0] & @CRLF)
+		$rsInDay = $aMatch[0]
+	EndIf
 
 	; Xem Nhat ky reset
 	_Demo_NavigateCheckBanner($sSession,combineUrl("web/char/char_info.logreset.shtml"))
