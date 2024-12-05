@@ -396,7 +396,7 @@ EndFunc
 #ce
 Func goToSportLvl1($mainNo) 
 	; Enable Auto Home in 3s
-	sendKeyDelay("{HOME}");
+	sendKeyDelay("{Home}");
 	secondWait(3)
 	; Send Tab button
 	writeLogFile($logFile, "Bat ban do !")
@@ -511,7 +511,7 @@ Func goMapLvl()
 	secondWait(2)
 
 	; Enable Auto Home
-	sendKeyDelay("{HOME}");
+	sendKeyDelay("{Home}");
 	; Doi 16p cho het event
 	;~ minuteWait(16)
 EndFunc
