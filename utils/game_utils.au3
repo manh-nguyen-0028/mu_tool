@@ -212,7 +212,7 @@ Func checkActiveAutoHome()
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
 
-	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 150, True)
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 50, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
