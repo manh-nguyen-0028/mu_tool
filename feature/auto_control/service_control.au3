@@ -29,7 +29,7 @@ Func start()
     ;~ deleteFileInFolder($outputPathRoot)
 
     While True
-        If Not checkProcessExists("mu_auction.exe") And (@HOUR <> 23 Or (@HOUR == 23 And @MIN <= 45)) Then 
+        If Not checkProcessExists("mu_auction.exe") And @HOUR <> 23 Then 
             writeLog("Start rs")
             ;~ startWithDrawRs()
             ;~ secondWait(10)

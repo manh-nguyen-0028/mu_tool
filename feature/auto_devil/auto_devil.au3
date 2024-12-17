@@ -141,10 +141,12 @@ Func checkThenGoDevilEvent()
 
 		handleAfterDevilEvent()
 
-		minuteWait(1)
-		; Thuc hien swith sang main chinh
-		$jsonAccountActiveDevil = getArrayActiveDevil()
-		switchToMainChar($jsonAccountActiveDevil)
+		;~ minuteWait(1)
+		; Thuc hien swith sang main chinh, truong hop la 20,21,22 thi khong thuc hien
+		If @HOUR < 20 Or @HOUR > 22 Then
+			$jsonAccountActiveDevil = getArrayActiveDevil()
+			switchToMainChar($jsonAccountActiveDevil)
+		EndIf
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
 	Else

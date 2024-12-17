@@ -554,6 +554,12 @@ Func validAccountRs($aAccountActiveRs)
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 		
+		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
+		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then 
+			MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
+			ContinueLoop 
+		EndIf
+
 		If getTimeNow() < $nextTimeRs Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
@@ -571,10 +577,13 @@ Func validAccountRs($aAccountActiveRs)
 			ContinueLoop
 		EndIf
 
-		; Neu vuot qua so lan rs duoc phep trong ngay
-		If $timeRs >= $limit Then 
+		; Neu vuot qua so lan rs duoc phep trong ngay $lastTimeRs khac voi ngay hien tai thi khong duoc coi la loi. dang cua $lastTimeRs la "2024/08/06 06:40:00"
+		$sDateCheck = @YEAR & "/" & @MON & "/" & @MDAY
+		If $timeRs >= $limit And StringLeft($lastTimeRs, 10) ==  $sDateCheck Then 
 			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
 			ContinueLoop
+		Else
+			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
 		Redim $aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) + 1]
