@@ -294,6 +294,11 @@ Func processReset($jAccountInfo)
 					EndIf
 
 					_MU_followLeader($positionLeader)
+					; Neu co active move va co toa do thi thuc hien move
+					If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+					EndIf
 					; 10. Wait in 1 min
 					minuteWait(1)
 				EndIf
