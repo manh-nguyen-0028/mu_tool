@@ -542,7 +542,6 @@ Func validAccountRs($aAccountActiveRs)
 	Local $aAccountActiveRsValidate[0]
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
-		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRs[$i]))
 		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
 		$password = getPropertyJson($aAccountActiveRs[$i],"password")
 		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
@@ -558,6 +557,8 @@ Func validAccountRs($aAccountActiveRs)
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
+
+		writeLogFile($logFile, "Dang xu ly voi account => " & $username & " - " & $charName)
 		
 		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
 		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then 

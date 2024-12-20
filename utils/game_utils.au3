@@ -7,6 +7,19 @@
 #include <Array.au3>
 #include "common_utils.au3"
 
+Func _MU_followLeader_ControlClick($hWnd, $position)
+	ControlSend($hWnd, "", "", "{ENTER}")
+	ControlSend($hWnd, "", "", "{ENTER}")
+	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
+	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
+	_MU_ControlClick_Delay($hWnd, $position_x, $position_y)
+	secondWait(1)
+	ControlSend($hWnd, "", "", "{ENTER}")
+	; Di chuot ra giua man hinh
+	mouseMoveCenterChar_Control($hWnd)
+EndFunc
+
 Func _MU_followLeader($position)
 	sendKeyEnter()
 	sendKeyEnter()
@@ -27,6 +40,18 @@ Func mouseMoveCenterChar()
 	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
 	MouseMove($position_char_x, $position_char_y)
 	secondWait(1)
+	Return True
+EndFunc
+
+Func mouseMoveCenterChar_Control($hWnd)
+	; Di chuot ra giua man hinh
+	writeLogFile($logFile,"Di chuot ra giua man hinh nhan vat")
+	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
+	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
+	ControlMouseMove($hWnd, "", $position_char_x, $position_char_y) ; Di chuyển chuột đến tọa độ (100, 50) trong control
+	secondWait(1)
+	;~ MouseMove($position_char_x, $position_char_y)
+	;~ secondWait(1)
 	Return True
 EndFunc
 
