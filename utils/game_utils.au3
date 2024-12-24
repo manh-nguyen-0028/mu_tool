@@ -7,6 +7,19 @@
 #include <Array.au3>
 #include "common_utils.au3"
 
+Func _MU_followLeader_ControlClick($hWnd, $position)
+	ControlSend($hWnd, "", "", "{ENTER}")
+	ControlSend($hWnd, "", "", "{ENTER}")
+	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
+	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
+	_MU_ControlClick_Delay($hWnd, $position_x, $position_y)
+	secondWait(1)
+	ControlSend($hWnd, "", "", "{ENTER}")
+	; Di chuot ra giua man hinh
+	mouseMoveCenterChar_Control($hWnd)
+EndFunc
+
 Func _MU_followLeader($position)
 	sendKeyEnter()
 	sendKeyEnter()
@@ -27,6 +40,18 @@ Func mouseMoveCenterChar()
 	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
 	MouseMove($position_char_x, $position_char_y)
 	secondWait(1)
+	Return True
+EndFunc
+
+Func mouseMoveCenterChar_Control($hWnd)
+	; Di chuot ra giua man hinh
+	writeLogFile($logFile,"Di chuot ra giua man hinh nhan vat")
+	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
+	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
+	ControlMouseMove($hWnd, "", $position_char_x, $position_char_y) ; Di chuyển chuột đến tọa độ (100, 50) trong control
+	secondWait(1)
+	;~ MouseMove($position_char_x, $position_char_y)
+	;~ secondWait(1)
 	Return True
 EndFunc
 
@@ -52,6 +77,7 @@ Func checkLvl400($mainNo)
                 $is400Lvl = True
             EndIf
         WEnd
+		writeLogFile($logFile, "Check 400 lvl after " & $countCheck & " times")
     EndIf
     
     ; Log the result
@@ -68,18 +94,72 @@ Func _MU_Start_AutoZ()
 	sendKeyDelay("{Home}")
 EndFunc
 
-Func checkEmptyMinuteStadium($mainNo)
-	writeLog("checkEmptyMinuteStadium($mainNo)")
-	$isEmptyMinute = False
-	; Click vao icon event
-	clickEventIcon()
-	$color = 0x262626
-	; TODO: Doan nay check chuyen thanh check pixel
-	If checkPixelColor(528, 494,$color) = True Then
-		writeLog("Het phut vao stadium roi !")
-		$isEmptyMinute = True
+Func checkEmptyMapStadium($mainNo)
+	writeLogFile($logFile, "Start method: checkEmptyMapStadium with mainNo: " & $mainNo)
+	
+	Local $isEmptyMap = False
+	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.x")
+	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.y")
+	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.color")
+	
+	; Check initial pixel color
+	If checkPixelColor($x, $y, $color) Then
+		$isEmptyMap = True
+	Else
+		; Retry checking pixel color up to 5 times
+		Local $countCheck = 0
+		While Not $isEmptyMap And ($countCheck < 5)
+			$countCheck += 1
+			secondWait(1)
+			If checkPixelColor($x, $y, $color) Then
+				$isEmptyMap = True
+			EndIf
+		WEnd
+		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
 	EndIf
-	Return $isEmptyMinute
+	
+	; Log the result
+	If $isEmptyMap Then
+		writeLogFile($logFile, "Da het luot di map stadium")
+	Else
+		writeLogFile($logFile, "Van con luot di map stadium")
+	EndIf
+	
+	Return $isEmptyMap
+EndFunc
+
+Func checkEmptyMapLvl($mainNo)
+	writeLogFile($logFile, "Start method: checkEmptyMapLvl with mainNo: " & $mainNo)
+	
+	Local $isEmptyMap = False
+	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.x")
+	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.y")
+	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.color")
+	
+	; Check initial pixel color
+	If checkPixelColor($x, $y, $color) Then
+		$isEmptyMap = True
+	Else
+		; Retry checking pixel color up to 5 times
+		Local $countCheck = 0
+		While Not $isEmptyMap And ($countCheck < 5)
+			$countCheck += 1
+			secondWait(1)
+			If checkPixelColor($x, $y, $color) Then
+				$isEmptyMap = True
+			EndIf
+		WEnd
+		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
+	EndIf
+	
+	; Log the result
+	If $isEmptyMap Then
+		writeLogFile($logFile, "Da het luot di map lvl")
+	Else
+		writeLogFile($logFile, "Van con luot di map lvl")
+	EndIf
+	
+	Return $isEmptyMap
 EndFunc
 
 Func getjsonPositionConfig()
@@ -147,6 +227,9 @@ Func clickEventStadium()
 EndFunc
 
 Func checkActiveAutoHome()
+	; can phai doi 5s de check auto home
+	secondWait(5)
+	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
 	$result = False
 	$x = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x")
@@ -154,7 +237,7 @@ Func checkActiveAutoHome()
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
 
-	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 150, True)
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 50, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result

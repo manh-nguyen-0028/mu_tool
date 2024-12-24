@@ -71,8 +71,18 @@ Func startAutoRs()
 			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
 		EndIf
 	Next
+
 	If UBound($aAccountActiveRs) == 0 Then 
 		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
+		FileClose($logFile)
+		Return
+	EndIf
+
+	; Validate account reset
+	$aAccountActiveRsValidate = validAccountRs($aAccountActiveRs)
+
+	If UBound($aAccountActiveRsValidate) == 0 Then 
+		writeLogFile($logFile, "Khong co account valid thoa man => Ket thuc chuong trinh !")
 		FileClose($logFile)
 		Return
 	Else
@@ -84,46 +94,11 @@ Func startAutoRs()
 		secondWait(5)
 	EndIf
 
-	For $i = 0 To UBound($aAccountActiveRs) - 1
-		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRs[$i]))
-		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
-		$password = getPropertyJson($aAccountActiveRs[$i],"password")
-		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
-		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
-		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
-		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
-		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
-		$resetOnline = getPropertyJson($aAccountActiveRs[$i],"reset_online")
-		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
-		
-		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+	For $i = 0 To UBound($aAccountActiveRsValidate) - 1
+		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRsValidate[$i]))
+		$charName = getPropertyJson($aAccountActiveRsValidate[$i],"char_name")
+		$resetOnline = getPropertyJson($aAccountActiveRsValidate[$i],"reset_online")
 		$mainNo = getMainNoByChar($charName)
-		$currentTime = getTimeNow()
-		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
-		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
-		
-		If getTimeNow() < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-			ContinueLoop
-		EndIf
-
-		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
-		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
-			ContinueLoop
-		EndIf
-
-		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
-		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then 
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
-			ContinueLoop
-		EndIf
-
-		; Neu vuot qua so lan rs duoc phep trong ngay
-		If $timeRs >= $limit Then 
-			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
-			ContinueLoop
-		EndIf
 
 		; Neu la rs online thi can thuc hien active main
 		If Not $resetOnline Then
@@ -135,10 +110,10 @@ Func startAutoRs()
 			If $activeMain Then 
 				; Thuc hien minize main
 				minisizeMain($mainNo)
-				processReset($aAccountActiveRs[$i])
+				processReset($aAccountActiveRsValidate[$i])
 			EndIf
 		Else
-			processReset($aAccountActiveRs[$i])
+			processReset($aAccountActiveRsValidate[$i])
 		EndIf
 
 		; Logout account
@@ -151,9 +126,11 @@ Func startAutoRs()
 	FileClose($logFile)
 
 	; Close webdriver neu thuc hien xong 
-	If $sSession Then _WD_DeleteSession($sSession)
+	If $sSession Then 
+		_WD_DeleteSession($sSession)
+		_WD_Shutdown()
+	EndIf
 	
-	_WD_Shutdown()
 EndFunc
 
 Func processReset($jAccountInfo)
@@ -317,6 +294,11 @@ Func processReset($jAccountInfo)
 					EndIf
 
 					_MU_followLeader($positionLeader)
+					; Neu co active move va co toa do thi thuc hien move
+					If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+					EndIf
 					; 10. Wait in 1 min
 					minuteWait(1)
 				EndIf
@@ -396,7 +378,7 @@ EndFunc
 #ce
 Func goToSportLvl1($mainNo) 
 	; Enable Auto Home in 3s
-	sendKeyDelay("{HOME}");
+	sendKeyDelay("{Home}");
 	secondWait(3)
 	; Send Tab button
 	writeLogFile($logFile, "Bat ban do !")
@@ -429,25 +411,37 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$nLvl = Number($tLvl)
 	$tmpLvl = 0
 	$timeCheck = 0
+	$timeCheckMax = 68
+	If $lvlStopCheck == 20 Then $timeCheckMax = 25
 
-	While $nLvl < $lvlStopCheck And $timeCheck <= 50
+	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
 		; Neu > 200 thi moi thuc hien ghi log
-		If $nLvl > 200 Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
+		If ($nLvl > 200 Or $timeCheck > 10) Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
 
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then 
 			$tmpLvl = $nLvl
 		Else
-			If activeAndMoveWin($mainNo) And Not checkActiveAutoHome() Then
-				writeLogFile($logFile, "Auto Home not active !")
-				goMapArena($rsCount)
+			; Truong hop lvl khong thay doi thi thuc hien move den stadium
+			writeLogFile($logFile, "Lvl khong thay doi gi goMapArena. $nLvl = "  & $nLvl & " - $tmpLvl = " & $tmpLvl)
+			
+			If activeAndMoveWin($mainNo) Then
+				If Not checkActiveAutoHome() Then
+					writeLogFile($logFile, "Auto Home not active !")
+					goMapArena($rsCount)
+				Else
+					writeLogFile($logFile, "Auto Home active ! Khong can lam gi nua")
+				EndIf
+			Else
+				writeLogFile($logFile, "Main khong active !")
 			EndIf
+
 		EndIf
 		minisizeMain($mainNo)
 		; Xu ly doi voi lvl check = 20; chi can doi 30s
 		If $lvlStopCheck == 20 Then
 			; Wait 30 sec then retry
-			secondWait(35)
+			secondWait(30)
 		Else
 			; Wait 1 min then retry
 			minuteWait($timeDelay)
@@ -460,22 +454,18 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 		$tLvl = getTextElement($sSession, $sElement)
 		$nLvl = Number($tLvl)
 		
-		; Truong hop $lvlStopCheck= 20 va so lan check ma = 5 thi thuc hien move = web
-		If $timeCheck == 15 And $lvlStopCheck == 20 Then
+		; Truong hop $lvlStopCheck= 20 va so lan check ma = 10 thi thuc hien move = web
+		If ($timeCheck == 10 Or $timeCheck == 20) And $lvlStopCheck == 20 Then
+			writeLogFile($logFile, "So lan check = 10, thuc hien move = web")
 			; Dien toa do X - vi tri cua sport 1 
 			;~ 174, 65
 			$positionX = 174
 			$positionY = 65
 			moveToPostionInWeb($sSession, $charName, $positionX, $positionY)
 		EndIf
-
-		; Neu check qua 15 lan thi thoat loop la bat buoc
-		;~ If $timeCheck >= 30 Then
-		;~ 	writeLogFile($logFile, "Da qua so lan duoc phep check lvl: " & $timeCheck)
-		;~ 	;~ MsgBox(0, "Thông báo", "Thoát khỏi vòng lặp khi i = 5")
-		;~ 	ExitLoop
-		;~ EndIf
 	WEnd
+
+	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
 	
 	Return $nLvl
 EndFunc
@@ -503,7 +493,7 @@ Func goMapLvl()
 	secondWait(2)
 
 	; Enable Auto Home
-	sendKeyDelay("{HOME}");
+	sendKeyDelay("{Home}");
 	; Doi 16p cho het event
 	;~ minuteWait(16)
 EndFunc
@@ -545,4 +535,66 @@ Func goSportStadium($sportNo = 1)
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
 	Send("{Tab}")
 	secondWait(2)
+EndFunc
+
+Func validAccountRs($aAccountActiveRs)
+
+	Local $aAccountActiveRsValidate[0]
+	; Validate account reset
+	For $i = 0 To UBound($aAccountActiveRs) - 1
+		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
+		$password = getPropertyJson($aAccountActiveRs[$i],"password")
+		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
+		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
+		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
+		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
+		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
+		$resetOnline = getPropertyJson($aAccountActiveRs[$i],"reset_online")
+		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
+		
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+		$mainNo = getMainNoByChar($charName)
+		$currentTime = getTimeNow()
+		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
+		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
+
+		writeLogFile($logFile, "Dang xu ly voi account => " & $username & " - " & $charName)
+		
+		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
+		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then 
+			MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
+			ContinueLoop 
+		EndIf
+
+		If getTimeNow() < $nextTimeRs Then 
+			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+			ContinueLoop
+		EndIf
+
+		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
+		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
+			ContinueLoop
+		EndIf
+
+		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
+		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then 
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs  & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
+			ContinueLoop
+		EndIf
+
+		; Neu vuot qua so lan rs duoc phep trong ngay $lastTimeRs khac voi ngay hien tai thi khong duoc coi la loi. dang cua $lastTimeRs la "2024/08/06 06:40:00"
+		$sDateCheck = @YEAR & "/" & @MON & "/" & @MDAY
+		If $timeRs >= $limit And StringLeft($lastTimeRs, 10) ==  $sDateCheck Then 
+			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
+			ContinueLoop
+		Else
+			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
+		EndIf
+
+		Redim $aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) + 1]
+		$aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) - 1] = $aAccountActiveRs[$i]
+	Next
+	
+	Return $aAccountActiveRsValidate
 EndFunc

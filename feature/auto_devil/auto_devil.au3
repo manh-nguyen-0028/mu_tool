@@ -97,7 +97,7 @@ Func checkThenGoDevilEvent()
 	; Kiểm tra xem giờ hiện tại có nằm trong danh sách không
 	If StringInStr($validHours, "," & $nextHour & ",") Then
 		; Truong hop ma dung trong CC thi doi them 1 phut
-		$nextMin = $nextMin + 1
+		$nextMin = $nextMin
 	EndIf
 
 	; Truong hop next hour = 24 thi thuc hien cho toi 00h
@@ -141,10 +141,12 @@ Func checkThenGoDevilEvent()
 
 		handleAfterDevilEvent()
 
-		minuteWait(1)
-		; Thuc hien swith sang main chinh
-		$jsonAccountActiveDevil = getArrayActiveDevil()
-		switchToMainChar($jsonAccountActiveDevil)
+		;~ minuteWait(1)
+		; Thuc hien swith sang main chinh, truong hop la 20,21,22 thi khong thuc hien
+		If @HOUR < 20 Or @HOUR > 22 Then
+			$jsonAccountActiveDevil = getArrayActiveDevil()
+			switchToMainChar($jsonAccountActiveDevil)
+		EndIf
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
 	Else
@@ -362,6 +364,7 @@ Func clickNpcDevil($npcSearch, $devilNo)
 			_MU_MouseClick_Delay(512, 477)
 			_MU_Start_AutoZ()
 		Else
+			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil => Thuc hien len lai bai")
 			_MU_followLeader(1)
 		EndIf
 	Else
