@@ -1,4 +1,2 @@
-zGaming|GameX
-GameX|zGaming
-AliceX|ThieuTuong
-ThieuTuong|AliceX
+zGaming|GameX|A11
+AliceX|ThieuTuong|GamingX

@@ -90,8 +90,7 @@ Func startAutoRs()
 		checkThenCloseChrome()
 		$sSession = SetupChrome()
 		; Logout account cho chac, nhieu luc se bi cache account cu
-		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-		secondWait(5)
+		logout($sSession)
 	EndIf
 
 	For $i = 0 To UBound($aAccountActiveRsValidate) - 1
@@ -110,6 +109,16 @@ Func startAutoRs()
 			If $activeMain Then 
 				; Thuc hien minize main
 				minisizeMain($mainNo)
+				; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
+				$minuteCheck = Number(@MIN)
+				If $minuteCheck > 52 Then
+					$minuteWait = (60 - $minuteCheck) + 8
+					minuteWait($minuteWait)
+				ElseIf $minuteCheck < 8 Then
+					; Wait 1 min
+					$minuteWait = 8 - $minuteCheck
+					minuteWait($minuteWait)
+				EndIf
 				processReset($aAccountActiveRsValidate[$i])
 			EndIf
 		Else
@@ -117,8 +126,7 @@ Func startAutoRs()
 		EndIf
 
 		; Logout account
-		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-		secondWait(5)
+		logout($sSession)
 	Next
 
 	writeLogMethodEnd("startAutoRs",@ScriptLineNumber)
@@ -144,6 +152,7 @@ Func processReset($jAccountInfo)
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
+	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
 	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
 	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
@@ -223,9 +232,22 @@ Func processReset($jAccountInfo)
 			; Click submit
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
+
 			; Submit add point
+			; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
+			$timeCheckAddPoint = 0
+			$sElement = findElement($sSession, "//h3[@class='card-title']")
+			$tElement = getTextElement($sSession, $sElement)
+			While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
+				secondWait(2)
+				$tElement = getTextElement($sSession, $sElement)
+				$timeCheckAddPoint += 1
+			WEnd
+
+			; Click submit
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
+
 			; close diaglog confirm
 			closeDiaglogConfim($sSession)
 			; Update info account json config
@@ -257,15 +279,40 @@ Func processReset($jAccountInfo)
 				; 3. Return game
 				returnChar($mainNo)
 				; Thuc hien enter 2 lan de thoat khoi bang thong bao
-				sendKeyEnter()
-				sendKeyEnter()
+				;~ sendKeyEnter()
+				;~ sendKeyEnter()
 				; 3.1. Check xem cua so enter co ton tai khong
-				checkEnterChat()
+				;~ checkEnterChat()
+				; Thuc hien send key home
+				sendKeyHome()
+				sendKeyTab()
 				; 4. Go to sport
-				goToSportLvl1($mainNo)
+				goToSportLvl1()
+				sendKeyH()
+				; Send 1 lan key tab nua de tat ban do
+				sendKeyTab()
+				; minisize main
+				minisizeMain($mainNo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
+				secondWait(30)
 				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+				; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
+				If $lvlCheckInWeb < 5 Then
+					writeLogFile($logFile, "Khong thay tang lvl! Lvl hien tai: " & $lvlCheckInWeb)
+					writeLogFile($logFile, "Thuc hien chuyen map bang web !")
+					If $postionMoveX <> "" And $postionMoveY <> "" Then
+						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+					EndIf
+					; Doi 50s
+					secondWait(50)
+					; Thuc hien check lai lvl
+					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+				Else
+					writeLogFile($logFile, "Lvl van tang theo dung quy trinh! Lvl hien tai: " & $lvlCheckInWeb)
+				EndIf
+				
 				; 6. Active main
 				activeAndMoveWin($mainNo)
 				If $lvlCheckInWeb >= 20 Then
@@ -283,7 +330,7 @@ Func processReset($jAccountInfo)
 					activeAndMoveWin($mainNo)
 
 					; Move other map
-					moveOtherMap()
+					moveOtherMap($charName)
 					secondWait(6)
 
 					; 9. Follow leader
@@ -308,7 +355,7 @@ Func processReset($jAccountInfo)
 
 			If Not $isMainCharacter Then
 				writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
-				$otherChar = getOtherChar($charName)
+				$otherChar = $mainCharName
 				If $otherChar <> "" Then 
 					$resultWwithChar = switchOtherChar($otherChar)
 					If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
@@ -322,10 +369,56 @@ Func processReset($jAccountInfo)
 			EndIf
 			
 			; 11. Logout account
-			_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-			secondWait(5)
+			logout($sSession)
 			;~ EndIf
+		Else
+			writeLogFile($logFile, "Khong du lvl de reset !")
+			writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
+			If Not $resetOnline Then
+				;~ minisizeMain($mainNo)
+				$mainNoMinisize = $mainNo
+				$lvlStopCheck = $lvlCanRs
+				$timeCheck = 0
+				$activeWin = activeAndMoveWin($mainNo)
+				If Not $activeWin Then $activeWin = switchOtherChar($charName)
+				; Click bỏ hết các bảng thông báo
+				If $activeWin Then
+					sendKeyEnter()
+					sendKeyEnter()
+					goMapArena($rsCount)
+					minuteWait(1)
+					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+					While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
+						writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
+						$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+						$timeCheck += 1
+						minuteWait(1)
+					WEnd
+					
+					If $lvlCheckInWeb < $lvlStopCheck Then
+						writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
+						moveOtherMap($charName)
+						secondWait(6)
+					Else
+						writeLogFile($logFile, "Du lvl de reset ! Follow leader !")
+					EndIf
+
+					activeAndMoveWin($mainNo)
+					_MU_followLeader(1)
+
+					If Not $resetOnline Then
+						; 10. minisize main
+						minisizeMain($mainNoMinisize)
+					EndIf
+
+					; 11. Logout account
+					logout($sSession)
+				Else
+					writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
+				EndIf
+			EndIf
 		EndIf
+
 		If Not $resetOnline Then minisizeMain($mainNo)
 	EndIf
 	writeLogMethodEnd("processReset",@ScriptLineNumber,$jAccountInfo)
@@ -339,7 +432,7 @@ Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
 Func changeChar($mainNo)
 	writeLogFile($logFile, "Begin change char !")
-	sendKeyDelay("+h")
+	sendKeyH()
 	secondWait(1)
 	sendKeyDelay("{ESC}")
 	secondWait(1)
@@ -364,38 +457,38 @@ Func returnChar($mainNo)
 	$checkActive = activeAndMoveWin($mainNo)
 	secondWait(1)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	While Not $checkActive
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
-		sendKeyEnter()
-		$checkActive = activeAndMoveWin($mainNo)
+	$timeCheck = 0
+	While Not $checkActive And $timeCheck <= 5
+		;~ _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
+		; Active title game main
+		If activeAndMoveWin($titleGameMain) Then
+			; Bam chon nhat vat khac
+			secondWait(1)
+			sendKeyEnter()
+			secondWait(2)
+			$checkActive = activeAndMoveWin($mainNo)
+			If $checkActive Then secondWait(3)
+		EndIf
+		$timeCheck += 1
 	WEnd
-	writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
-	secondWait(12)
+
+	If $checkActive Then 
+		writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
+	Else
+		writeLogFile($logFile, "Vao lai game that bai ! Sau " & $timeCheck & " lan thu ! ")
+	EndIf
+
 EndFunc 
 
 #cs
 	Tim sport de luyen lvl len 20
 #ce
-Func goToSportLvl1($mainNo) 
-	; Enable Auto Home in 3s
-	sendKeyDelay("{Home}");
-	secondWait(3)
-	; Send Tab button
-	writeLogFile($logFile, "Bat ban do !")
-	Send("{Tab}")
-	secondWait(2)
-	; An nhan vat
-	sendKeyDelay("+h")
-	secondWait(1)
+Func goToSportLvl1() 
 	; Khi bat dau se xuat hien tai 182 - 128
 	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
 	; 533, 338
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.loren_sport1.x"), _JSONGet($jsonPositionConfig,"button.loren_sport1.y"))
 	secondWait(1)
-	Send("{Tab}")
-	writeLogFile($logFile, "Tat ban do !")
-	secondWait(1)
-	WinSetState($mainNo,"",@SW_MINIMIZE)
 EndFunc
 
 Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
@@ -430,10 +523,18 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 					writeLogFile($logFile, "Auto Home not active !")
 					goMapArena($rsCount)
 				Else
-					writeLogFile($logFile, "Auto Home active ! Khong can lam gi nua")
+					; Truong hop lvl < 100 thi van vao map arena
+					;~ writeLogFile($logFile, "Auto Home active ! Khong can lam gi nua")
+					If $nLvl < 120 Then
+						writeLogFile($logFile, "Auto Home active ! LVL < 120 vao map arena")
+						goMapArena($rsCount)
+					Else
+						writeLogFile($logFile, "Auto Home active ! Khong can lam gi nua")
+					EndIf
 				EndIf
 			Else
-				writeLogFile($logFile, "Main khong active !")
+				writeLogFile($logFile, "Main khong active ! Thuc hien swith main khac")
+				switchOtherChar($charName)
 			EndIf
 
 		EndIf
@@ -493,9 +594,7 @@ Func goMapLvl()
 	secondWait(2)
 
 	; Enable Auto Home
-	sendKeyDelay("{Home}");
-	; Doi 16p cho het event
-	;~ minuteWait(16)
+	sendKeyHome()
 EndFunc
 
 Func goMapArena($rsCount)
@@ -517,8 +616,8 @@ Func goMapArena($rsCount)
 EndFunc
 
 Func goSportStadium($sportNo = 1) 
-	Send("{Tab}")
-	secondWait(2)
+	sendKeyTab()
+	;~ secondWait(2)
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
 	$sportArenaX = 269 
 	$sportArenaY = 329
@@ -533,8 +632,7 @@ Func goSportStadium($sportNo = 1)
 		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
 	EndIf
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
-	Send("{Tab}")
-	secondWait(2)
+	sendKeyTab()
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)

@@ -21,6 +21,8 @@ Global $sChromeUserDataPath = StringRegExpReplace($sAppDataPath, "Roaming", "Loc
 
 Global $sTitleLoginSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Thông báo"
 Global $sTitleLoginSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Notifications"
+Global $sTitleLogoutSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Đăng nhập"
+Global $sTitleLogoutSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Sign In"
 
 Func checkThenCloseChrome()
 	Local $chromeProcessName = "chrome.exe"
@@ -110,6 +112,29 @@ Func login($sSession, $username, $password)
 		writeLogFile($logFile, "Đăng nhập thành công !")
 		Return True
 	EndIf
+EndFunc
+
+Func logout($sSession)
+	; 11. Logout account
+	$isSuccess = False
+	$timeLogoutFail = 0
+	$sTitle = getTitleWebsite($sSession)
+
+	While ($sTitle <> $sTitleLogoutSuccess) And ($sTitle <> $sTitleLogoutSuccess_EN) And ($timeLogoutFail < 3)
+		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
+		secondWait(5)
+		$sTitle = getTitleWebsite($sSession)
+		$timeLogoutFail = $timeLogoutFail + 1
+	WEnd
+
+	If ($sTitle == $sTitleLogoutSuccess) Or ($sTitle == $sTitleLogoutSuccess_EN) Then
+		writeLogFile($logFile, "Logout success!")
+		$isSuccess = True
+	Else
+		writeLogFile($logFile, "Logout fail!")
+	EndIf
+	
+	Return $isSuccess
 EndFunc
 
 Func closeDiaglogConfim($sSession)

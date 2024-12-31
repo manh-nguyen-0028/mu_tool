@@ -7,6 +7,9 @@
       "is_fast_join": true,
       "ignore_peak_hour": true,
       "switch_other_main": true,
+      "main_char_name": "GameX",
+      "is_check_400lv": true,
+      "is_need_follow_leader": true,
       "max_hour_go": 25
     },
     {
@@ -17,6 +20,9 @@
       "is_fast_join": false,
       "ignore_peak_hour": false,
       "switch_other_main": true,
+      "main_char_name": "GameX",
+      "is_check_400lv": true,
+      "is_need_follow_leader": true,
       "max_hour_go": 25
     }
   ]
