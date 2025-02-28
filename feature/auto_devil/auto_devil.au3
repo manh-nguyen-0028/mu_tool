@@ -247,11 +247,6 @@ Func goToDevilEvent()
 				EndIf
 			EndIf
 
-			$checkActiveWin = activeAndMoveWin($mainNo)
-
-			; Nhan enter 2 lan de thuc hien loai bo cac dialog
-			sendKeyEnter()
-			sendKeyEnter()
 			clickIconDevil($checkRuongK)
 
 			; Check and click into NPC devil
@@ -374,10 +369,12 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$npcSearchDeviationX = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_x")
 		$npcSearchDeviationY = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_y")
 
+		writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
+
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
 		mouseClickDelayAlt($npcX, $npcY)
-		secondWait(1)
+		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
 		$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
 		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
@@ -385,17 +382,23 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		
 		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		If $checkOpenDevil Then
+			writeLogFile($logFile, "Thuc hien click vao devil")
 			clickPositionByDevilNo($devilNo)
-			secondWait(4)
-			;~ _MU_MouseClick_Delay(512, 477)
+			secondWait(6)
 			_MU_Start_AutoZ()
 		Else
-			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil => Thuc hien len lai bai")
-			If $isNeedFollowLeader Then _MU_followLeader(1)
+			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
+			If $isNeedFollowLeader Then 
+				writeLogFile($logFile, "Thuc hien follow leader")
+				_MU_followLeader(1)
+			EndIf
 		EndIf
 	Else
-		writeLogFile($logFile, "Khong tim thay vi tri cua NPC devil => Thuc hien len lai bai")
-		If $isNeedFollowLeader Then _MU_followLeader(1)
+		writeLogFile($logFile, "Search NPC khong thanh cong")
+		If $isNeedFollowLeader Then 
+			writeLogFile($logFile, "Thuc hien follow leader")
+			_MU_followLeader(1)
+		EndIf
 	EndIf
 EndFunc
 

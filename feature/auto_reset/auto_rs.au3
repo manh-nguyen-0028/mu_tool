@@ -196,6 +196,7 @@ Func processReset($jAccountInfo)
 			$lvlCanRs = 200 + ($rsCount * 5)
 			If $lvlCanRs > 400 Then $lvlCanRs = 400
 		EndIf
+
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 		$mainNo = getMainNoByChar($charName)
 		If $nLvl >= $lvlCanRs Then 
@@ -233,20 +234,35 @@ Func processReset($jAccountInfo)
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
 
-			; Submit add point
-			; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
-			$timeCheckAddPoint = 0
-			$sElement = findElement($sSession, "//h3[@class='card-title']")
-			$tElement = getTextElement($sSession, $sElement)
-			While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
-				secondWait(2)
-				$tElement = getTextElement($sSession, $sElement)
-				$timeCheckAddPoint += 1
-			WEnd
+			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
+			If Not $resetOnline Then
+				; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
+				$timeCheckAddPoint = 0
+				$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+				$tElement = getTextElement($sSession, $sElementTitle)
+				While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
+					secondWait(2)
+					$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+					$tElement = getTextElement($sSession, $sElementTitle)
+					$timeCheckAddPoint += 1
+				WEnd
 
-			; Click submit
-			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-			secondWait(2)
+				If $tElement == "Cộng điểm nhanh" Then
+					writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
+					; Click submit add point
+					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+					secondWait(2)
+				Else
+					writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
+					writeLogFile($logFile, "Thuc hien di toi trang add point")
+					;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+					_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+					secondWait(5)
+					; Click submit add point
+					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+					secondWait(2)
+				EndIf
+			EndIf
 
 			; close diaglog confirm
 			closeDiaglogConfim($sSession)

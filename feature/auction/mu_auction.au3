@@ -3,15 +3,10 @@
 #include <Excel.au3>
 #include <MsgBoxConstants.au3>
 #include <File.au3>
-#include "../../lib/au3WebDriver-0.12.0/wd_helper.au3"
-#include "../../lib/au3WebDriver-0.12.0/wd_capabilities.au3"
-#include "../../lib/au3WebDriver-0.12.0/wd_core.au3"
-#include "../../lib/au3WebDriver-0.12.0/webdriver_utils.au3"
-#include "../../utils/common_utils.au3"
-#include "../../utils/web_mu_utils.au3"
-#include "../../utils/game_utils.au3"
 #include <Constants.au3>
 #include <String.au3>
+#include "../../utils/common_utils.au3"
+#include "../../utils/web_mu_utils.au3"
 
 ; Valiable
 Local $sSession,$adminIDs,$auctionsConfig, $accountAuction
@@ -21,11 +16,26 @@ Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $logFile,$auctionResultFile, $auctionArray[0]
 Local $recordExample = "5153|100"
 
-;~ startAuction()
+start()
 ;~ test()
 
-getConfigAuction()
-;~ minuteWait(60)
+;~ deleteFileInFolder()
+
+Func test2()
+	$sTimeFinishTmp = "14:23:55 11/12/2024"
+		
+	$arrayTimeFinish = StringSplit($sTimeFinishTmp," ")
+
+	$sYear = StringRight($arrayTimeFinish[2],4)
+	$sDay = StringLeft($arrayTimeFinish[2],2)
+	; Thang la chuoi 12 trong text 11/12/2024
+	$sMonth = StringMid($arrayTimeFinish[2],4,2)
+
+	writeLogFile($logFile, "$sYear = " & $sYear)
+	writeLogFile($logFile, "$sDay = " & $sDay)
+	writeLogFile($logFile, "$sMonth = " & $sMonth)
+	Return True
+EndFunc
 
 Func test()
 
@@ -65,45 +75,47 @@ Func test()
 	Return True
 EndFunc
 
-Func startAuction()
+Func start()
 
-	Local $sFilePath = $outputPathRoot & "File_" & $sDateTime & ".txt"
-	Local $resultAuctionFilePath = $outputPathRoot & "File_" & $sDateTime & "_auction_result.txt"
+	Local $sFilePath = $sRootDir & "output\\File_Auction.txt"
+	Local $resultAuctionFilePath = $sRootDir & "output\\File_auction_result.txt"
 
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$auctionResultFile = FileOpen($resultAuctionFilePath, $FO_OVERWRITE)
 	
 	checkThenCloseChrome()
 
-	deleteFileInFolder($outputPathRoot)
+	;~ deleteFileInFolder()
 
 	; Set up chrome
 	$sSession = SetupChrome()
 
+	$firstTimeLogin = True
+
 	; thuc hien di vao trang dau gia
-	While @HOUR >= 19 And @HOUR < 23 
-		getConfigAuction()
+	While @HOUR >= 10 And @HOUR < 23 
+		;~ getConfigAuction()
+		;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
+		$username = _JSONGet($autoAuctionConfigFileName,"username")
+		$password = _JSONGet($autoAuctionConfigFileName,"password")
+		$adminList = _JSONGet($autoAuctionConfigFileName,"admin_list")
+		writeLogFile($logFile, "Begin auction for user: " & $username & ". Admin list: " & $adminList)
+		$isLoginSuccess = login($sSession, $username, $password)
 
-		$accountInfo = $accountAuction[0]
-		$username = StringSplit($accountInfo, "|")[1]
-		$password = StringSplit($accountInfo, "|")[2]
+		If $firstTimeLogin == True Then
+			login()
+			; Check IP
+			$isHaveIP = checkIp()
+			$firstTimeLogin = False
+			If $isHaveIP == False Then ExitLoop
+		EndIf
 
+		;~ getConfigAuction()
+		
 		; Truong hop co 1 phan tu va phan tu do bang phan tu example thi dong chuong trinh
 		If UBound($auctionsConfig) == 1 And $auctionsConfig[0] == $recordExample Then ExitLoop
 
-		writeLogFile($logFile, "Begin process login")
-		$isLoginSuccess = login($sSession, $username, $password)
-		secondWait(5)
-		If $isLoginSuccess Then 
-			$isHaveIP = checkIp($sSession)
-			If Not $isHaveIP Then ExitLoop
-		Else
-			; Login khong thanh cong => exit
-			ExitLoop
-		EndIf
-
 		ReDim $auctionArray[0]
-		$amountCanAuction = 0
 		For $i = 0 To UBound($auctionsConfig) - 1
 			writeLogFile($logFile, "Thông tin account đấu giá: " & $auctionsConfig[$i])
 			If $auctionsConfig[$i] <> '' Then
@@ -118,7 +130,6 @@ Func startAuction()
 					writeLogFile($logFile, "Thời gian đấu giá: " & $dateTimeArray[1])
 					If $dateTimeArray[1] == @YEAR & "-" & @MON & "-" & @MDAY Or $dateTimeArray[1] == @YEAR & "/" & @MON & "/" & @MDAY Then 
 						$canAuction = True
-						$amountCanAuction = $amountCanAuction + 1
 					Else
 						If $dateTimeString > $currentTime Then 
 							writeLogFile($logFile, "Thời gian đấu giá trong tương lai !" & $auctionsConfig[$i])
@@ -130,7 +141,7 @@ Func startAuction()
 					$canAuction = True
 				EndIf
 
-				If $canAuction Then 
+				If $canAuction == True Then 
 					auction($idUrl, $maxPrice, $adminIDs)
 				Else
 					writeLogFile($logFile, "Thời gian đấu giá trong tương lai hoặc đã qua !")
@@ -145,6 +156,10 @@ Func startAuction()
 	
 	FileClose($logFile)
 	FileClose($auctionResultFile)
+	
+	; Logout account
+	_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
+	secondWait(5)
 	
 	; Close webdriver neu thuc hien xong 
 	If $sSession Then _WD_DeleteSession($sSession)
@@ -166,9 +181,20 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 
 		$aChildElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//div[@class='col-sm-6 align-self-center']/div[@class='input-group']/span", $aElements[0], True)
       
-		$sTimeFinish = getTextElement($sSession, $aChildElements[0])
-
+		$sTimeFinishTmp = getTextElement($sSession, $aChildElements[0])
+		; 14:23:55 11/12/2024
 		
+		$arrayTimeFinish = StringSplit($sTimeFinishTmp," ")
+
+		$sYear = StringRight($arrayTimeFinish[2],4)
+		$sDay = StringLeft($arrayTimeFinish[2],2)
+		; Thang la chuoi 12 trong text 11/12/2024
+		$sMonth = StringMid($arrayTimeFinish[2],4,2)
+
+		$sTimeFinish = $sYear & "/" & $sMonth & "/" & $sDay & " " & $arrayTimeFinish[1]
+
+		writeLogFile($logFile, "$sTimeFinish = " & $sTimeFinish)
+
 		$sCurrentChar = getTextElement($sSession, $aChildElements[1])
 
 		; Boc tach du lieu va trim du lieu
@@ -180,10 +206,13 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 			$currentCharAuction = StringSplit($sCurrentChar, " (")[1]
 			writeLogFile($logFile, "Nhân vật đang đấu giá hiện tại: " & $currentCharAuction)
 		EndIf
-		
+		          
 		$timeFinish = _DateAdd('h', 0, $sTimeFinish)
 
 		$timeMatch = _DateAdd('n', -7, $sTimeFinish)
+
+		writeLogFile($logFile, "Thời gian kết thúc đấu giá: " & $timeFinish)
+		writeLogFile($logFile, "Thời gian có thể vào đấu giá: " & $timeMatch)
 
 		$currentTime = _NowCalc()
 
@@ -233,7 +262,7 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 
 		If Number($numPriceAuctionAllow) > Number($maxPriceTmp) Then $checkMatchMaxPrice = False
 
-		If $isCheckTimeOk And $bFound == False And $checkMatchMaxPrice Then
+		If $isCheckTimeOk == True And $bFound == False And $checkMatchMaxPrice == True Then
 			Local $sScript = "document.querySelector('input[name=price]').value = '"& ($numPriceAuctionAllow + 1) &"';"
 			_WD_ExecuteScript($sSession, $sScript)
 			secondWait(1)
@@ -247,11 +276,11 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 			Else
 				clickElement($sSession, $checkConfirmBox)
 			EndIf
-			writeLogFile($logFile, "Đấu giá thành công !")
+			writeLogFile($logFile, "Đấu giá thành công ! Gia vao dau gia la: " & ($numPriceAuctionAllow + 1))
 		Else
 			$reason = "Không đủ điều kiện đấu giá ! Nguyên nhân: " & @CRLF
 			If $isCheckTimeOk == False Then $reason &= "Thời gian chưa đủ để đấu giá ! Thời gian kết thúc: " & $timeFinish  & @CRLF
-			If $bFound Then $reason &= "Nhân vật đang đấu giá là chính bạn. Nhân vật đang đấu giá: " & $currentCharAuction & @CRLF
+			If $bFound == True Then $reason &= "Nhân vật đang đấu giá là chính bạn. Nhân vật đang đấu giá: " & $currentCharAuction & @CRLF
 			If $checkMatchMaxPrice == False Then $reason &= "Giá cho phép đã vượt qua ngưỡng tối đa. Max giá: " & $maxPrice & " ! Giá hiện tại: " & $numPriceAuctionAllow & @CRLF
 			writeLogFile($logFile, $reason)
 		EndIf	
@@ -264,19 +293,56 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 	Return True
 EndFunc
 
+Func login()
+	; vao website
+	_WD_Navigate($sSession, $baseMuUrl)
+	secondWait(5)
+	; get title
+	$sTitle = getTitleWebsite($sSession)
+
+	While $sTitle <> $sTitleLoginSuccess
+		$checkConfirmBox = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//button[@class='swal2-confirm swal2-styled']")
+		If @error Then
+			writeLogFile($logFile, "Không tìm thấy diaglog lỗi !")
+		Else
+			clickElement($sSession, $checkConfirmBox)
+		EndIf
+		loginWebsite($sSession, Default)
+		$sTitle = getTitleWebsite($sSession)
+	WEnd
+
+	writeLogFile($logFile, "Đăng nhập thành công !")
+	Return True
+EndFunc
+
 Func getConfigAuction()
-	Local $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
-	Local $auctionConfigPath = $inputPathRoot & "auctions.txt"
-	Local $auctionAccountPath = $inputPathRoot & "account.txt"
+	Local $sAdminsIdFilePath = $sRootDir & "input\\admins_id.txt"
+	Local $auctionConfigPath = $sRootDir & "input\\auctions.txt"
+	Local $auctionAccountPath = $sRootDir & "input\\account.txt"
 
 	; Đọc nội dung của file .txt vào mảng
 	If FileExists($sAdminsIdFilePath) And FileExists($auctionConfigPath) And FileExists($auctionAccountPath) Then
 		; char auction list
-		$adminIDs = readFileTxtToArray($sAdminsIdFilePath)
+		$adminIDs = FileReadToArray($sAdminsIdFilePath)
+		If @error Then
+			MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file adminIDs.")
+			Exit
+		EndIf
+
 		; auction config list
-		$auctionsConfig = readFileTxtToArray($auctionConfigPath)
+		$auctionsConfig = FileReadToArray($auctionConfigPath)
+		If @error Then
+			MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file auctionsConfig.")
+			Exit
+		EndIf
+
 		; account
-		$accountAuction = readFileTxtToArray($auctionAccountPath)
+		$accountAuction = FileReadToArray($auctionAccountPath)
+		
+		If @error Then
+			MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file $accountAuction.")
+			Exit
+		EndIf
 	Else
 		MsgBox(16, "Lỗi", "File không tồn tại.")
 		Exit
@@ -284,9 +350,125 @@ Func getConfigAuction()
 	Return True
 EndFunc
 
+Func loginWebsite($sSession, $accountInfo)
+	$accountInfo = $accountAuction[0]
+	$username = StringSplit($accountInfo, "|")[1]
+	$password = StringSplit($accountInfo, "|")[2]
+
+	writeLogFile($logFile, "UserName: " & $username & ", Password: " & $password)
+
+	_WD_Navigate($sSession, $baseMuUrl)
+	secondWait(5)
+
+	; _WD_Window($sSession,"MINIMIZE")
+
+	_Demo_NavigateCheckBanner($sSession, $baseUrl)
+    _WD_LoadWait($sSession, 1000)
+
+	; Fill user name
+	$sElement = _WD_GetElementByName($sSession,"username")
+	_WD_ElementAction($sSession, $sElement, 'value','xxx')
+	_WD_ElementAction($sSession, $sElement, 'CLEAR')
+	secondWait(2)
+	_WD_ElementAction($sSession, $sElement, 'value',$username)
+	
+	; Fill password
+	$sElement = _WD_GetElementByName($sSession,"password") 
+	_WD_ElementAction($sSession, $sElement, 'value','xxx')
+	_WD_ElementAction($sSession, $sElement, 'CLEAR')
+	secondWait(2)
+	_WD_ElementAction($sSession, $sElement, 'value',$password)
+
+	; Save captcha
+	$captchaImgPath = @ScriptDir & "\captcha_img.png";
+	; Find image captcha
+	$sElement = findElement($sSession, "//img[@class='captcha_img']")
+	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
+
+	If @error = $_WD_ERROR_Success Then 
+		$idCaptchaFinal = ''
+		; Get captcha buoc 2 => call server captcha 
+		While $idCaptchaFinal == '' Or StringLen($idCaptchaFinal) > 4
+			$sFilePath = "file:///" & $sRootDir & "input/get_captcha.html"
+
+			; Get captcha buoc 1
+			createNewTab($sSession,optimizeUrl($sFilePath))
+			; select captcha
+			_WD_SelectFiles($sSession, $_WD_LOCATOR_ByXPath, "//input[@name='file']", $captchaImgPath)
+			; Submit get id from azcaptcha
+			$sElement = findElement($sSession, "//input[@type='submit']")
+			clickElement($sSession, $sElement)
+			; get text
+			$sElement = findElement($sSession, "//body")
+			$idCaptcha = getTextElement($sSession, $sElement)
+			$idCaptcha = StringReplace($idCaptcha, "OK|", "")
+			secondWait(2)
+
+			; Get captcha buoc 2
+			$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
+			_Demo_NavigateCheckBanner($sSession, $serverCaptcha)
+			; _WD_Window($sSession,"MINIMIZE")
+			; get text
+			$sElement = findElement($sSession, "//body")
+			$idCaptchaFinal = getTextElement($sSession, $sElement)
+			$idCaptchaFinal = StringReplace($idCaptchaFinal, "OK|", "")
+			writeLogFile($logFile, "Captcha Value: " & $idCaptchaFinal)
+			secondWait(1)
+		WEnd
+		
+		; Chuyen lai tab ve gamethuvn.net
+		_WD_Attach($sSession, $baseMuUrl, "URL")
+		
+		; _WD_Window($sSession,"MINIMIZE")
+
+		writeLogFile($logFile, "mu_auction.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
+		; set input captcha
+		$sElement = findElement($sSession, "//input[@name='captcha']") 
+		_WD_ElementAction($sSession, $sElement, 'value',$idCaptchaFinal)
+		secondWait(1)
+		; Submit to login
+		$sElement = findElement($sSession, "//button[@type='submit']") 
+		clickElement($sSession, $sElement)
+		secondWait(5)
+	EndIf
+
+	Return True
+EndFunc
+
+Func checkIp()
+	$isHaveIP = True
+	$sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='alert alert-success']/i[@class='c-icon c-icon-xl cil-shield-alt t-pull-left']", Default, False)
+	If @error Then
+		writeLogFile($logFile, "IP KHONG CHINH CHU")
+		$isHaveIP = False
+	EndIf
+	Return $isHaveIP
+EndFunc
+
+Func deleteFileInFolder()
+
+	Local $sFolderPath = $sRootDir & "output" ; Đường dẫn thư mục output
+
+	Local $aFileList = _FileListToArray($sFolderPath) ; Lấy danh sách các file trong thư mục
+
+	If @error Then
+		writeLogFile($logFile, "Không thể đọc danh sách file trong thư mục")
+	Else
+		For $i = 1 To $aFileList[0] ; Duyệt qua từng file
+			If StringInStr($aFileList[$i], "File_" & $sDateToday) == 0 Then ; Kiểm tra nếu tên file chứa "File_"
+				Local $sFilePath = $sFolderPath & "\" & $aFileList[$i] ; Đường dẫn đầy đủ của file
+				FileDelete($sFilePath) ; Xoá file
+			EndIf
+		Next
+		;~ MsgBox(64, "Thông báo", "Xoá các file thành công")
+	EndIf
+
+	Return True
+EndFunc
+
 Func reWriteAuctionFile($auctionArray)
 	
-	Local $auctionPath = $inputPathRoot & "auctions.txt"
+	Local $auctionPath = $sRootDir & "input\\auctions.txt"
 
 	$autionFile = FileOpen($auctionPath, $FO_OVERWRITE)
 
