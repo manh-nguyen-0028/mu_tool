@@ -6,24 +6,22 @@
 
 ; CONSTANT
 Global $baseDir = StringSplit(@ScriptDir,"mu_tool",1)[1] & "mu_tool"
-Global $imagePathRoot = $baseDir & "\media\image\"
-Global $jsonPathRoot = $baseDir & "\config\json\"
-Global $textPathRoot = $baseDir & "\config\text\"
-Global $inputPathRoot = $baseDir & "\input\"
-Global $outputPathRoot = $baseDir & "\output\"
-Global $driverPathRoot = $baseDir & "\driver\"
+Global $imagePathRoot = $baseDir & "\media\image\", $jsonPathRoot = $baseDir & "\config\json\"
+Global $textPathRoot = $baseDir & "\config\text\", $inputPathRoot = $baseDir & "\input\"
+Global $outputPathRoot = $baseDir & "\output\", $driverPathRoot = $baseDir & "\driver\"
 Global $featurePathRoot = $baseDir & "\feature\"
 
-Local $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của script
+Global $sScriptDir = @ScriptDir ; Đường dẫn thư mục hiện tại của script
 Global $sRootDir = StringRegExpReplace($sScriptDir, "^(.+\\)[^\\]+\\?$", "$1") ; Lấy đường dẫn thư mục gốc
+Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
-Global $baseMuUrl = "https://hn.mugamethuvn.info/"
+; CONSTANT MU
+;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
+Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
 Global $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName
-
 Global $aCharInAccount
-Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 ; Khai báo hằng số
 Global Const $WM_MOUSEMOVE = 0x0200
@@ -43,7 +41,7 @@ Func init()
 	For $i =0 To UBound($jsonConfig) - 1
 		$active = getPropertyJson($jsonConfig[$i], "active")
 		$type = getPropertyJson($jsonConfig[$i], "type")
-		$key = getPropertyJson($jsonConfig[$i], "key")
+		;~ $key = getPropertyJson($jsonConfig[$i], "key")
 		$value = getPropertyJson($jsonConfig[$i], "value")
 		If $active Then
 			If "position" == $type Then
@@ -69,7 +67,15 @@ Func init()
 		EndIf
 	Next
 	
+	initPositionConfig($jsonPositionConfig)
+	
 	Return True
+EndFunc
+
+Func initPositionConfig($jsonPositionConfig)
+	; Web driver config
+	$muUrl = _JSONGet($jsonPositionConfig,"common.web.mu_url")
+	If $muUrl <> "" Then $baseMuUrl = $muUrl
 EndFunc
 
 ; Method: writeLog
@@ -286,9 +292,9 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
-	Sleep(500)
+	Sleep(400)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
-	Sleep(500)
+	Sleep(400)
 EndFunc
 
 Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)
@@ -345,6 +351,25 @@ Func sendKeyEnter()
 	sendKeyDelay("{Enter}")
 EndFunc
 
+; Send key home
+Func sendKeyHome()
+	writeLogFile($logFile, "Send key home !")
+	sendKeyDelay("{Home}")
+	secondWait(1)
+EndFunc
+
+Func sendKeyTab()
+	writeLogFile($logFile, "Send key tab !")
+	sendKeyDelay("{Tab}")
+	secondWait(1)
+EndFunc
+
+Func sendKeyH()
+	writeLogFile($logFile, "Send key +h !")
+	sendKeyDelay("+h")
+	secondWait(1)
+EndFunc
+
 ; Method: activeMain
 ; Description: Activates a specified window.
 Func activeMain($mainNo)
@@ -357,6 +382,11 @@ EndFunc
 Func minisizeMain($mainNo)
 	;~ writeLogFile($logFile,"SW_MINIMIZE main: " & $mainNo)
 	WinSetState($mainNo,"",@SW_MINIMIZE)
+EndFunc
+
+Func minisizeMainByChar($charName)
+	$mainName = getMainNoByChar($charName)
+	minisizeMain($mainName)
 EndFunc
 
 Func minisizeAllMain()
@@ -377,6 +407,11 @@ Func activeAndMoveWin($mainName)
 		writeLogFile($logFile,"Window not activated : " & $mainName)
 	EndIf
 	Return $isActive
+EndFunc
+
+Func activeAndMoveWinByChar($charName)
+	$mainName = getMainNoByChar($charName)
+	Return activeAndMoveWin($mainName)
 EndFunc
 
 ; Method: readFileText
@@ -421,15 +456,25 @@ EndFunc
 ; Description: Checks if the color of a pixel at specified coordinates matches a given color.
 Func checkPixelColor($toaDoX, $toaDoY, $color)
 	$resultCompare = False
-	secondWait(1)
-	$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
-	Local $isClose = IsColorClose(Hex($colorGetPosition, 6), Hex($color, 6), 20)
-	If $isClose Then 
-		$resultCompare = True
-		writeLogFile($logFile,"Mau trung khop")
-	;~ Else
-	;~ 	writeLogFile($logFile,"color compare : " & $resultCompare & " - Hex($colorGetPosition, 6) = " & Hex($colorGetPosition, 6))
-	EndIf 
+	$count = 0
+	While Not $resultCompare And $count < 4
+		$colorGetPosition = PixelGetColor($toaDoX, $toaDoY)
+		Local $isClose = IsColorClose(Hex($colorGetPosition, 6), Hex($color, 6), 20)
+		If $isClose Then 
+			$resultCompare = True
+			; Thoat khoi vong lap While
+			ExitLoop
+		Else
+			secondWait(1)
+		EndIf
+		$count = $count + 1
+	WEnd
+
+	If $resultCompare Then 
+		writeLogFile($logFile,"checkPixelColor SUCCESS")
+	Else
+		writeLogFile($logFile,"checkPixelColor FAIL after " & $count & " times")
+	EndIf
 	Return $resultCompare
 EndFunc
 
@@ -549,21 +594,24 @@ Func getOtherChar($currentChar)
 	; load char in account
 	$aCharInAccount = getArrayInFileTxt($textPathRoot & $charInAccountFileName)
 
-	$otherCharName = ""
+	$result = ""
 
-	For $i = 0 To UBound($aCharInAccount) -1
-		$resultCheck = StringInStr($aCharInAccount[$i], $currentChar & "|")
+	;~ _ArrayDisplay($aCharInAccount)
+
+	For $i = 0 To UBound($aCharInAccount) - 1
+		$aChar = $aCharInAccount[$i]
+		writeLogFile($logFile, "aChar : " & $aChar)
+		$resultCheck = StringInStr($aChar, $currentChar)
 		If $resultCheck Then
-			; Chuyen sang char con lai
-			$otherCharName = StringSplit($aCharInAccount[$i],"|")[2]
-			writeLogFile($logFile, "Da tim thay other char: " & $otherCharName)
+			writeLogFile($logFile, "Da tim thay other char: " & $aChar)
+			$result = $aChar
 			ExitLoop
 		EndIf
 	Next
 
-	If $otherCharName == "" Then writeLogFile($logFile, "Khong tim thay char nao phu hop")
+	If $result == "" Then writeLogFile($logFile, "Khong tim thay char nao phu hop")
 
-	Return $otherCharName
+	Return $result
 EndFunc
 
 Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)

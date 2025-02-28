@@ -9,7 +9,10 @@
 Global $baseUrl = $baseMuUrl
 
 Func SetupChrome()
-    _WD_Option('Driver', $driverPathRoot & 'chromedriver\chromedriver.exe')
+	Local $chormeDriver = _JSONGet($jsonPositionConfig,"common.chrome.path"), $chormeProfile = _JSONGet($jsonPositionConfig,"common.chrome.profile")
+	Local $chormeBinary = _JSONGet($jsonPositionConfig,"common.chrome.binary")
+
+    _WD_Option('Driver', $driverPathRoot & $chormeDriver)
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\chrome.log"')
 
@@ -20,8 +23,8 @@ Func SetupChrome()
 	_WD_CapabilitiesAdd('args', 'start-maximized')
 	_WD_CapabilitiesAdd('args', 'disable-infobars')
 	_WD_CapabilitiesAdd('args', 'user-data-dir', $sChromeUserDataPath)
-	_WD_CapabilitiesAdd('args', '--profile-directory', 'Profile 1')
-	_WD_CapabilitiesAdd('binary', "C:\Program Files\Google\Chrome\Application\chrome.exe")
+	_WD_CapabilitiesAdd('args', '--profile-directory', $chormeProfile)
+	_WD_CapabilitiesAdd('binary', $chormeBinary)
 
 	_WD_Startup()
     Local $sCapabilities = _WD_CapabilitiesGet()

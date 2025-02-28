@@ -1,9 +1,12 @@
 #include-once
 #include "../../utils/common_utils.au3"
-;~ #include "../../utils/game_utils.au3"
+#include "../../utils/game_utils.au3"
 
-testControlClick() 
+;~ testControlClick() 
 ;~ start()
+
+;~ getOtherChar("AliceX")
+switchOtherChar("XXXX002")
 
 Func start()
     $idCaptcha = ""

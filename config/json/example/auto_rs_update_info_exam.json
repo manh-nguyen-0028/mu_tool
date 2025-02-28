@@ -1,7 +1,4 @@
 [
-{"user_name":"luongmanh2","char_name":"DavidRyan","time_rs":1,"limit":5,"is_main_character":true,"last_time_reset":"2024/08/06 06:40:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100},
-{"user_name":"truongthon","char_name":"TruongThon","time_rs":1,"limit":16,"is_main_character":true,"last_time_reset":"2024/08/06 04:44:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100},
-{"user_name":"chensongbo","char_name":"chensongbo","time_rs":1,"limit":16,"is_main_character":true,"last_time_reset":"2024/08/06 01:44:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100},
-{"user_name":"angelexe87","char_name":"MaiyeuPT","time_rs":2,"limit":16,"is_main_character":true,"last_time_reset":"2024/08/05 22:44:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100},
-{"user_name":"truongthon","char_name":"DarkPhonix","time_rs":3,"limit":26,"is_main_character":false,"last_time_reset":"2024/07/31 17:00:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100}
+{"user_name":"luongmanh2","char_name":"DavidRyan","time_rs":1,"limit":5,"is_main_character":true,"main_char_name":"DavidRyan","last_time_reset":"2024/08/06 06:40:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100},
+{"user_name":"truongthon","char_name":"TruongThon","time_rs":1,"limit":16,"is_main_character":true,"main_char_name":"TruongThon","last_time_reset":"2024/08/06 04:44:00","password":"manhva02", "postion_move_x": 100, "postion_move_y": 100}
 ]

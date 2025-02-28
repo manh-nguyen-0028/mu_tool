@@ -8,17 +8,48 @@
 #RequireAdmin
 
 
-;~ $charName="Porsche718"
+$charName="BumbleBee"
 
-;~ startPath()
-;~ test()\
-;~ test3()
-;~ $charName="HaGiangOi"
-;~ test3()
-;~ testControlClick()
 
-$charName="zGaming"
+activeAndMoveWin(getMainNoByChar($charName))
+$checkRuongK = True
+$devilNo = 3
+$isNeedFollowLeader = False
+; 221 -91
+;~ writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+; Check and click into NPC devil
+;~ $npmSearchResult = searchNpcDevil($checkRuongK, $devilNo)
 
+
+; Click into NPC devil
+;~ clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
+
+;~ secondWait(3)
+
+;~ ;~ goMapLvl()
+;~ moveOtherMap($charName)
+
+;~ secondWait(3)
+
+;~ _MU_followLeader(1)
+
+;~ $devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
+;~ 		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
+;~ 		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
+		
+
+;~ 		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+;~ 		If $checkOpenDevil Then
+;~ 			;~ clickPositionByDevilNo($devilNo)
+;~ 			secondWait(4)
+;~ 			;~ _MU_MouseClick_Delay(512, 477)
+;~ 			_MU_Start_AutoZ()
+;~ 		Else
+;~ 			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil => Thuc hien len lai bai")
+;~ 			;~ If $isNeedFollowLeader Then _MU_followLeader(1)
+;~ 		EndIf
+
+minisizeMain(getMainNoByChar($charName))
 
 ; Sử dụng hàm
 ;~ Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
@@ -27,8 +58,8 @@ $charName="zGaming"
 ;~ ControlClick_NoFocus($hWnd, "", 732, 95) ; Click không chiếm chuột vào tọa độ (100, 50) trong control 
 
 ; Thuc hien swith sang main chinh
-$jsonAccountActiveDevil = getArrayActiveDevil()
-switchToMainChar($jsonAccountActiveDevil)
+;~ $jsonAccountActiveDevil = getArrayActiveDevil()
+;~ switchToMainChar($jsonAccountActiveDevil)
 
 
 Func testControlClick()

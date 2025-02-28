@@ -91,7 +91,7 @@ Func checkLvl400($mainNo)
 EndFunc
 
 Func _MU_Start_AutoZ()
-	sendKeyDelay("{Home}")
+	sendKeyHome()
 EndFunc
 
 Func checkEmptyMapStadium($mainNo)
@@ -236,8 +236,10 @@ Func checkActiveAutoHome()
 	$y = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y")
 	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
+	$imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
-	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, 50, True)
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
@@ -338,32 +340,47 @@ Func switchOtherChar($currentChar)
 	$otherCharName = getOtherChar($currentChar)
 	
 	If $otherCharName <> '' Then 
-		$otherMainNo = getMainNoByChar($otherCharName)
+		; chuoi $otherCharName = "char1|char2|char3"
+		; Tach chuoi dua tren dau | va kiem tra xem co nhan vat nao duoc active hay khong
+		$otherCharNameArray = StringSplit($otherCharName, "|")
+		$numberChar = $otherCharNameArray[0]
+		$charName = ""
 
-		If activeAndMoveWin($otherMainNo) Then
-			writeLogFile($logFile,"Da tim thay main khac cung tai khoan: " & $otherCharName)
+		For $i = 1 To UBound($otherCharNameArray) - 1
+			$charName = $otherCharNameArray[$i]
+			writeLogFile($logFile,"Check nhan vat: " & $charName)
+			If activeAndMoveWinByChar($charName) Then ExitLoop
+		Next
+
+		;~ $otherMainNo = getMainNoByChar($otherCharName)
+
+		If activeAndMoveWinByChar($charName) Then
+			writeLogFile($logFile,"Tim thay nhan vat: " & $charName & " cung tai khoan")
+			writeLogFile($logFile,"Bat dau chuyen sang main chinh: " & $currentChar)
 			; Thuc hien click chuyen nhan vat cung tai khoan
 			clickOtherChar()
-			; check current char
-			$currentMainNo = getMainNoByChar($currentChar)
 
 			$timeCheck = 1;
 
-			While Not activeAndMoveWin($currentMainNo) And $timeCheck < 5
+			While Not activeAndMoveWinByChar($currentChar) And $timeCheck < 5
+				If $timeCheck >= 2 And Number($numberChar) > 1 Then
+					clickOtherChar2()
+				Else
+					secondWait(1)
+				EndIf
 				secondWait(1)
 				$timeCheck += 1
 			WEnd
 
-			If activeAndMoveWin($currentMainNo) Then 
+			If activeAndMoveWinByChar($currentChar) Then 
 				$resultSwitch = True
-				writeLogFile($logFile,"Da chuyen thanh cong vao main chinh: " & $currentChar)
+				writeLogFile($logFile,"Switch account SUCCESS: " & $currentChar)
 			Else
-				writeLogFile($logFile,"Khong chuyen duoc vao main chinh: " & $currentChar & " sau " & $timeCheck & " lan thu")
+				writeLogFile($logFile,"Switch account FAIL: " & $currentChar & " affter " & $timeCheck & " time")
 				; De chuot ra man hinh
 				mouseMoveCenterChar()
 				; Minisize main
-				writeLogFile($logFile,"Minisize main: " & $otherMainNo)
-				minisizeMain($otherMainNo)
+				minisizeMainByChar($charName)
 			EndIf
 
 		EndIf
@@ -374,30 +391,54 @@ EndFunc
 Func clickOtherChar()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
+	clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
+	Return True
+EndFunc
+
+Func clickOtherChar2()
+	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
+	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
+	clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
+EndFunc
+
+Func clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
 	$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
 	$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
 
-	;~ writeLogFile($logFile,"Bat dau chuyen vao main chinh: " & $currentChar)
+	writeLogFile($logFile,"Bat dau click voi toa do: " & $swithCharIconX & " - " & $swithCharIconY & " - " & $swithCharButtonChangeX & " - " & $swithCharButtonChangeY)
 
 	; => Click vao icon chuyen
 	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
 	; => Click vao chuyen
 	_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 	; Lay lai mainNo cua current char
-	secondWait(6)
+	secondWait(3)
 	; De chuot ra man hinh
-	mouseMoveCenterChar()
+	;~ mouseMoveCenterChar()
 	Return True
 EndFunc
 
-Func moveOtherMap()
-	secondWait(1)
-	writeLogFile($logFile,"Bat dau chuyen map khac")
-	sendKeyDelay("m")
-	$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
-	$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
-	_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
-	writeLogFile($logFile,"Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
+Func moveOtherMap($charName)
+	; Thuc hien get mainNo cua charName
+	$mainNo = getMainNoByChar($charName)
+	; Thuc hien active va move win
+	$activeWin = activeAndMoveWin($mainNo)
+	; Neu khong duoc active thi thuc hien switch sang main khac
+	If Not $activeWin Then
+		$activeWin = switchOtherChar($charName)
+	EndIf
+	; Chi nhung truong hop duoc active moi thuc hien move map
+	If $activeWin Then
+		secondWait(1)
+		writeLogFile($logFile,"Bat dau chuyen map khac")
+		sendKeyDelay("m")
+		$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
+		$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
+		_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
+		writeLogFile($logFile,"Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
+	Else
+		writeLogFile($logFile,"Khong the chuyen map khac")
+	EndIf
 EndFunc
 
 Func checkEnterChat()
@@ -406,6 +447,7 @@ Func checkEnterChat()
 	$color = _JSONGet($jsonPositionConfig,"button.check_enter_chat.color")
 	; Truong hop ton tai cua so chat, thuc hien enter 1 lan nua
 	If checkPixelColor($x, $y, $color) Then
+		writeLogFile($logFile,"Ton tai cua so chat, thuc hien enter 1 lan nua")
 		sendKeyEnter()
 	EndIf
 	Return True
@@ -415,18 +457,17 @@ Func switchToMainChar($jsonAccountActiveDevil)
 	; Thuc hien check trong $jsonAccountActiveDevil xem acc nao can chuyen sang main chinh hay khong ?
 	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
 		$switch_other_main = _JSONGet($jsonAccountActiveDevil[$i], "switch_other_main")
+		$main_char_name = _JSONGet($jsonAccountActiveDevil[$i], "main_char_name")
 		If $switch_other_main Then
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 			$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
 			$mainNo = getMainNoByChar($charName)
 			If $active And activeAndMoveWin($mainNo) Then
-				; Lay ten cua main cung tai khoan
-				$otherCharName = getOtherChar($charName)
 				; Thuc hien swith
-				$resultSwitch = switchOtherChar($otherCharName)
+				$resultSwitch = switchOtherChar($main_char_name)
 				; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
 				If $resultSwitch Then
-					minisizeMain(getMainNoByChar($otherCharName))
+					minisizeMain(getMainNoByChar($main_char_name))
 				Else
 					minisizeMain($mainNo)
 				EndIf

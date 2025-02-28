@@ -10,18 +10,14 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aActiveMove[0]
-Local $sSession,$logFile
-Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
-Local $sDate = @YEAR & @MON & @MDAY
-Local $className = @ScriptName
-
-
-Local $sFilePath = $outputPathRoot & "File_Log_Auto_Move.txt"
-
 ; Chức năng này dành cho chủ PT để kéo team lên map
 
 Func start()
+    Local $logFile
+    Local $aActiveMove[0], $sSession, $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
+    Local $sDate = @YEAR & @MON & @MDAY
+    Local $className = @ScriptName
+    Local $sFilePath = $outputPathRoot & "File_Log_Auto_Move.txt"
     writeLogFile($logFile, "Begin start auto move !")
     ; 1. Thuc hien lay danh sach account can auto move, chi lay nhung account co active = true
     $aAccountAutoMove = getJsonFromFile($jsonPathRoot & $autoMoveConfigFileName)
@@ -54,7 +50,7 @@ Func start()
             ; 3.2. Neu co thi kiem tra xem autoZ co hoat dong hay khong
             $checkAutoZ = checkActiveAutoHome()
             ; 3.2.1. Neu autoZ hoat dong thi thuc hien minizie cua so game
-            If checkActiveAutoHome() Then 
+            If $checkAutoZ Then 
                 minisizeMain($mainName)
             Else
                 ; 3.2.2. Neu autoZ khong hoat dong thi thuc hien login va move tren web

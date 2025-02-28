@@ -1,5 +1,5 @@
 {
-	"common" : {
+	"common": {
 	  "web": {
 		"mu_url": "https://hn.gamethuvn.net/"
 	  },
@@ -10,9 +10,9 @@
 		"y1": 789
 	  },
 	  "chrome": {
-		"path": "chromedriver\\chromedriver.exe",
-		"profile": "Profile 1",
-		"binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+		"path": "chrome\\chromedriver-win64\\chromedriver.exe",
+		"profile": "Default",
+		"binary": "C:\\Users\\MSI\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"
 	  },
 	  "image_search": {
 		"tolerance": 50
@@ -54,9 +54,9 @@
 	  "event_devil": {
 		"move_check_npc_x": 379,
 		"move_check_npc_y": 298,
-		"check_devil_open_x": 64,
-		"check_devil_open_y": 620,
-		"check_devil_open_color": "0x81C024"
+		"check_devil_open_x": 601,
+		"check_devil_open_y": 532,
+		"check_devil_open_color": "0xB98B4B"
 	  },
 	  "event_devil_icon": {
 		"x": 24,
@@ -65,15 +65,15 @@
 		"chap_nhan_y": 476,
 		"huy_bo_x": 554,
 		"huy_bo_y": 475,
-		"devil_2_x": 590,
-		"devil_2_y": 279,
+		"devil_2_x": 630,
+		"devil_2_y": 278,
 		"devil_3_x": 630,
 		"devil_3_y": 318,
-		"devil_4_x": 631,
+		"devil_4_x": 630,
 		"devil_4_y": 358,
-		"devil_5_x": 654,
+		"devil_5_x": 630,
 		"devil_5_y": 404,
-		"devil_6_x": 635,
+		"devil_6_x": 630,
 		"devil_6_y": 446
 	  },
 	  "event_devil_icon_no_had_k": {
@@ -111,10 +111,10 @@
 		"y": 359
 	  },
 	  "switch_char": {
-		"icon_x": 775,
-		"icon_y": 502,
-		"icon_x_2": 775,
-		"icon_y_2": 502,
+		"icon_x": 778,
+		"icon_y": 513,
+		"icon_x_2": 778,
+		"icon_y_2": 449,
 		"button_change_x": 420,
 		"button_change_y": 421
 	  },
@@ -164,16 +164,20 @@
 		"y1": 103
 	  },
 	  "sport_arena_1": {
-		"x": 269,
-		"y": 329
+		"x": 313,
+		"y": 324
 	  },
 	  "sport_arena_2": {
-		"x": 269,
-		"y": 329
+		"x": 360,
+		"y": 367
 	  },
 	  "sport_arena_3": {
-		"x": 269,
-		"y": 329
+		"x": 224,
+		"y": 505
+	  },
+	  "sport_arena_4": {
+		"x": 186,
+		"y": 249
 	  }
 	},
 	"web": {
