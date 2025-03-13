@@ -82,78 +82,83 @@ Func start()
 
 	$logFile = FileOpen($sFilePath, $FO_OVERWRITE)
 	$auctionResultFile = FileOpen($resultAuctionFilePath, $FO_OVERWRITE)
+
+	; Thuc hien load toan bo config dau gia
+	getConfigAuction()
+
+	; Truong hop co 1 phan tu va phan tu do bang phan tu example thi dong chuong trinh
+	If UBound($auctionsConfig) == 1 And $auctionsConfig[0] == $recordExample Then 
+		writeLogFile($logFile, "Không có dữ liệu đấu giá !")
+		FileClose($logFile)
+		FileClose($auctionResultFile)
+		Return True
+	EndIf
 	
 	checkThenCloseChrome()
 
-	;~ deleteFileInFolder()
-
-	; Set up chrome
+	; Thuc hien login
 	$sSession = SetupChrome()
-
-	$firstTimeLogin = True
-
-	; thuc hien di vao trang dau gia
-	While @HOUR >= 10 And @HOUR < 23 
-		;~ getConfigAuction()
-		;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
-		$username = _JSONGet($autoAuctionConfigFileName,"username")
-		$password = _JSONGet($autoAuctionConfigFileName,"password")
-		$adminList = _JSONGet($autoAuctionConfigFileName,"admin_list")
-		writeLogFile($logFile, "Begin auction for user: " & $username & ". Admin list: " & $adminList)
-		$isLoginSuccess = login($sSession, $username, $password)
-
-		If $firstTimeLogin == True Then
-			login()
-			; Check IP
-			$isHaveIP = checkIp()
-			$firstTimeLogin = False
-			If $isHaveIP == False Then ExitLoop
-		EndIf
-
-		;~ getConfigAuction()
-		
-		; Truong hop co 1 phan tu va phan tu do bang phan tu example thi dong chuong trinh
-		If UBound($auctionsConfig) == 1 And $auctionsConfig[0] == $recordExample Then ExitLoop
-
-		ReDim $auctionArray[0]
-		For $i = 0 To UBound($auctionsConfig) - 1
-			writeLogFile($logFile, "Thông tin account đấu giá: " & $auctionsConfig[$i])
-			If $auctionsConfig[$i] <> '' Then
-				$idUrl = StringSplit($auctionsConfig[$i], "|")[1]
-				$maxPrice = StringSplit($auctionsConfig[$i], "|")[2]
-				$canAuction = False
-				If StringSplit($auctionsConfig[$i], "|")[0] >= 3 Then
-					Local $dateTimeString = StringSplit($auctionsConfig[$i], "|")[3]
-					$dateTimeString = _DateAdd('h', 0, $dateTimeString)
-					$currentTime = _NowCalc()
-					Local $dateTimeArray = StringSplit($dateTimeString, " ")
-					writeLogFile($logFile, "Thời gian đấu giá: " & $dateTimeArray[1])
-					If $dateTimeArray[1] == @YEAR & "-" & @MON & "-" & @MDAY Or $dateTimeArray[1] == @YEAR & "/" & @MON & "/" & @MDAY Then 
-						$canAuction = True
-					Else
-						If $dateTimeString > $currentTime Then 
-							writeLogFile($logFile, "Thời gian đấu giá trong tương lai !" & $auctionsConfig[$i])
-							Redim $auctionArray[UBound($auctionArray) + 1]
-							$auctionArray[UBound($auctionArray) - 1] = $auctionsConfig[$i]
+	;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
+	$username = _JSONGet($autoAuctionConfigFileName,"username")
+	$password = _JSONGet($autoAuctionConfigFileName,"password")
+	$adminList = _JSONGet($autoAuctionConfigFileName,"admin_list")
+	writeLogFile($logFile, "Begin auction for user: " & $username & ". Admin list: " & $adminList)
+	$isLoginSuccess = login($sSession, $username, $password)
+	secondWait(5)
+	If $isLoginSuccess Then
+		; Check IP
+		$haveIP = checkIP($sSession)
+		; Chi khi co IP moi thuc hien tiep
+		If Not $haveIP Then 
+			writeLogFile($logFile, "Không có IP ! Khong the thuc hien dau gia !")
+			Return True
+		Else
+			; thuc hien di vao trang dau gia
+			While @HOUR >= 10 And @HOUR < 23 
+				; reload lai thong tin dau gia 
+				reloadAuctionInfo()
+				; Thuc hien dau gia
+				ReDim $auctionArray[0]
+				For $i = 0 To UBound($auctionsConfig) - 1
+					writeLogFile($logFile, "Thông tin account đấu giá: " & $auctionsConfig[$i])
+					If $auctionsConfig[$i] <> '' Then
+						$idUrl = StringSplit($auctionsConfig[$i], "|")[1]
+						$maxPrice = StringSplit($auctionsConfig[$i], "|")[2]
+						$canAuction = False
+						If StringSplit($auctionsConfig[$i], "|")[0] >= 3 Then
+							Local $dateTimeString = StringSplit($auctionsConfig[$i], "|")[3]
+							$dateTimeString = _DateAdd('h', 0, $dateTimeString)
+							$currentTime = _NowCalc()
+							Local $dateTimeArray = StringSplit($dateTimeString, " ")
+							writeLogFile($logFile, "Thời gian đấu giá: " & $dateTimeArray[1])
+							If $dateTimeArray[1] == @YEAR & "-" & @MON & "-" & @MDAY Or $dateTimeArray[1] == @YEAR & "/" & @MON & "/" & @MDAY Then 
+								$canAuction = True
+							Else
+								If $dateTimeString > $currentTime Then 
+									writeLogFile($logFile, "Thời gian đấu giá trong tương lai !" & $auctionsConfig[$i])
+									Redim $auctionArray[UBound($auctionArray) + 1]
+									$auctionArray[UBound($auctionArray) - 1] = $auctionsConfig[$i]
+								EndIf
+							EndIf
+						Else
+							$canAuction = True
 						EndIf
-					EndIf
-				Else
-					$canAuction = True
-				EndIf
 
-				If $canAuction == True Then 
-					auction($idUrl, $maxPrice, $adminIDs)
-				Else
-					writeLogFile($logFile, "Thời gian đấu giá trong tương lai hoặc đã qua !")
-				EndIf
-			EndIf 
-		Next
+						If $canAuction == True Then 
+							auction($idUrl, $maxPrice, $adminIDs)
+						Else
+							writeLogFile($logFile, "Thời gian đấu giá trong tương lai hoặc đã qua !")
+						EndIf
+					EndIf 
+				Next
 
-		reWriteAuctionFile($auctionArray)
+				reWriteAuctionFile($auctionArray)
 
-		minuteWait(4)
-	WEnd
-	
+				minuteWait(4)
+			WEnd
+		EndIf
+	EndIf
+
 	FileClose($logFile)
 	FileClose($auctionResultFile)
 	
@@ -293,32 +298,10 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 	Return True
 EndFunc
 
-Func login()
-	; vao website
-	_WD_Navigate($sSession, $baseMuUrl)
-	secondWait(5)
-	; get title
-	$sTitle = getTitleWebsite($sSession)
-
-	While $sTitle <> $sTitleLoginSuccess
-		$checkConfirmBox = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//button[@class='swal2-confirm swal2-styled']")
-		If @error Then
-			writeLogFile($logFile, "Không tìm thấy diaglog lỗi !")
-		Else
-			clickElement($sSession, $checkConfirmBox)
-		EndIf
-		loginWebsite($sSession, Default)
-		$sTitle = getTitleWebsite($sSession)
-	WEnd
-
-	writeLogFile($logFile, "Đăng nhập thành công !")
-	Return True
-EndFunc
-
 Func getConfigAuction()
-	Local $sAdminsIdFilePath = $sRootDir & "input\\admins_id.txt"
-	Local $auctionConfigPath = $sRootDir & "input\\auctions.txt"
-	Local $auctionAccountPath = $sRootDir & "input\\account.txt"
+	Local $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
+	Local $auctionConfigPath = $inputPathRoot & "auctions.txt"
+	Local $auctionAccountPath = $inputPathRoot & "account.txt"
 
 	; Đọc nội dung của file .txt vào mảng
 	If FileExists($sAdminsIdFilePath) And FileExists($auctionConfigPath) And FileExists($auctionAccountPath) Then
@@ -347,122 +330,37 @@ Func getConfigAuction()
 		MsgBox(16, "Lỗi", "File không tồn tại.")
 		Exit
 	EndIf
+
+	; In ra thong tin
+	writeLogFile($logFile, "Danh sách admins đang đấu giá: ")
+	For $i = 0 To UBound($adminIDs) - 1
+		writeLogFile($logFile, $adminIDs[$i])
+	Next
+	writeLogFile($logFile, "Danh sách đấu giá: ")
+	For $i = 0 To UBound($auctionsConfig) - 1
+		writeLogFile($logFile, $auctionsConfig[$i])
+	Next
+	writeLogFile($logFile, "Danh sách account đấu giá: ")
+	For $i = 0 To UBound($accountAuction) - 1
+		writeLogFile($logFile, $accountAuction[$i])
+	Next
 	Return True
 EndFunc
 
-Func loginWebsite($sSession, $accountInfo)
-	$accountInfo = $accountAuction[0]
-	$username = StringSplit($accountInfo, "|")[1]
-	$password = StringSplit($accountInfo, "|")[2]
-
-	writeLogFile($logFile, "UserName: " & $username & ", Password: " & $password)
-
-	_WD_Navigate($sSession, $baseMuUrl)
-	secondWait(5)
-
-	; _WD_Window($sSession,"MINIMIZE")
-
-	_Demo_NavigateCheckBanner($sSession, $baseUrl)
-    _WD_LoadWait($sSession, 1000)
-
-	; Fill user name
-	$sElement = _WD_GetElementByName($sSession,"username")
-	_WD_ElementAction($sSession, $sElement, 'value','xxx')
-	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-	secondWait(2)
-	_WD_ElementAction($sSession, $sElement, 'value',$username)
-	
-	; Fill password
-	$sElement = _WD_GetElementByName($sSession,"password") 
-	_WD_ElementAction($sSession, $sElement, 'value','xxx')
-	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-	secondWait(2)
-	_WD_ElementAction($sSession, $sElement, 'value',$password)
-
-	; Save captcha
-	$captchaImgPath = @ScriptDir & "\captcha_img.png";
-	; Find image captcha
-	$sElement = findElement($sSession, "//img[@class='captcha_img']")
-	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
-
-	If @error = $_WD_ERROR_Success Then 
-		$idCaptchaFinal = ''
-		; Get captcha buoc 2 => call server captcha 
-		While $idCaptchaFinal == '' Or StringLen($idCaptchaFinal) > 4
-			$sFilePath = "file:///" & $sRootDir & "input/get_captcha.html"
-
-			; Get captcha buoc 1
-			createNewTab($sSession,optimizeUrl($sFilePath))
-			; select captcha
-			_WD_SelectFiles($sSession, $_WD_LOCATOR_ByXPath, "//input[@name='file']", $captchaImgPath)
-			; Submit get id from azcaptcha
-			$sElement = findElement($sSession, "//input[@type='submit']")
-			clickElement($sSession, $sElement)
-			; get text
-			$sElement = findElement($sSession, "//body")
-			$idCaptcha = getTextElement($sSession, $sElement)
-			$idCaptcha = StringReplace($idCaptcha, "OK|", "")
-			secondWait(2)
-
-			; Get captcha buoc 2
-			$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
-			_Demo_NavigateCheckBanner($sSession, $serverCaptcha)
-			; _WD_Window($sSession,"MINIMIZE")
-			; get text
-			$sElement = findElement($sSession, "//body")
-			$idCaptchaFinal = getTextElement($sSession, $sElement)
-			$idCaptchaFinal = StringReplace($idCaptchaFinal, "OK|", "")
-			writeLogFile($logFile, "Captcha Value: " & $idCaptchaFinal)
-			secondWait(1)
-		WEnd
-		
-		; Chuyen lai tab ve gamethuvn.net
-		_WD_Attach($sSession, $baseMuUrl, "URL")
-		
-		; _WD_Window($sSession,"MINIMIZE")
-
-		writeLogFile($logFile, "mu_auction.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
-		; set input captcha
-		$sElement = findElement($sSession, "//input[@name='captcha']") 
-		_WD_ElementAction($sSession, $sElement, 'value',$idCaptchaFinal)
-		secondWait(1)
-		; Submit to login
-		$sElement = findElement($sSession, "//button[@type='submit']") 
-		clickElement($sSession, $sElement)
-		secondWait(5)
-	EndIf
-
-	Return True
-EndFunc
-
-Func checkIp()
-	$isHaveIP = True
-	$sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='alert alert-success']/i[@class='c-icon c-icon-xl cil-shield-alt t-pull-left']", Default, False)
-	If @error Then
-		writeLogFile($logFile, "IP KHONG CHINH CHU")
-		$isHaveIP = False
-	EndIf
-	Return $isHaveIP
-EndFunc
-
-Func deleteFileInFolder()
-
-	Local $sFolderPath = $sRootDir & "output" ; Đường dẫn thư mục output
-
-	Local $aFileList = _FileListToArray($sFolderPath) ; Lấy danh sách các file trong thư mục
-
-	If @error Then
-		writeLogFile($logFile, "Không thể đọc danh sách file trong thư mục")
+Func reloadAuctionInfo()
+	; Thuc hien load toan bo config dau gia
+	Local $auctionConfigPath = $inputPathRoot & "auctions.txt"
+	If FileExists($auctionConfigPath) Then
+		; auction config list
+		$auctionsConfig = FileReadToArray($auctionConfigPath)
+		If @error Then
+			MsgBox(16, "Lỗi", "Đã xảy ra lỗi khi đọc file auctionsConfig.")
+			Exit
+		EndIf
 	Else
-		For $i = 1 To $aFileList[0] ; Duyệt qua từng file
-			If StringInStr($aFileList[$i], "File_" & $sDateToday) == 0 Then ; Kiểm tra nếu tên file chứa "File_"
-				Local $sFilePath = $sFolderPath & "\" & $aFileList[$i] ; Đường dẫn đầy đủ của file
-				FileDelete($sFilePath) ; Xoá file
-			EndIf
-		Next
-		;~ MsgBox(64, "Thông báo", "Xoá các file thành công")
+		MsgBox(16, "Lỗi", "File không tồn tại.")
+		Exit
 	EndIf
-
 	Return True
 EndFunc
 
