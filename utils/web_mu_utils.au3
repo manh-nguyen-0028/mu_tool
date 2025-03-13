@@ -387,3 +387,11 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		Return True
 	EndIf
 EndFunc
+
+Func logoutAndCloseChromeDriver($sSession)
+	logout($sSession)
+	; Close webdriver neu thuc hien xong 
+	If $sSession Then _WD_DeleteSession($sSession)
+	
+	_WD_Shutdown()
+EndFunc

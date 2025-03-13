@@ -9,12 +9,12 @@
 #include "../../utils/web_mu_utils.au3"
 
 ; Valiable
-Local $sSession,$adminIDs,$auctionsConfig, $accountAuction
-Local $sTitleLoginSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Thông báo"
-Local $sDateToday = @YEAR & @MON & @MDAY
-Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
-Local $logFile,$auctionResultFile, $auctionArray[0]
-Local $recordExample = "5153|100"
+Global $sSession,$adminIDs,$auctionsConfig, $accountAuction
+Global $auctionResultFile, $auctionArray[0]
+Global $recordExample = "5153|100"
+Global $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
+Global $auctionConfigPath = $inputPathRoot & "auctions.txt"
+Global $auctionAccountPath = $inputPathRoot & "account.txt"
 
 start()
 ;~ test()
@@ -93,16 +93,28 @@ Func start()
 		FileClose($auctionResultFile)
 		Return True
 	EndIf
-	
+
+	performAuctionProcess()
+
+	FileClose($logFile)
+	FileClose($auctionResultFile)
+
+	Return True
+EndFunc
+
+Func performAuctionProcess()
+	; Kiem tra xem chorme co duoc bat hay khong, neu co thi dong no
 	checkThenCloseChrome()
 
 	; Thuc hien login
 	$sSession = SetupChrome()
 	;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
-	$username = _JSONGet($autoAuctionConfigFileName,"username")
-	$password = _JSONGet($autoAuctionConfigFileName,"password")
-	$adminList = _JSONGet($autoAuctionConfigFileName,"admin_list")
-	writeLogFile($logFile, "Begin auction for user: " & $username & ". Admin list: " & $adminList)
+	$accountInfo = $accountAuction[0]
+	$username = StringSplit($accountInfo, "|")[1]
+	$password = StringSplit($accountInfo, "|")[2]
+	; Lay danh sach admin
+	;~ $adminList = _JSONGet($autoAuctionConfigFileName,"admin_list")
+	writeLogFile($logFile, "Begin auction for user: " & $username)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess Then
@@ -111,6 +123,8 @@ Func start()
 		; Chi khi co IP moi thuc hien tiep
 		If Not $haveIP Then 
 			writeLogFile($logFile, "Không có IP ! Khong the thuc hien dau gia !")
+			; Logout and close chorome driver
+			logoutAndCloseChromeDriver($sSession)
 			Return True
 		Else
 			; thuc hien di vao trang dau gia
@@ -159,19 +173,8 @@ Func start()
 		EndIf
 	EndIf
 
-	FileClose($logFile)
-	FileClose($auctionResultFile)
-	
-	; Logout account
-	_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-	secondWait(5)
-	
-	; Close webdriver neu thuc hien xong 
-	If $sSession Then _WD_DeleteSession($sSession)
-	
-	_WD_Shutdown()
-
-	Return True
+	; Logout and close chrome driver
+	logoutAndCloseChromeDriver($sSession)
 EndFunc
 
 Func auction($idUrl, $maxPrice, $adminIDs)
@@ -299,10 +302,6 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 EndFunc
 
 Func getConfigAuction()
-	Local $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
-	Local $auctionConfigPath = $inputPathRoot & "auctions.txt"
-	Local $auctionAccountPath = $inputPathRoot & "account.txt"
-
 	; Đọc nội dung của file .txt vào mảng
 	If FileExists($sAdminsIdFilePath) And FileExists($auctionConfigPath) And FileExists($auctionAccountPath) Then
 		; char auction list
@@ -349,7 +348,6 @@ EndFunc
 
 Func reloadAuctionInfo()
 	; Thuc hien load toan bo config dau gia
-	Local $auctionConfigPath = $inputPathRoot & "auctions.txt"
 	If FileExists($auctionConfigPath) Then
 		; auction config list
 		$auctionsConfig = FileReadToArray($auctionConfigPath)
@@ -365,10 +363,8 @@ Func reloadAuctionInfo()
 EndFunc
 
 Func reWriteAuctionFile($auctionArray)
-	
-	Local $auctionPath = $sRootDir & "input\\auctions.txt"
 
-	$autionFile = FileOpen($auctionPath, $FO_OVERWRITE)
+	$autionFile = FileOpen($auctionConfigPath, $FO_OVERWRITE)
 
 	For $i = 0 To UBound($auctionArray) - 1
 		FileWriteLine($autionFile, $auctionArray[$i])
