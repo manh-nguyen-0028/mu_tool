@@ -372,6 +372,12 @@ Func sendKeyH()
 	secondWait(1)
 EndFunc
 
+Func sendKeyEnd()
+	writeLogFile($logFile, "Send key End !")
+	sendKeyDelay("{END}")
+	secondWait(1)
+EndFunc
+
 ; Method: activeMain
 ; Description: Activates a specified window.
 Func activeMain($mainNo)

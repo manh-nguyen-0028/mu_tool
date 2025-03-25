@@ -390,6 +390,7 @@ EndFunc
 
 Func logoutAndCloseChromeDriver($sSession)
 	logout($sSession)
+	secondWait(5)
 	; Close webdriver neu thuc hien xong 
 	If $sSession Then _WD_DeleteSession($sSession)
 	

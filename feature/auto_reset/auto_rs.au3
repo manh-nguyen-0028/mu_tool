@@ -301,12 +301,16 @@ Func processReset($jAccountInfo)
 				;~ checkEnterChat()
 				; Thuc hien send key home
 				sendKeyHome()
+				; Send tiep key tab de mo ban do
 				sendKeyTab()
 				; 4. Go to sport
 				goToSportLvl1()
+				; Sau khi vao sport thi thuc hien send key H
 				sendKeyH()
 				; Send 1 lan key tab nua de tat ban do
 				sendKeyTab()
+				; Sau do thuc hien send key end de kep chuot
+				sendKeyEnd()
 				; minisize main
 				minisizeMain($mainNo)
 				; 5. Check lvl in web
