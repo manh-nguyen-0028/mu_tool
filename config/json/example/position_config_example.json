@@ -14,6 +14,11 @@
 		"profile": "Profile 1",
 		"binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 	  },
+	  "edge": {
+		"path": "msedgedriver\\edgedriver_win64_134\\msedgedriver.exe",
+		"profile": "Profile 1",
+		"binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+	  },
 	  "image_search": {
 		"tolerance": 50
 	  }

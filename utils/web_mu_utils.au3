@@ -25,17 +25,22 @@ Global $sTitleLogoutSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - G
 Global $sTitleLogoutSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Sign In"
 
 Func checkThenCloseChrome()
-	Local $chromeProcessName = "chrome.exe"
+	checkThenCloseProcess("chrome.exe")
+EndFunc
 
-	; Kiểm tra xem có trình duyệt Chrome đang chạy không
+Func checkThenCloseEdge()
+	checkThenCloseProcess("msedge.exe")
+EndFunc
+
+Func checkThenCloseProcess($chromeProcessName)
+	
+	; Kiểm tra xem có tiến trình đang chạy không
 	If ProcessExists($chromeProcessName) Then
-		; Đóng tất cả các tiến trình trình duyệt Chrome
+		; Đóng tất cả các tiến trình
 		ProcessClose($chromeProcessName)
-		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Đã đóng tất cả các trình duyệt Chrome.")
-		writeLogFile($logFile, "Đã đóng tất cả các trình duyệt Chrome.")
+		writeLogFile($logFile, "Đã đóng tất cả các procees: " & $chromeProcessName)
 	Else
-		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Không tìm thấy trình duyệt Chrome đang chạy.")
-		writeLogFile($logFile, "Không tìm thấy trình duyệt Chrome đang chạy.")
+		writeLogFile($logFile, "Không tìm thấy procees đang chạy => " & $chromeProcessName)
 	EndIf
 	
 	Return True

@@ -39,7 +39,7 @@ EndFunc
 
 Func test()
 
-	Local $sSession = SetupChrome()
+	Local $sSession = SetupEdge()
 
 	Local $sURL = "https://www.facebook.com/groups/406692874523853/community_roles/Admin"
 	Local $aParentElements = ["x9f619 x1n2onr6 x1ja2u2z x78zum5 xdt5ytf x2lah0s x193iq5w x1xmf6yo x1e56ztr xzboxd6 x14l7nz5"]
@@ -104,10 +104,10 @@ EndFunc
 
 Func performAuctionProcess()
 	; Kiem tra xem chorme co duoc bat hay khong, neu co thi dong no
-	checkThenCloseChrome()
+	checkThenCloseEdge()
 
 	; Thuc hien login
-	$sSession = SetupChrome()
+	$sSession = SetupEdge()
 	;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
 	$accountInfo = $accountAuction[0]
 	$username = StringSplit($accountInfo, "|")[1]

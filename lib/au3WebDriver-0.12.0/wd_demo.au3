@@ -1169,9 +1169,9 @@ Func SetupChrome($bHeadless)
 EndFunc   ;==>SetupChrome
 
 Func SetupEdge($bHeadless)
-	_WD_Option('Driver', 'D:\Project\AutoIT\mu_tool\driver\msedgedriver\edgedriver_win64\msedgedriver.exe')
-	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\msedge.log"')
+	_WD_Option('Driver', 'D:\Project\AutoIT\mu_tool\driver\msedgedriver\edgedriver_win64_134\msedgedriver.exe')
+	_WD_Option('Port', 9515) ; Cổng cố định để kết nối
+	_WD_Option('DriverParams', '--port=9515 --verbose --log-path="' & @ScriptDir & '\msedge.log"')
 
 ;~ 	Local $sCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
 	_WD_CapabilitiesStartup()
