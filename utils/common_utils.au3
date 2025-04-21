@@ -521,7 +521,7 @@ EndFunc
 ; Method: getJsonFromFile
 ; Description: Reads a JSON object from a file.
 Func getJsonFromFile($filePath)
-	writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
+	;~ writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
 	;~ writeLogFile($logFile,"Text read from file getJsonFromFile: " &$convtext)

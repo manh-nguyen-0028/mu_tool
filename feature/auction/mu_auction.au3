@@ -7,6 +7,7 @@
 #include <String.au3>
 #include "../../utils/common_utils.au3"
 #include "../../utils/web_mu_utils.au3"
+#RequireAdmin
 
 ; Valiable
 Global $sSession,$adminIDs,$auctionsConfig, $accountAuction
@@ -16,8 +17,8 @@ Global $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
 Global $auctionConfigPath = $inputPathRoot & "auctions.txt"
 Global $auctionAccountPath = $inputPathRoot & "account.txt"
 
-start()
-;~ test()
+;~ start()
+test()
 
 ;~ deleteFileInFolder()
 
