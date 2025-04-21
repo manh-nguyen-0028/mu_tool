@@ -339,7 +339,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 	$totalSearch = 0;
 	;~ 671 1050
 	While $npcSearch = 0 And $totalSearch < 5
-		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 
 		$countSearchPixel = 0;
 
@@ -348,7 +348,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
 			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
 			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
-			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 			$countSearchPixel = $countSearchPixel + 1;
 		WEnd
 

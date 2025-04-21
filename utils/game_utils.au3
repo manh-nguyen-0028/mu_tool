@@ -329,7 +329,7 @@ Func clickIconDevil($checkRuongK)
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	;~ ; Sleep 4s
-	secondWait(4)
+	secondWait(5)
 EndFunc
 
 Func switchOtherChar($currentChar)
