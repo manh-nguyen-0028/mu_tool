@@ -56,7 +56,7 @@ EndFunc
 Func startAutoRs()
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
-	$logFile = FileOpen($sFilePath, $FO_APPEND)
+	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
 	ReDim $aAccountActiveRs[0]

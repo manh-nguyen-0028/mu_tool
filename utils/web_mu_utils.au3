@@ -229,7 +229,17 @@ Func loginWebsite($sSession,$username, $password)
 
 		; Chuyen lai tab ve gamethuvn.net
 		writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
-		_WD_Attach($sSession, $baseMuUrl, "URL")
+		
+		; Gắn kết với tab chứa URL cụ thể
+		Local $attachedTabHandle = _WD_Attach($sSession, $baseMuUrl, "URL")
+		If @error Then
+			writeLogFile($logFile, "Không thể gắn kết với tab chứa URL: " & $baseMuUrl)
+		Else
+			writeLogFile($logFile, "Đã gắn kết với tab: " & $attachedTabHandle)
+
+			; Đóng các tab khác
+			closeOtherTabs($sSession, $attachedTabHandle)
+		EndIf
 		
 		_WD_Window($sSession,"MINIMIZE")
 
@@ -247,6 +257,25 @@ Func loginWebsite($sSession,$username, $password)
 	EndIf
 
 	Return $isSuccess
+EndFunc
+
+Func closeOtherTabs($sSession, $attachedTabHandle)
+    ; Lấy danh sách tất cả các tab
+    Local $aHandles = _WD_Window($sSession, "handles")
+    If @error Then
+        writeLogFile($logFile, "Không thể lấy danh sách tab.")
+        Return False
+    EndIf
+
+    ; Lặp qua tất cả các tab và đóng các tab không phải là tab đã gắn kết
+    For $sHandle In $aHandles
+        If $sHandle <> $attachedTabHandle Then
+            _WD_Window($sSession, "close", '{"handle":"' & $sHandle & '"}')
+            writeLogFile($logFile, "Đã đóng tab: " & $sHandle)
+        EndIf
+    Next
+
+    Return True
 EndFunc
 
 ; Format: $rsInDay|$timeReset

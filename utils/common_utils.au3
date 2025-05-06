@@ -23,6 +23,9 @@ Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFil
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
 Global $aCharInAccount
 
+; Khai báo biến toàn cục
+Global $iLogOverwrite = 2 ; Ghi đè file log
+
 ; Khai báo hằng số
 Global Const $WM_MOUSEMOVE = 0x0200
 Global Const $WM_LBUTTONDOWN = 0x0201
@@ -77,7 +80,9 @@ EndFunc
 Func initPositionConfig($jsonPositionConfig)
 	; Web driver config
 	$muUrl = _JSONGet($jsonPositionConfig,"common.web.mu_url")
+	$fileLogOverwrite = _JSONGet($jsonPositionConfig,"common.log.file_overwrite")
 	If $muUrl <> "" Then $baseMuUrl = $muUrl
+	If $fileLogOverwrite <> "" And $fileLogOverwrite == True Then $iLogOverwrite = 1
 EndFunc
 
 ; Method: writeLog
