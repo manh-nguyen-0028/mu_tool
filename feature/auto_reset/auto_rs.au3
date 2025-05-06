@@ -349,9 +349,12 @@ Func processReset($jAccountInfo)
 					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
 
-					; Move other map
-					moveOtherMap($charName)
-					secondWait(6)
+					; Move other map khi $resetInDay <= 3
+					; Neu $resetInDay > 3 thi khong can thuc hien move
+					If $resetInDay <= 3 Then
+						moveOtherMap($charName)
+						secondWait(6)
+					EndIf
 
 					; 9. Follow leader
 					If IsNumber($positionLeader) Then 

@@ -1,5 +1,8 @@
 {
 	"common" : {
+	  "logger": {
+		"override": true
+	 }, 
 	  "web": {
 		"mu_url": "https://hn.gamethuvn.net/"
 	  },

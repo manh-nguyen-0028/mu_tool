@@ -163,6 +163,11 @@ Func loginWebsite($sSession,$username, $password)
 
 	; Fill user name
 	$sElement = _WD_GetElementByName($sSession,"username")
+	; Truong hop bi loi thi return false
+	If @error Then
+		writeLogFile($logFile, "Không tìm thấy phần tử username!")
+		Return False
+	EndIf
 	_WD_ElementAction($sSession, $sElement, 'value','xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
 	;~ secondWait(1)
@@ -227,19 +232,27 @@ Func loginWebsite($sSession,$username, $password)
 		
 		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
 
+		_WD_Window($sSession, "close")
+
 		; Chuyen lai tab ve gamethuvn.net
 		writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
 		
 		; Gắn kết với tab chứa URL cụ thể
-		Local $attachedTabHandle = _WD_Attach($sSession, $baseMuUrl, "URL")
-		If @error Then
-			writeLogFile($logFile, "Không thể gắn kết với tab chứa URL: " & $baseMuUrl)
-		Else
-			writeLogFile($logFile, "Đã gắn kết với tab: " & $attachedTabHandle)
+		_WD_Attach($sSession, $baseMuUrl, "URL")
 
-			; Đóng các tab khác
-			closeOtherTabs($sSession, $attachedTabHandle)
-		EndIf
+		;~ ; Chuyen lai tab ve gamethuvn.net
+		;~ writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
+		
+		;~ ; Gắn kết với tab chứa URL cụ thể
+		;~ Local $attachedTabHandle = _WD_Attach($sSession, $baseMuUrl, "URL")
+		;~ If @error Then
+		;~ 	writeLogFile($logFile, "Không thể gắn kết với tab chứa URL: " & $baseMuUrl)
+		;~ Else
+		;~ 	writeLogFile($logFile, "Đã gắn kết với tab: " & $attachedTabHandle)
+
+		;~ 	; Đóng các tab khác
+		;~ 	closeOtherTabs($sSession, $attachedTabHandle)
+		;~ EndIf
 		
 		_WD_Window($sSession,"MINIMIZE")
 
