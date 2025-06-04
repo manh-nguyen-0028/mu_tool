@@ -335,13 +335,13 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 
 	; Search NPC devil
 	$npcSearchX = 0
-	$npcSearchY = 0
+	$npcSearchY = 136
 	$npcSearchX1 = 720
 	$npcSearchY1 = 793
-	;~ $npcSearchColor = 0xB9AA95
-	$npcSearchColor = 0x2A1B43
+	$npcSearchColor = 0xB9AA95
+	;~ $npcSearchColor = 0x2A1B43
 
-	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 	
 	$totalSearch = 0;
 	;~ 671 1050
@@ -379,10 +379,10 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 
 		writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
 
-		;~ $npcX = $npcSearch[0] + Number($npcSearchDeviationX)
-		;~ $npcY = $npcSearch[1] + Number($npcSearchDeviationY)
-		$npcX = $npcSearch[0] - 131
-		$npcY = $npcSearch[1]
+		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
+		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
+		;~ $npcX = $npcSearch[0] - 131
+		;~ $npcY = $npcSearch[1]
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ

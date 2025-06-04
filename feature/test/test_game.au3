@@ -8,8 +8,9 @@
 #RequireAdmin
 
 
-$charName="SandyX"
+$charName="FiIeX"
 
+;~ test3()
 
 activeAndMoveWin(getMainNoByChar($charName))
 $checkRuongK = True
@@ -186,10 +187,11 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 
 	; Search NPC devil
 	$npcSearchX = 0
-	$npcSearchY = 0
+	$npcSearchY = 136
 	$npcSearchX1 = 720
 	$npcSearchY1 = 793
-	$npcSearchColor = 0x2A1B43
+	;~ $npcSearchColor = 0x2A1B43
+	$npcSearchColor = 0xB9AA95
 
 	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 	
@@ -231,10 +233,11 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 
 		writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
 
-		$npcX = $npcSearch[0] - 131
-		$npcY = $npcSearch[1]
+		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
+		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
+		mouseClickDelayAlt($npcX, $npcY)
+		;~ MouseMove($npcX, $npcY)
 		;~ mouseClickDelayAlt($npcX, $npcY)
-		MouseMove($npcX, $npcY)
 		secondWait(3)
 		;~ ; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
 		;~ $devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
