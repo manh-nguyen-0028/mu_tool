@@ -4,8 +4,8 @@
 #include "../../include/_ImageSearch_UDF.au3"
 #RequireAdmin
 
-Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
-Local $sCharNotJoinDevil = ""
+
+Global $sCharNotJoinDevil = ""
 
 start()
 ;~ processGoEvent()
@@ -252,6 +252,11 @@ Func processGoEvent()
 				EndIf
 			EndIf
 
+			; Thuc hien send enter 1 lan truoc khi click icon devil
+			sendKeyEnter()
+			secondWait(1)
+
+			; Bat dau click icon devil
 			clickIconDevil($checkRuongK)
 
 			; Check and click into NPC devil
@@ -336,8 +341,8 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 	; Search NPC devil
 	$npcSearchX = 0
 	$npcSearchY = 136
-	$npcSearchX1 = 720
-	$npcSearchY1 = 793
+	$npcSearchX1 = 528
+	$npcSearchY1 = 471
 	$npcSearchColor = 0xB9AA95
 	;~ $npcSearchColor = 0x2A1B43
 
@@ -373,11 +378,11 @@ EndFunc
 Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 	; Kiem tra xem co tim duoc vi tri cua npc khong $npcSearch <> 0
 	If $npcSearch <> 0 Then
-		writeLogFile($logFile, "searchPixel : " & $npcSearch[1]& "-" & $npcSearch[0])
+		writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[1]& "-" & $npcSearch[0])
 		$npcSearchDeviationX = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_x")
 		$npcSearchDeviationY = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_y")
 
-		writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
+		;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
 
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)

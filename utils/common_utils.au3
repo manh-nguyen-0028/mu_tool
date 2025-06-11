@@ -191,7 +191,7 @@ EndFunc
 ; Method: waitToNextHourMinutes
 ; Description: Pauses execution until the next specified hour and minute.
 Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
-	If @MIN <= $minPlus Then 
+	If @MIN < $minPlus Then 
 		$nextHour = @HOUR
 	Else
 		$nextHour = @HOUR + $hourPlus
@@ -609,11 +609,8 @@ Func getOtherChar($currentChar)
 
 	$result = ""
 
-	;~ _ArrayDisplay($aCharInAccount)
-
 	For $i = 0 To UBound($aCharInAccount) - 1
 		$aChar = $aCharInAccount[$i]
-		writeLogFile($logFile, "aChar : " & $aChar)
 		$resultCheck = StringInStr($aChar, $currentChar)
 		If $resultCheck Then
 			writeLogFile($logFile, "Da tim thay other char: " & $aChar)

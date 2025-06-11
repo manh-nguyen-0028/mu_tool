@@ -352,7 +352,7 @@ Func switchOtherChar($currentChar)
 			If activeAndMoveWinByChar($charName) Then ExitLoop
 		Next
 
-		;~ $otherMainNo = getMainNoByChar($otherCharName)
+		writeLogFile($logFile,"So nhan vat cung tai khoan: " & $numberChar & " - Tim thay nhan vat: " & $charName)
 
 		If activeAndMoveWinByChar($charName) Then
 			writeLogFile($logFile,"Tim thay nhan vat: " & $charName & " cung tai khoan")

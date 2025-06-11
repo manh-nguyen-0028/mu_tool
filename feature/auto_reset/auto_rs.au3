@@ -276,6 +276,12 @@ Func processReset($jAccountInfo)
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset,0)
+					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
+					If $sTimeReset = 0 Then
+						$sTimeReset = getTimeNow()
+						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
+					EndIf
+					
 					_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					If $resetInDay == 1 And $isBuff Then
