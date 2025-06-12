@@ -357,10 +357,12 @@ Func processReset($jAccountInfo)
 
 					; Move other map khi $resetInDay <= 3
 					; Neu $resetInDay > 3 thi khong can thuc hien move
-					If $resetInDay <= 3 Then
-						moveOtherMap($charName)
-						secondWait(6)
-					EndIf
+					;~ If $resetInDay <= 3 Then
+					;~ 	moveOtherMap($charName)
+					;~ 	secondWait(6)
+					;~ EndIf
+					moveOtherMap($charName)
+					secondWait(6)
 
 					; 9. Follow leader
 					If IsNumber($positionLeader) Then 
