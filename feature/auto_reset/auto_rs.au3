@@ -10,6 +10,7 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
+Local $aAccountActiveRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $sDate = @YEAR & @MON & @MDAY
