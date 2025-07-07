@@ -154,6 +154,7 @@ Func processReset($jAccountInfo)
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
+	$activeEndKey = getPropertyJson($jAccountInfo,"active_end_key")
 	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
 	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
 	$postionMoveY = getPropertyJson($jAccountInfo,"postion_move_y")
@@ -299,8 +300,8 @@ Func processReset($jAccountInfo)
 				sendKeyH()
 				; Send 1 lan key tab nua de tat ban do
 				sendKeyTab()
-				; Sau do thuc hien send key end de kep chuot
-				sendKeyEnd()
+				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
+				If $activeEndKey Then sendKeyEnd()
 				; minisize main
 				minisizeMain($mainNo)
 				; 5. Check lvl in web
@@ -308,15 +309,15 @@ Func processReset($jAccountInfo)
 				secondWait(30)
 				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
-				If $lvlCheckInWeb < 5 Then
+				If $lvlCheckInWeb < 20 Then
 					writeLogFile($logFile, "Khong thay tang lvl! Lvl hien tai: " & $lvlCheckInWeb)
 					writeLogFile($logFile, "Thuc hien chuyen map bang web !")
-					If $postionMoveX <> "" And $postionMoveY <> "" Then
-						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-					EndIf
+					$moveLorenX = 220
+					$moveLorenY = 144
+					moveToPostionInWeb($sSession, $charName, $moveLorenX, $moveLorenY)
+					writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
 					; Doi 50s
-					secondWait(50)
+					minuteWait(2)
 					; Thuc hien check lai lvl
 					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				Else
@@ -512,7 +513,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tmpLvl = 0
 	$timeCheck = 0
 	$timeCheckMax = 68
-	If $lvlStopCheck == 20 Then $timeCheckMax = 25
+	If $lvlStopCheck == 20 Then $timeCheckMax = 8
 
 	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
 		; Neu > 200 thi moi thuc hien ghi log
