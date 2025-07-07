@@ -7,7 +7,6 @@
 #include <String.au3>
 #include "../../utils/common_utils.au3"
 #include "../../utils/web_mu_utils.au3"
-#RequireAdmin
 
 ; Valiable
 Global $sSession,$adminIDs,$auctionsConfig, $accountAuction
@@ -17,8 +16,8 @@ Global $sAdminsIdFilePath = $inputPathRoot & "admins_id.txt"
 Global $auctionConfigPath = $inputPathRoot & "auctions.txt"
 Global $auctionAccountPath = $inputPathRoot & "account.txt"
 
-;~ start()
-test()
+start()
+;~ test()
 
 ;~ deleteFileInFolder()
 
@@ -105,10 +104,10 @@ EndFunc
 
 Func performAuctionProcess()
 	; Kiem tra xem chorme co duoc bat hay khong, neu co thi dong no
-	checkThenCloseEdge()
+	checkThenCloseChrome()
 
 	; Thuc hien login
-	$sSession = SetupEdge()
+	$sSession = SetupChrome()
 	;~ Lay thong tin user + danh sach admin + danh sach dau gia $autoAuctionConfigFileName
 	$accountInfo = $accountAuction[0]
 	$username = StringSplit($accountInfo, "|")[1]
@@ -132,6 +131,16 @@ Func performAuctionProcess()
 			While @HOUR >= 10 And @HOUR < 23 
 				; reload lai thong tin dau gia 
 				reloadAuctionInfo()
+				; Truong hop co 1 phan tu va phan tu do bang phan tu example thi dong chuong trinh
+				If UBound($auctionsConfig) == 1 And $auctionsConfig[0] == $recordExample Then 
+					writeLogFile($logFile, "Không có dữ liệu đấu giá !")
+					FileClose($logFile)
+					FileClose($auctionResultFile)
+					; Logout and close chrome driver
+					logoutAndCloseChromeDriver($sSession)
+					; thoat khoi vong lap
+					ExitLoop
+				EndIf
 				; Thuc hien dau gia
 				ReDim $auctionArray[0]
 				For $i = 0 To UBound($auctionsConfig) - 1

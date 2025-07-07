@@ -40,6 +40,10 @@
 		  "y":200
 	   },
 	   "npc_search": {
+		"npc_search_x": 0,
+		"npc_search_y": 136,
+		"npc_search_x_1": 573,
+		"npc_search_y_1": 470,
 		 "deviation_x": 0,
 		 "deviation_y": 30
 	   },

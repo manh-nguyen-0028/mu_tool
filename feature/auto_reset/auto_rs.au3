@@ -10,7 +10,6 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aAccountActiveRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $sDate = @YEAR & @MON & @MDAY
@@ -239,33 +238,6 @@ Func processReset($jAccountInfo)
 				; Click submit
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
-				; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
-				;~ $timeCheckAddPoint = 0
-				;~ $sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-				;~ $tElement = getTextElement($sSession, $sElementTitle)
-				;~ While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
-				;~ 	secondWait(2)
-				;~ 	$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-				;~ 	$tElement = getTextElement($sSession, $sElementTitle)
-				;~ 	$timeCheckAddPoint += 1
-				;~ WEnd
-
-				;~ If $tElement == "Cộng điểm nhanh" Then
-				;~ 	writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
-				;~ 	; Click submit add point
-				;~ 	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-				;~ 	secondWait(2)
-				;~ Else
-				;~ 	writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
-				;~ 	writeLogFile($logFile, "Thuc hien di toi trang add point")
-				;~ 	;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-				;~ 	_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-				;~ 	secondWait(5)
-				;~ 	; Click submit add point
-				;~ 	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-				;~ 	secondWait(2)
-				;~ EndIf
-
 				; Vao trang add point thuc hien lai 1 lan nua cho chac
 				;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
 				_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")

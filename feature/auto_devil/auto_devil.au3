@@ -339,10 +339,10 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
 
 	; Search NPC devil
-	$npcSearchX = 0
-	$npcSearchY = 136
-	$npcSearchX1 = 528
-	$npcSearchY1 = 471
+	$npcSearchX = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x")
+	$npcSearchY = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y")
+	$npcSearchX1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x_1")
+	$npcSearchY1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y_1")
 	$npcSearchColor = 0xB9AA95
 	;~ $npcSearchColor = 0x2A1B43
 
