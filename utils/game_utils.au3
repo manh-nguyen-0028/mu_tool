@@ -449,6 +449,7 @@ Func checkEnterChat()
 	If checkPixelColor($x, $y, $color) Then
 		writeLogFile($logFile,"Ton tai cua so chat, thuc hien enter 1 lan nua")
 		sendKeyEnter()
+		secondWait(1)
 	EndIf
 	Return True
 EndFunc

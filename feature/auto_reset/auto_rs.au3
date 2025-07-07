@@ -236,32 +236,43 @@ Func processReset($jAccountInfo)
 
 			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
 			If Not $resetOnline Then
+				; Click submit
+				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				secondWait(2)
 				; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
-				$timeCheckAddPoint = 0
-				$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-				$tElement = getTextElement($sSession, $sElementTitle)
-				While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
-					secondWait(2)
-					$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-					$tElement = getTextElement($sSession, $sElementTitle)
-					$timeCheckAddPoint += 1
-				WEnd
+				;~ $timeCheckAddPoint = 0
+				;~ $sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+				;~ $tElement = getTextElement($sSession, $sElementTitle)
+				;~ While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
+				;~ 	secondWait(2)
+				;~ 	$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+				;~ 	$tElement = getTextElement($sSession, $sElementTitle)
+				;~ 	$timeCheckAddPoint += 1
+				;~ WEnd
 
-				If $tElement == "Cộng điểm nhanh" Then
-					writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
-					; Click submit add point
-					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-					secondWait(2)
-				Else
-					writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
-					writeLogFile($logFile, "Thuc hien di toi trang add point")
-					;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-					_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-					secondWait(5)
-					; Click submit add point
-					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-					secondWait(2)
-				EndIf
+				;~ If $tElement == "Cộng điểm nhanh" Then
+				;~ 	writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
+				;~ 	; Click submit add point
+				;~ 	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				;~ 	secondWait(2)
+				;~ Else
+				;~ 	writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
+				;~ 	writeLogFile($logFile, "Thuc hien di toi trang add point")
+				;~ 	;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+				;~ 	_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+				;~ 	secondWait(5)
+				;~ 	; Click submit add point
+				;~ 	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				;~ 	secondWait(2)
+				;~ EndIf
+
+				; Vao trang add point thuc hien lai 1 lan nua cho chac
+				;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+				_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+				secondWait(5)
+				; Click submit add point
+				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				secondWait(2)
 			EndIf
 
 			; close diaglog confirm
@@ -354,13 +365,6 @@ Func processReset($jAccountInfo)
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
-
-					; Move other map khi $resetInDay <= 3
-					; Neu $resetInDay > 3 thi khong can thuc hien move
-					;~ If $resetInDay <= 3 Then
-					;~ 	moveOtherMap($charName)
-					;~ 	secondWait(6)
-					;~ EndIf
 					moveOtherMap($charName)
 					secondWait(6)
 
@@ -473,7 +477,6 @@ Func changeChar($mainNo)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
@@ -647,6 +650,8 @@ Func goMapArena($rsCount)
 EndFunc
 
 Func goSportStadium($sportNo = 1) 
+	checkEnterChat()
+	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
 	;~ secondWait(2)
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
@@ -667,7 +672,6 @@ Func goSportStadium($sportNo = 1)
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)
-
 	Local $aAccountActiveRsValidate[0]
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
