@@ -8,8 +8,9 @@
 #RequireAdmin
 
 
-$charName="BumbleBee"
+$charName="FiIeX"
 
+;~ test3()
 
 activeAndMoveWin(getMainNoByChar($charName))
 $checkRuongK = True
@@ -18,18 +19,20 @@ $isNeedFollowLeader = False
 ; 221 -91
 ;~ writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
 ; Check and click into NPC devil
-;~ $npmSearchResult = searchNpcDevil($checkRuongK, $devilNo)
+$npmSearchResult = searchNpcDevil($checkRuongK, $devilNo)
+
+
 
 
 ; Click into NPC devil
-;~ clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
+clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
 
 ;~ secondWait(3)
 
 ;~ ;~ goMapLvl()
 ;~ moveOtherMap($charName)
 
-;~ secondWait(3)
+secondWait(3)
 
 ;~ _MU_followLeader(1)
 
@@ -49,7 +52,7 @@ $isNeedFollowLeader = False
 ;~ 			;~ If $isNeedFollowLeader Then _MU_followLeader(1)
 ;~ 		EndIf
 
-minisizeMain(getMainNoByChar($charName))
+;~ minisizeMain(getMainNoByChar($charName))
 
 ; Sử dụng hàm
 ;~ Local $hWnd = WinGetHandle(getMainNoByChar($charName)) ; Thay "Tên của cửa sổ" bằng tên cửa sổ cần thao tác
@@ -184,66 +187,82 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 
 	; Search NPC devil
 	$npcSearchX = 0
-	$npcSearchY = 0
+	$npcSearchY = 136
 	$npcSearchX1 = 720
 	$npcSearchY1 = 793
+	;~ $npcSearchColor = 0x2A1B43
 	$npcSearchColor = 0xB9AA95
 
-	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 	
 	$totalSearch = 0;
 	;~ 671 1050
-	While $npcSearch = 0 And $totalSearch < 5
-		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+	;~ While $npcSearch = 0 And $totalSearch < 5
+	;~ 	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
 
-		$countSearchPixel = 0;
+	;~ 	$countSearchPixel = 0;
 
-		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $npcSearch  = 0 And $countSearchPixel < 2
-			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
-			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
-			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
-			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
-			$countSearchPixel = $countSearchPixel + 1;
-		WEnd
+	;~ 	; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
+	;~ 	While $npcSearch  = 0 And $countSearchPixel < 2
+	;~ 		$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
+	;~ 		$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
+	;~ 		_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+	;~ 		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+	;~ 		$countSearchPixel = $countSearchPixel + 1;
+	;~ 	WEnd
 
-		If $npcSearch  = 0 Then
-			clickIconDevil($checkRuongK)
-			$totalSearch = $totalSearch + 1
-		EndIf
-	WEnd
-	
-	; Neu tim thay toa do thi click vao npc
-	clickNpcDevil($npcSearch, $devilNo)
+	;~ 	If $npcSearch  = 0 Then
+	;~ 		clickIconDevil($checkRuongK)
+	;~ 		$totalSearch = $totalSearch + 1
+	;~ 	EndIf
+	;~ WEnd
+	;~ writeLogFile($logFile, "searchNpcDevil result: " & $npcSearch[0] & "- " & $npcSearch[1])
+	MouseMove($npcSearch[0],$npcSearch[1])
+	;~ _ArrayDisplay($npcSearch)
+	Return $npcSearch
 EndFunc
 
 ; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
-Func clickNpcDevil($npcSearch, $devilNo)
+Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 	; Kiem tra xem co tim duoc vi tri cua npc khong $npcSearch <> 0
 	If $npcSearch <> 0 Then
 		writeLogFile($logFile, "searchPixel : " & $npcSearch[1]& "-" & $npcSearch[0])
-		$npcX = $npcSearch[0]-10
-		$npcY = $npcSearch[1] + 20
+		$npcSearchDeviationX = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_x")
+		$npcSearchDeviationY = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_y")
+
+		writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
+
+		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
+		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
 		mouseClickDelayAlt($npcX, $npcY)
-		secondWait(1)
-		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
-		$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
-		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
-		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
+		;~ MouseMove($npcX, $npcY)
+		;~ mouseClickDelayAlt($npcX, $npcY)
+		secondWait(3)
+		;~ ; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
+		;~ $devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
+		;~ $devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
+		;~ $devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
 		
-		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
-		If $checkOpenDevil Then
-			clickPositionByDevilNo($devilNo)
-			secondWait(4)
-			_MU_MouseClick_Delay(512, 477)
-			_MU_Start_AutoZ()
-		Else
-			_MU_followLeader(1)
-		EndIf
+		;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		;~ If $checkOpenDevil Then
+		;~ 	writeLogFile($logFile, "Thuc hien click vao devil")
+		;~ 	clickPositionByDevilNo($devilNo)
+		;~ 	secondWait(6)
+		;~ 	_MU_Start_AutoZ()
+		;~ Else
+		;~ 	writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
+		;~ 	If $isNeedFollowLeader Then 
+		;~ 		writeLogFile($logFile, "Thuc hien follow leader")
+		;~ 		_MU_followLeader(1)
+		;~ 	EndIf
+		;~ EndIf
 	Else
-		writeLogFile($logFile, "Khong tim thay vi tri cua NPC devil => Thuc hien len lai bai")
-		_MU_followLeader(1)
+		writeLogFile($logFile, "Search NPC khong thanh cong")
+		;~ If $isNeedFollowLeader Then 
+		;~ 	writeLogFile($logFile, "Thuc hien follow leader")
+		;~ 	_MU_followLeader(1)
+		;~ EndIf
 	EndIf
 EndFunc
 

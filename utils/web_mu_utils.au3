@@ -25,17 +25,22 @@ Global $sTitleLogoutSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - G
 Global $sTitleLogoutSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Sign In"
 
 Func checkThenCloseChrome()
-	Local $chromeProcessName = "chrome.exe"
+	checkThenCloseProcess("chrome.exe")
+EndFunc
 
-	; Kiểm tra xem có trình duyệt Chrome đang chạy không
+Func checkThenCloseEdge()
+	checkThenCloseProcess("msedge.exe")
+EndFunc
+
+Func checkThenCloseProcess($chromeProcessName)
+	
+	; Kiểm tra xem có tiến trình đang chạy không
 	If ProcessExists($chromeProcessName) Then
-		; Đóng tất cả các tiến trình trình duyệt Chrome
+		; Đóng tất cả các tiến trình
 		ProcessClose($chromeProcessName)
-		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Đã đóng tất cả các trình duyệt Chrome.")
-		writeLogFile($logFile, "Đã đóng tất cả các trình duyệt Chrome.")
+		writeLogFile($logFile, "Đã đóng tất cả các procees: " & $chromeProcessName)
 	Else
-		;~ MsgBox($MB_ICONINFORMATION, "Thông báo", "Không tìm thấy trình duyệt Chrome đang chạy.")
-		writeLogFile($logFile, "Không tìm thấy trình duyệt Chrome đang chạy.")
+		writeLogFile($logFile, "Không tìm thấy procees đang chạy => " & $chromeProcessName)
 	EndIf
 	
 	Return True
@@ -158,6 +163,11 @@ Func loginWebsite($sSession,$username, $password)
 
 	; Fill user name
 	$sElement = _WD_GetElementByName($sSession,"username")
+	; Truong hop bi loi thi return false
+	If @error Then
+		writeLogFile($logFile, "Không tìm thấy phần tử username!")
+		Return False
+	EndIf
 	_WD_ElementAction($sSession, $sElement, 'value','xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
 	;~ secondWait(1)
@@ -222,9 +232,27 @@ Func loginWebsite($sSession,$username, $password)
 		
 		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
 
+		_WD_Window($sSession, "close")
+
 		; Chuyen lai tab ve gamethuvn.net
 		writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
+		
+		; Gắn kết với tab chứa URL cụ thể
 		_WD_Attach($sSession, $baseMuUrl, "URL")
+
+		;~ ; Chuyen lai tab ve gamethuvn.net
+		;~ writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
+		
+		;~ ; Gắn kết với tab chứa URL cụ thể
+		;~ Local $attachedTabHandle = _WD_Attach($sSession, $baseMuUrl, "URL")
+		;~ If @error Then
+		;~ 	writeLogFile($logFile, "Không thể gắn kết với tab chứa URL: " & $baseMuUrl)
+		;~ Else
+		;~ 	writeLogFile($logFile, "Đã gắn kết với tab: " & $attachedTabHandle)
+
+		;~ 	; Đóng các tab khác
+		;~ 	closeOtherTabs($sSession, $attachedTabHandle)
+		;~ EndIf
 		
 		_WD_Window($sSession,"MINIMIZE")
 
@@ -242,6 +270,25 @@ Func loginWebsite($sSession,$username, $password)
 	EndIf
 
 	Return $isSuccess
+EndFunc
+
+Func closeOtherTabs($sSession, $attachedTabHandle)
+    ; Lấy danh sách tất cả các tab
+    Local $aHandles = _WD_Window($sSession, "handles")
+    If @error Then
+        writeLogFile($logFile, "Không thể lấy danh sách tab.")
+        Return False
+    EndIf
+
+    ; Lặp qua tất cả các tab và đóng các tab không phải là tab đã gắn kết
+    For $sHandle In $aHandles
+        If $sHandle <> $attachedTabHandle Then
+            _WD_Window($sSession, "close", '{"handle":"' & $sHandle & '"}')
+            writeLogFile($logFile, "Đã đóng tab: " & $sHandle)
+        EndIf
+    Next
+
+    Return True
 EndFunc
 
 ; Format: $rsInDay|$timeReset
@@ -386,4 +433,13 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		
 		Return True
 	EndIf
+EndFunc
+
+Func logoutAndCloseChromeDriver($sSession)
+	logout($sSession)
+	secondWait(5)
+	; Close webdriver neu thuc hien xong 
+	If $sSession Then _WD_DeleteSession($sSession)
+	
+	_WD_Shutdown()
 EndFunc

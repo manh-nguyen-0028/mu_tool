@@ -34,6 +34,27 @@ Func SetupChrome()
     Return $sSession
 EndFunc   ;==>SetupChrome
 
+Func SetupEdge()
+	$edgeDriver = _JSONGet($jsonPositionConfig,"common.edge.path")
+	writeLog("Edge driver path: " & $driverPathRoot & $edgeDriver)
+	_WD_Option('Driver', $driverPathRoot & $edgeDriver)
+	;~ _WD_Option('Driver', 'D:\Project\AutoIT\mu_tool\driver\msedgedriver\edgedriver_win64_134\msedgedriver.exe')
+	_WD_Option('Port', 9515) ; Cổng cố định để kết nối
+	_WD_Option('DriverParams', '--port=9515 --verbose --log-path="' & @ScriptDir & '\msedge.log"')
+
+;~ 	Local $sCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
+	_WD_CapabilitiesStartup()
+	_WD_CapabilitiesAdd('alwaysMatch', 'msedge')
+	_WD_CapabilitiesAdd('excludeSwitches', 'enable-automation')
+	;~ If $bHeadless Then _WD_CapabilitiesAdd('args', '--headless')
+	_WD_CapabilitiesDump(@ScriptLineNumber) ; dump current Capabilities setting to console - only for testing in this demo
+
+	_WD_Startup()
+	Local $sCapabilities = _WD_CapabilitiesGet()
+	Local $sSession = _WD_CreateSession($sCapabilities)
+
+    Return $sSession
+EndFunc   ;==>SetupEdge
 
 Func _Demo_NavigateCheckBanner($sSession, $sURL, $sXpath = '//body/div[1][@aria-hidden="true"]')
 	_WD_Navigate($sSession, $sURL)

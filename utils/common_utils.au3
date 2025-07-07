@@ -20,8 +20,11 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
 Global $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
-Global $autoMoveConfigFileName
+Global $autoMoveConfigFileName, $autoAuctionConfigFileName
 Global $aCharInAccount
+
+; Khai báo biến toàn cục
+Global $iLogOverwrite = 2 ; Ghi đè file log
 
 ; Khai báo hằng số
 Global Const $WM_MOUSEMOVE = 0x0200
@@ -63,6 +66,8 @@ Func init()
 				$accountPasswordFileName = $value
 			ElseIf "auto_move" == $type Then
 				$autoMoveConfigFileName = $value
+			ElseIf "auto_auction" == $type Then
+				$autoAuctionConfigFileName = $value
 			EndIf
 		EndIf
 	Next
@@ -75,7 +80,9 @@ EndFunc
 Func initPositionConfig($jsonPositionConfig)
 	; Web driver config
 	$muUrl = _JSONGet($jsonPositionConfig,"common.web.mu_url")
+	$fileLogOverwrite = _JSONGet($jsonPositionConfig,"common.log.file_overwrite")
 	If $muUrl <> "" Then $baseMuUrl = $muUrl
+	If $fileLogOverwrite <> "" And $fileLogOverwrite == True Then $iLogOverwrite = 1
 EndFunc
 
 ; Method: writeLog
@@ -184,7 +191,7 @@ EndFunc
 ; Method: waitToNextHourMinutes
 ; Description: Pauses execution until the next specified hour and minute.
 Func waitToNextHourMinutes($hourPlus, $minPlus, $secPlus)
-	If @MIN <= $minPlus Then 
+	If @MIN < $minPlus Then 
 		$nextHour = @HOUR
 	Else
 		$nextHour = @HOUR + $hourPlus
@@ -370,6 +377,12 @@ Func sendKeyH()
 	secondWait(1)
 EndFunc
 
+Func sendKeyEnd()
+	writeLogFile($logFile, "Send key End !")
+	sendKeyDelay("{END}")
+	secondWait(1)
+EndFunc
+
 ; Method: activeMain
 ; Description: Activates a specified window.
 Func activeMain($mainNo)
@@ -513,7 +526,7 @@ EndFunc
 ; Method: getJsonFromFile
 ; Description: Reads a JSON object from a file.
 Func getJsonFromFile($filePath)
-	writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
+	;~ writeLogFile($logFile,"Read file getJsonFromFile: " &$filePath)
 	$rtfhandle = FileOpen($filePath)
 	$convtext = FileRead($rtfhandle)
 	;~ writeLogFile($logFile,"Text read from file getJsonFromFile: " &$convtext)
@@ -596,11 +609,8 @@ Func getOtherChar($currentChar)
 
 	$result = ""
 
-	;~ _ArrayDisplay($aCharInAccount)
-
 	For $i = 0 To UBound($aCharInAccount) - 1
 		$aChar = $aCharInAccount[$i]
-		writeLogFile($logFile, "aChar : " & $aChar)
 		$resultCheck = StringInStr($aChar, $currentChar)
 		If $resultCheck Then
 			writeLogFile($logFile, "Da tim thay other char: " & $aChar)

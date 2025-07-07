@@ -329,7 +329,7 @@ Func clickIconDevil($checkRuongK)
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	;~ ; Sleep 4s
-	secondWait(4)
+	secondWait(5)
 EndFunc
 
 Func switchOtherChar($currentChar)
@@ -352,7 +352,7 @@ Func switchOtherChar($currentChar)
 			If activeAndMoveWinByChar($charName) Then ExitLoop
 		Next
 
-		;~ $otherMainNo = getMainNoByChar($otherCharName)
+		writeLogFile($logFile,"So nhan vat cung tai khoan: " & $numberChar & " - Tim thay nhan vat: " & $charName)
 
 		If activeAndMoveWinByChar($charName) Then
 			writeLogFile($logFile,"Tim thay nhan vat: " & $charName & " cung tai khoan")

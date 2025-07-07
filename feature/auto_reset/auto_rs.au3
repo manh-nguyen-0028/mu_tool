@@ -56,7 +56,7 @@ EndFunc
 Func startAutoRs()
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
-	$logFile = FileOpen($sFilePath, $FO_APPEND)
+	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
 	ReDim $aAccountActiveRs[0]
@@ -196,6 +196,7 @@ Func processReset($jAccountInfo)
 			$lvlCanRs = 200 + ($rsCount * 5)
 			If $lvlCanRs > 400 Then $lvlCanRs = 400
 		EndIf
+
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 		$mainNo = getMainNoByChar($charName)
 		If $nLvl >= $lvlCanRs Then 
@@ -233,20 +234,35 @@ Func processReset($jAccountInfo)
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
 
-			; Submit add point
-			; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
-			$timeCheckAddPoint = 0
-			$sElement = findElement($sSession, "//h3[@class='card-title']")
-			$tElement = getTextElement($sSession, $sElement)
-			While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
-				secondWait(2)
-				$tElement = getTextElement($sSession, $sElement)
-				$timeCheckAddPoint += 1
-			WEnd
+			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
+			If Not $resetOnline Then
+				; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
+				$timeCheckAddPoint = 0
+				$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+				$tElement = getTextElement($sSession, $sElementTitle)
+				While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
+					secondWait(2)
+					$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
+					$tElement = getTextElement($sSession, $sElementTitle)
+					$timeCheckAddPoint += 1
+				WEnd
 
-			; Click submit
-			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-			secondWait(2)
+				If $tElement == "Cộng điểm nhanh" Then
+					writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
+					; Click submit add point
+					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+					secondWait(2)
+				Else
+					writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
+					writeLogFile($logFile, "Thuc hien di toi trang add point")
+					;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+					_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+					secondWait(5)
+					; Click submit add point
+					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+					secondWait(2)
+				EndIf
+			EndIf
 
 			; close diaglog confirm
 			closeDiaglogConfim($sSession)
@@ -260,6 +276,12 @@ Func processReset($jAccountInfo)
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset,0)
+					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
+					If $sTimeReset = 0 Then
+						$sTimeReset = getTimeNow()
+						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
+					EndIf
+					
 					_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					If $resetInDay == 1 And $isBuff Then
@@ -285,12 +307,16 @@ Func processReset($jAccountInfo)
 				;~ checkEnterChat()
 				; Thuc hien send key home
 				sendKeyHome()
+				; Send tiep key tab de mo ban do
 				sendKeyTab()
 				; 4. Go to sport
 				goToSportLvl1()
+				; Sau khi vao sport thi thuc hien send key H
 				sendKeyH()
 				; Send 1 lan key tab nua de tat ban do
 				sendKeyTab()
+				; Sau do thuc hien send key end de kep chuot
+				sendKeyEnd()
 				; minisize main
 				minisizeMain($mainNo)
 				; 5. Check lvl in web
@@ -329,7 +355,12 @@ Func processReset($jAccountInfo)
 					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
 
-					; Move other map
+					; Move other map khi $resetInDay <= 3
+					; Neu $resetInDay > 3 thi khong can thuc hien move
+					;~ If $resetInDay <= 3 Then
+					;~ 	moveOtherMap($charName)
+					;~ 	secondWait(6)
+					;~ EndIf
 					moveOtherMap($charName)
 					secondWait(6)
 
