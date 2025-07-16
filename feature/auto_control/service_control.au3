@@ -3,7 +3,7 @@
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
 
-#include "../auto_reset/withdraw_rs.au3"
+;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
 ;~ startPath()
@@ -30,9 +30,6 @@ Func start()
 
     While True
         If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <=20)) Then 
-            writeLog("Start rs")
-            ;~ startWithDrawRs()
-            ;~ secondWait(10)
             startAutoRs()
         EndIf
         waitToNextHourMinutes(1, 38, 00)

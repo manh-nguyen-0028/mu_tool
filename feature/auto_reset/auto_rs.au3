@@ -48,7 +48,7 @@ Func startAutoRs()
 	EndIf
 
 	; Validate account reset
-	$aAccValidate = validAccountRs($aAccountActiveRs)
+	$aAccValidate = validAccountRs($aAccountActive)
 
 	If UBound($aAccValidate) == 0 Then 
 		writeLogFile($logFile, "Khong co account valid thoa man => Ket thuc chuong trinh !")
@@ -63,8 +63,8 @@ Func startAutoRs()
 	EndIf
 
 	For $i = 0 To UBound($aAccValidate) - 1
-		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccValidate[$i]))
-		$type = getPropertyJson($jAccMerge[$i], "type")
+		$type = getPropertyJson($aAccValidate[$i], "type")
+		writeLogFile($logFile, "type rs = " & $type & "---" & "Dang xu ly voi account => " & convertJsonToString($aAccValidate[$i]))
 
 		If "withdraw" == $type Then
 			withDrawRs($aAccValidate[$i])
@@ -145,12 +145,12 @@ Func withDrawRs($jAccountInfo)
 				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 					For $i =0 To UBound($jsonRsGame) - 1
 						$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 						If $charNameTmp == $charName Then
 							_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-							setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+							setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 						EndIf
 					Next
 				Return
@@ -179,7 +179,7 @@ Func withDrawRs($jAccountInfo)
 				clickElement($sSession, $sElement)
 				writeLogFile($logFile, "Rut reset thanh cong !")
 				secondWait(5)
-				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 				For $i =0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
@@ -189,7 +189,7 @@ Func withDrawRs($jAccountInfo)
 						; last time rs
 						$sTimeReset = getTimeReset($sLogReset,0)
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
 				Next
 			EndIf
@@ -706,6 +706,7 @@ Func goSportStadium($sportNo = 1)
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)
+	writeLogMethodStart("validAccountRs",@ScriptLineNumber,$aAccountActiveRs)
 	Local $aAccValidate[0]
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
