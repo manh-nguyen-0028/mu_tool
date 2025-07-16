@@ -37,8 +37,7 @@ init()
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
-	;~ $jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
-
+	
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
 
 	For $i =0 To UBound($jsonConfig) - 1
@@ -742,4 +741,10 @@ EndFunc
 
 Func getMainNoByChar($charName)
 	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+EndFunc
+
+Func redimArray($arrayRedim, $value = "")
+	Redim $arrayRedim[UBound($arrayRedim) + 1]
+	$arrayRedim[UBound($arrayRedim) - 1] = $value
+	Return $arrayRedim
 EndFunc

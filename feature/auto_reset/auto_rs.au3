@@ -10,78 +10,47 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aAccountActiveRs[0]
 Local $sSession,$logFile
 Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
 Local $sDate = @YEAR & @MON & @MDAY
 Local $className = @ScriptName
-Local $haveIP = False
-
-;~ testAa()
-
-Func testAa()
-	;~ $charName = "GiamDocSo"
-	$charName = "xTramAnh"
-	$mainNo = getMainNoByChar($charName)
-	activeAndMoveWin($mainNo)
-	checkLvl400($mainNo)
-	;~ Local $pTime = "2023/10/02 18:34:58"
-	;~ Local $amount = 7
-
-	;~ Local $addedTime = _DateAdd('h', $amount, $pTime)
-	;~ Local $addedTime1 = _DateAdd('n', -20, $addedTime)
-
-	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
-	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
-	;~ $charInfoText = "Reset 889 lần xxmrgreo xxvxv"
-	
-	;~ $sResetCount = StringMid($charInfoText, 7, 10)
-	;~ $charRsCount =StringSplit($sResetCount, ' ', 0)
-
-	;~ writeLogMethodStart("testAa",@ScriptLineNumber & $charRsCount[0])
-	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
-	;~ writeLogFile($logFile, "aRsConfig: " & convertJsonToString($aRsConfig))
-	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	;~ writeLogFile($logFile, "aRsUpdateInfo: " & convertJsonToString($aRsUpdateInfo))
-	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
-
-	For $i = 0 To UBound($jAccountWithdrawRs) - 1
-		writeLogFile($logFile, "jAccountWithdrawRs - " & $i & " : " & convertJsonToString($jAccountWithdrawRs[$i]))
-		$charName = getPropertyJson($jAccountWithdrawRs[$i],"char_name")
-		writeLogFile($logFile, "jAccountWithdrawRs - charName: " & $charName)
-	Next
-	
-EndFunc
 
 Func startAutoRs()
+	Local $aAccountActive[0], $aAccountWithDraw[0], $aAccountActiveRs[0]
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !")
-	ReDim $aAccountActiveRs[0]
 	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
-	For $i =0 To UBound($jAccountWithdrawRs) - 1
-		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
-		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
-		If $active And "reset" == $type Then
-			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
-			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
+	$jAccMerge = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+
+	For $i = 0 To UBound($jAccMerge) - 1
+		$active = getPropertyJson($jAccMerge[$i], "active")
+		$type = getPropertyJson($jAccMerge[$i], "type")
+		; Tu gio se chia ra 2 loai type = reset hoac withdraw
+		; "reset" la reset account, "withdraw" la withdraw account
+		If $active Then
+			$aAccountActive = redimArray($aAccountActive, $jAccMerge[$i])
+			If "withdraw" == $type Then
+				$aAccountWithDraw = redimArray($aAccountWithDraw, $jAccMerge[$i])
+			Else
+				$aAccountActiveRs = redimArray($aAccountActiveRs, $jAccMerge[$i])
+			EndIf
 		EndIf
 	Next
 
-	If UBound($aAccountActiveRs) == 0 Then 
+	If UBound($aAccountActive) == 0 Then 
 		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
 		FileClose($logFile)
 		Return
 	EndIf
 
 	; Validate account reset
-	$aAccountActiveRsValidate = validAccountRs($aAccountActiveRs)
+	$aAccValidate = validAccountRs($aAccountActiveRs)
 
-	If UBound($aAccountActiveRsValidate) == 0 Then 
+	If UBound($aAccValidate) == 0 Then 
 		writeLogFile($logFile, "Khong co account valid thoa man => Ket thuc chuong trinh !")
 		FileClose($logFile)
 		Return
@@ -93,39 +62,16 @@ Func startAutoRs()
 		logout($sSession)
 	EndIf
 
-	For $i = 0 To UBound($aAccountActiveRsValidate) - 1
-		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRsValidate[$i]))
-		$charName = getPropertyJson($aAccountActiveRsValidate[$i],"char_name")
-		$resetOnline = getPropertyJson($aAccountActiveRsValidate[$i],"reset_online")
-		$mainNo = getMainNoByChar($charName)
+	For $i = 0 To UBound($aAccValidate) - 1
+		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccValidate[$i]))
+		$type = getPropertyJson($jAccMerge[$i], "type")
 
-		; Neu la rs online thi can thuc hien active main
-		If Not $resetOnline Then
-			; Begin reset
-			$activeMain = activeAndMoveWin($mainNo)
-
-			; Truong hop main hien tai khong duoc active, active main khac
-			If Not $activeMain Then $activeMain = switchOtherChar($charName)
-			If $activeMain Then 
-				; Thuc hien minize main
-				minisizeMain($mainNo)
-				; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
-				$minuteCheck = Number(@MIN)
-				If $minuteCheck > 52 Then
-					$minuteWait = (60 - $minuteCheck) + 8
-					minuteWait($minuteWait)
-				ElseIf $minuteCheck < 8 Then
-					; Wait 1 min
-					$minuteWait = 8 - $minuteCheck
-					minuteWait($minuteWait)
-				EndIf
-				processReset($aAccountActiveRsValidate[$i])
-			EndIf
+		If "withdraw" == $type Then
+			withDrawRs($aAccValidate[$i])
 		Else
-			processReset($aAccountActiveRsValidate[$i])
+			reset($aAccValidate[$i])
 		EndIf
 
-		; Logout account
 		logout($sSession)
 	Next
 
@@ -139,6 +85,120 @@ Func startAutoRs()
 		_WD_Shutdown()
 	EndIf
 	
+EndFunc
+
+Func reset($jAccountInfo)
+	writeLogMethodStart("resetRs",@ScriptLineNumber,$jAccountInfo)
+	$charName = getPropertyJson($jAccountInfo,"char_name")
+	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
+	$mainNo = getMainNoByChar($charName)
+	If Not $resetOnline Then
+		; Begin reset
+		$activeMain = activeAndMoveWin($mainNo)
+
+		; Truong hop main hien tai khong duoc active, active main khac
+		If Not $activeMain Then $activeMain = switchOtherChar($charName)
+		If $activeMain Then 
+			; Thuc hien minize main
+			minisizeMain($mainNo)
+			; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
+			$minuteCheck = Number(@MIN)
+			If $minuteCheck > 52 Then
+				$minuteWait = (60 - $minuteCheck) + 8
+				minuteWait($minuteWait)
+			ElseIf $minuteCheck < 8 Then
+				; Wait 1 min
+				$minuteWait = 8 - $minuteCheck
+				minuteWait($minuteWait)
+			EndIf
+			processReset($jAccountInfo)
+		EndIf
+	Else
+		processReset($jAccountInfo)
+	EndIf
+	writeLogMethodEnd("resetRs",@ScriptLineNumber,$jAccountInfo)
+EndFunc
+
+Func withDrawRs($jAccountInfo)
+	writeLogMethodStart("processWithDrawReset",@ScriptLineNumber,$jAccountInfo)
+	$username = getPropertyJson($jAccountInfo,"user_name")
+	$password = getPropertyJson($jAccountInfo,"password")
+	$charName = getPropertyJson($jAccountInfo,"char_name")
+	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
+
+	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
+	$isLoginSuccess = login($sSession, $username, $password)
+	secondWait(5)
+	If $isLoginSuccess Then
+		; Check IP
+		$haveIP = checkIP($sSession)
+		If Not $haveIP Then
+			writeLogFile($logFile, "Khong co IP hoac IP khong hop le, ket thuc xu ly !")
+			Return False
+		Else
+			writeLogFile($logFile, "Co IP hop le, tiep tuc xu ly !")
+			$timeNow = getTimeNow()
+			$sLogReset = getLogReset($sSession, $charName)
+			$lastTimeRs = getTimeReset($sLogReset,0)
+			$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+			If $timeNow < $nextTimeRs Then 
+				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
+				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
+				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+					For $i =0 To UBound($jsonRsGame) - 1
+						$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+						If $charNameTmp == $charName Then
+							_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+							setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+						EndIf
+					Next
+				Return
+			EndIf
+
+			; withraw reset
+			$errorIp = _Demo_NavigateCheckBanner($sSession,combineUrl("web/bank/reset_in_out.withdraw_confirm.shtml?val=1&char=" & $charName))
+			secondWait(5)
+			writeLogFile($logFile, "$errorIp: " & $errorIp)
+
+			If $errorIp == $_WD_ERROR_Timeout Then
+				; Thuc hien set lai vao file de khong thuc hien rs nua
+				;~ setRsLogByAccountProperty($accountInfo,"is_have_ip", False)
+				$sElement = findElement($sSession, "//button[@type='submit']") 
+				clickElement($sSession, $sElement)
+				secondWait(5)
+				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
+				clickElement($sSession, $sElement)
+				writeLogFile($logFile, "IP khong chinh chu khong the RS")
+				secondWait(5)
+			Else
+				$sElement = findElement($sSession, "//button[@type='submit']") 
+				clickElement($sSession, $sElement)
+				secondWait(5)
+				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
+				clickElement($sSession, $sElement)
+				writeLogFile($logFile, "Rut reset thanh cong !")
+				secondWait(5)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+				For $i =0 To UBound($jsonRsGame) - 1
+					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+					If $charNameTmp == $charName Then
+						$sLogReset = getLogReset($sSession, $charName)
+						$resetInDay = getRsInDay($sLogReset)
+						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+						; last time rs
+						$sTimeReset = getTimeReset($sLogReset,0)
+						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
+						setJsonToFileFormat($jsonPathRoot & $accountRsFileName, $jsonRsGame)
+					EndIf
+				Next
+			EndIf
+		EndIf
+	Else
+		writeLogFile($logFile, "Dang nhap that bai voi account: " & $charName)
+		Return False
+	EndIf
+	writeLogMethodEnd("processWithDrawReset",@ScriptLineNumber,$jAccountInfo)
 EndFunc
 
 Func processReset($jAccountInfo)
@@ -223,14 +283,14 @@ Func processReset($jAccountInfo)
 			; 2. Reset in web
 			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
 			secondWait(5)
-			; Click radio rs vip
-			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
-			secondWait(2)
 			If $resetOnline Then
 				; Click radio online
 				_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
 				secondWait(2)
 			EndIf
+			; Click radio rs vip
+			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
+			secondWait(2)
 			; Click submit
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
@@ -646,7 +706,7 @@ Func goSportStadium($sportNo = 1)
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)
-	Local $aAccountActiveRsValidate[0]
+	Local $aAccValidate[0]
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
@@ -699,9 +759,9 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
-		Redim $aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) + 1]
-		$aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) - 1] = $aAccountActiveRs[$i]
+		Redim $aAccValidate[UBound($aAccValidate) + 1]
+		$aAccValidate[UBound($aAccValidate) - 1] = $aAccountActiveRs[$i]
 	Next
 	
-	Return $aAccountActiveRsValidate
+	Return $aAccValidate
 EndFunc
