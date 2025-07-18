@@ -2,12 +2,8 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
-
-;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-;~ startPath()
-;~ test()
 start()
 
 ; Method: test

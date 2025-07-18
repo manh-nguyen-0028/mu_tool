@@ -10,10 +10,7 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $sSession,$logFile
-Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
-Local $sDate = @YEAR & @MON & @MDAY
-Local $className = @ScriptName
+$className = "auto_rs.au3"
 
 Func startAutoRs()
 	Local $aAccountActive[0], $aAccountWithDraw[0], $aAccountActiveRs[0]
@@ -21,7 +18,7 @@ Func startAutoRs()
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
-	writeLogFile($logFile, "Begin start auto reset !")
+	writeLogFile($logFile, "Begin start auto reset !", @ScriptLineNumber)
 	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	$jAccMerge = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
@@ -164,23 +161,15 @@ Func withDrawRs($jAccountInfo)
 			If $errorIp == $_WD_ERROR_Timeout Then
 				; Thuc hien set lai vao file de khong thuc hien rs nua
 				;~ setRsLogByAccountProperty($accountInfo,"is_have_ip", False)
-				$sElement = findElement($sSession, "//button[@type='submit']") 
-				clickElement($sSession, $sElement)
-				secondWait(5)
-				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
-				clickElement($sSession, $sElement)
+				findAndClick($sSession, "//button[@type='submit']") 
+				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']") 
 				writeLogFile($logFile, "IP khong chinh chu khong the RS")
-				secondWait(5)
 			Else
-				$sElement = findElement($sSession, "//button[@type='submit']") 
-				clickElement($sSession, $sElement)
-				secondWait(5)
-				$sElement = findElement($sSession, "//button[@class='swal2-confirm swal2-styled']") 
-				clickElement($sSession, $sElement)
+				findAndClick($sSession, "//button[@type='submit']") 
+				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']") 
 				writeLogFile($logFile, "Rut reset thanh cong !")
-				secondWait(5)
 				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-				For $i =0 To UBound($jsonRsGame) - 1
+				For $i = 0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
 					If $charNameTmp == $charName Then
 						$sLogReset = getLogReset($sSession, $charName)
@@ -717,7 +706,6 @@ Func validAccountRs($aAccountActiveRs)
 		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
 		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
-		$resetOnline = getPropertyJson($aAccountActiveRs[$i],"reset_online")
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))

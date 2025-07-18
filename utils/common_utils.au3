@@ -18,7 +18,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 ; CONSTANT MU
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
-Global $logFile, $jsonPositionConfig, $jsonConfig
+Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
 Global $aCharInAccount
@@ -31,6 +31,8 @@ Global Const $WM_MOUSEMOVE = 0x0200
 Global Const $WM_LBUTTONDOWN = 0x0201
 Global Const $WM_LBUTTONUP = 0x0202
 
+; Khởi tạo biến logFile
+Global $className = "MuTool"
 
 init()
 
@@ -121,9 +123,9 @@ EndFunc
 Func logFileCommon($logFile, $sText,$line=Default)
 	$sTextFinal = ''
 	If $line == Default Then
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName &" : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  $className &" : " & $sText
 	Else
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "[" & $line & "]" & " : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  $className & "[" & $line & "]" & " : " & $sText
 	EndIf
 	writeLog($sTextFinal)
 	FileWriteLine($logFile, $sTextFinal)
