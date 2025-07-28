@@ -673,7 +673,7 @@ Func goMapArena($rsCount)
 EndFunc
 
 Func goSportStadium($sportNo = 1) 
-	checkEnterChat()
+	;~ checkEnterChat()
 	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
 	;~ secondWait(2)
