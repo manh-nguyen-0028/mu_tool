@@ -212,8 +212,6 @@ Func processReset($jAccountInfo)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess Then
-		; Check IP
-		$haveIP = checkIP($sSession)
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
@@ -710,7 +708,6 @@ Func validAccountRs($aAccountActiveRs)
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
-		$password = getPropertyJson($aAccountActiveRs[$i],"password")
 		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
 		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
 		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
@@ -719,7 +716,6 @@ Func validAccountRs($aAccountActiveRs)
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
-		$mainNo = getMainNoByChar($charName)
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
