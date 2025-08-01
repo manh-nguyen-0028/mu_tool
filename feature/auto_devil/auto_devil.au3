@@ -10,26 +10,6 @@ Global $sCharNotJoinDevil = ""
 start()
 ;~ processGoEvent()
 
-;~ test2()
-
-Func test2()
-    $charName="SieuXGao"
-
-    $devilNo = 6
-    
-    $mainNo = getMainNoByChar($charName)
-
-    activeAndMoveWin($mainNo)
-
-    clickPositionByDevilNo($devilNo)
-    ;~ 19696 962
-    ;~ 0x0078D4
-    ;~ secondWait(2)
-    ;~ $result = checkPixelColor(579, 208,"0x0E0E0E")
-    ;~ writeLog($result)
-    Return True
-EndFunc
-
 ; Method: start
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
@@ -272,13 +252,11 @@ Func processGoEvent()
 	secondWait(5)
 	
 	; Check accounts in devil
-	checkAccountsInDevil($jsonAccountActiveDevil)
-	minuteWait(1)
-	switchToMainChar($jsonAccountActiveDevil)
+	checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
 
 	; Process fast join accounts
 	processFastJoinAccounts($jsonAccountFastJoin)
-	minuteWait(1)
+	secondWait(30)
 	switchToMainChar($jsonAccountActiveDevil)
 
 	writeLogFile($logFile, "Finish processGoEvent")
@@ -504,7 +482,7 @@ Func handleAfterDevilEvent()
 	Next
 EndFunc
 
-Func checkAccountsInDevil($jsonAccountActiveDevil)
+Func checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
     writeLogFile($logFile, "Start method: checkAccountsInDevil with accounts: " & convertJsonToString($jsonAccountActiveDevil))
 	Local $sCharNotJoinDevil = ""
     
@@ -518,9 +496,8 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 
         If activeAndMoveWin($mainNo) And Not checkActiveAutoHome() Then
 			$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
-            actionWhenCantJoinDevil()
+            actionWhenCantJoinDevil($isNeedFollowLeader)
         EndIf
-
         minisizeMain($mainNo)
     Next
 

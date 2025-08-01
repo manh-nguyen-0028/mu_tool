@@ -183,12 +183,14 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
 EndFunc
 
-Func actionWhenCantJoinDevil()
+Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
 	; Thuc hien follow leader
-	_MU_followLeader(1)
-	checkAutoZAfterFollowLead()
+	If $isNeedFollowLeader Then
+		_MU_followLeader(1)
+		checkAutoZAfterFollowLead()
+	EndIf
 	Return True
 EndFunc
 

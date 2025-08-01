@@ -655,8 +655,19 @@ Func goMapLvl()
 EndFunc
 
 Func goMapArena($rsCount)
-	sendKeyEnter()
-	sendKeyEnter()
+	; neu thoi gian tu phut 0 -5, 30 - 35 thi se cho cho toi khi thoi gian nay qua, sau do moi vao sport arena
+	If (@MIN >= 0 And @MIN < 5) Or (@MIN >= 30 And @MIN < 35) Then
+		writeLogFile($logFile, "Thoi gian hien tai: " & @HOUR & ":" & @MIN & " - Chua den thoi gian vao arena, cho toi 5 phut nua !")
+		If (@MIN >= 0 And @MIN < 5) Then
+			; Neu thoi gian tu 0 - 5 thi cho toi den 5 phut
+			; Wait 5 minute
+			minuteWait(5 - @MIN)
+		Else
+			; Neu thoi gian tu 30 - 35 thi cho toi den 35 phut
+			; Wait 5 minute
+			minuteWait(35 - @MIN)
+		EndIf
+	EndIf
 	writeLogFile($logFile, "Bat dau map event arena ! ")
 	; Click event icon then go arena map
 	clickEventIcon()
@@ -673,7 +684,6 @@ Func goMapArena($rsCount)
 EndFunc
 
 Func goSportStadium($sportNo = 1) 
-	;~ checkEnterChat()
 	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
 	;~ secondWait(2)
