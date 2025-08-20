@@ -363,25 +363,25 @@ EndFunc
 Func sendKeyHome()
 	writeLogFile($logFile, "Send key home !")
 	sendKeyDelay("{Home}")
-	secondWait(1)
+	;~ secondWait(1)
 EndFunc
 
 Func sendKeyTab()
 	writeLogFile($logFile, "Send key tab !")
 	sendKeyDelay("{Tab}")
-	secondWait(1)
+	;~ secondWait(1)
 EndFunc
 
 Func sendKeyH()
 	writeLogFile($logFile, "Send key +h !")
 	sendKeyDelay("+h")
-	secondWait(1)
+	;~ secondWait(1)
 EndFunc
 
 Func sendKeyEnd()
 	writeLogFile($logFile, "Send key End !")
 	sendKeyDelay("{END}")
-	secondWait(1)
+	;~ secondWait(1)
 EndFunc
 
 ; Method: activeMain

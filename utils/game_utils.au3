@@ -173,6 +173,8 @@ EndFunc
 Func handelWhenFinshDevilEvent()
 	sendKeyEnter()
 	sendKeyEnter()
+	sendKeyEnter()
+	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")

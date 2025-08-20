@@ -79,11 +79,11 @@ Func checkThenGoDevilEvent()
 EndFunc
 
 Func sleep26Min($nextHour)
-	Local $nextMinFollowLeader = 20, $secondFollowLeader = 10
+	Local $nextMinFollowLeader = 21, $secondFollowLeader = 10
 	Local $nextHourFollowLeader = $nextHour
 	Local $currentTime = getCurrentTime()
 
-	If @MIN >= 30 Then $nextMinFollowLeader = 50
+	If @MIN >= 30 Then $nextMinFollowLeader = 51
 
 	Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, $secondFollowLeader)
 	$timeLeft = timeLeft($currentTime, $nextTimeFollowLeader)
