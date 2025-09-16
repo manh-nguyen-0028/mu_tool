@@ -131,6 +131,18 @@ Func withDrawRs($jAccountInfo)
 		$haveIP = checkIP($sSession)
 		If Not $haveIP Then
 			writeLogFile($logFile, "Khong co IP hoac IP khong hop le, ket thuc xu ly !")
+			; Cap nhat time rs de khong thuc hien lai nua ( time = time + 24h)
+			$timeNow = getTimeNow()
+			$hourPerRs = 24
+			$lastTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
+			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+			For $i =0 To UBound($jsonRsGame) - 1
+				$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+				If $charNameTmp == $charName Then
+					_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+				EndIf
+			Next
 			Return False
 		Else
 			writeLogFile($logFile, "Co IP hop le, tiep tuc xu ly !")
