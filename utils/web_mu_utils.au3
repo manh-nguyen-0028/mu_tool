@@ -11,7 +11,7 @@
 #include "../lib/au3WebDriver-0.12.0/wd_core.au3"
 #include "../lib/au3WebDriver-0.12.0/webdriver_utils.au3"
 
-Local $sAppDataPath = @AppDataDir ; Lấy đường dẫn tới thư mục "AppData"
+$sAppDataPath = @AppDataDir ; Lấy đường dẫn tới thư mục "AppData"
 
 Global $sAppDataLocalPath = StringRegExpReplace($sAppDataPath, "Roaming", "Local") ; Lấy đường dẫn thư mục gốc
 
@@ -60,13 +60,12 @@ Func getTitleWebsite($sSession)
 EndFunc
 
 Func checkIp($sSession)
-	$isHaveIP = True
-	$sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='alert alert-success']/i[@class='c-icon c-icon-xl cil-shield-alt t-pull-left']", Default, False)
+	_WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='alert alert-success']/i[@class='c-icon c-icon-xl cil-shield-alt t-pull-left']", Default, False)
 	If @error Then
 		writeLogFile($logFile, "IP KHONG CHINH CHU")
-		$isHaveIP = False
+		Return False
 	EndIf
-	Return $isHaveIP
+	Return True
 EndFunc
 
 Func login($sSession, $username, $password)

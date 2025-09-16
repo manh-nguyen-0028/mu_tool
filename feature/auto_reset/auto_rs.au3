@@ -10,78 +10,44 @@
 #include "../../utils/game_utils.au3"
 #RequireAdmin
 
-Local $aAccountActiveRs[0]
-Local $sSession,$logFile
-Local $sDateTime = @YEAR & @MON & @MDAY & "_" & @HOUR & @MIN & @SEC
-Local $sDate = @YEAR & @MON & @MDAY
-Local $className = @ScriptName
-Local $haveIP = False
-
-;~ testAa()
-
-Func testAa()
-	;~ $charName = "GiamDocSo"
-	$charName = "xTramAnh"
-	$mainNo = getMainNoByChar($charName)
-	activeAndMoveWin($mainNo)
-	checkLvl400($mainNo)
-	;~ Local $pTime = "2023/10/02 18:34:58"
-	;~ Local $amount = 7
-
-	;~ Local $addedTime = _DateAdd('h', $amount, $pTime)
-	;~ Local $addedTime1 = _DateAdd('n', -20, $addedTime)
-
-	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime)
-	;~ MsgBox($MB_OK, "Output Time", "Input Time: " & $pTime & @CRLF & "Output Time: " & $addedTime1)
-	;~ $charInfoText = "Reset 889 lần xxmrgreo xxvxv"
-	
-	;~ $sResetCount = StringMid($charInfoText, 7, 10)
-	;~ $charRsCount =StringSplit($sResetCount, ' ', 0)
-
-	;~ writeLogMethodStart("testAa",@ScriptLineNumber & $charRsCount[0])
-	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
-	;~ writeLogFile($logFile, "aRsConfig: " & convertJsonToString($aRsConfig))
-	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	;~ writeLogFile($logFile, "aRsUpdateInfo: " & convertJsonToString($aRsUpdateInfo))
-	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
-
-	For $i = 0 To UBound($jAccountWithdrawRs) - 1
-		writeLogFile($logFile, "jAccountWithdrawRs - " & $i & " : " & convertJsonToString($jAccountWithdrawRs[$i]))
-		$charName = getPropertyJson($jAccountWithdrawRs[$i],"char_name")
-		writeLogFile($logFile, "jAccountWithdrawRs - charName: " & $charName)
-	Next
-	
-EndFunc
+$className = "auto_rs.au3"
 
 Func startAutoRs()
+	Local $aAccountActive[0], $aAccountWithDraw[0], $aAccountActiveRs[0]
 	; get array account need withdraw reset
 	Local $sFilePath = $outputPathRoot & "File_Log_AutoRS_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
-	writeLogFile($logFile, "Begin start auto reset !")
-	ReDim $aAccountActiveRs[0]
+	writeLogFile($logFile, "Begin start auto reset !", @ScriptLineNumber)
 	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	$jAccountWithdrawRs = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
-	For $i =0 To UBound($jAccountWithdrawRs) - 1
-		$active = getPropertyJson($jAccountWithdrawRs[$i], "active")
-		$type = getPropertyJson($jAccountWithdrawRs[$i], "type")
-		If $active And "reset" == $type Then
-			Redim $aAccountActiveRs[UBound($aAccountActiveRs) + 1]
-			$aAccountActiveRs[UBound($aAccountActiveRs) - 1] = $jAccountWithdrawRs[$i]
+	$jAccMerge = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+
+	For $i = 0 To UBound($jAccMerge) - 1
+		$active = getPropertyJson($jAccMerge[$i], "active")
+		$type = getPropertyJson($jAccMerge[$i], "type")
+		; Tu gio se chia ra 2 loai type = reset hoac withdraw
+		; "reset" la reset account, "withdraw" la withdraw account
+		If $active Then
+			$aAccountActive = redimArray($aAccountActive, $jAccMerge[$i])
+			If "withdraw" == $type Then
+				$aAccountWithDraw = redimArray($aAccountWithDraw, $jAccMerge[$i])
+			Else
+				$aAccountActiveRs = redimArray($aAccountActiveRs, $jAccMerge[$i])
+			EndIf
 		EndIf
 	Next
 
-	If UBound($aAccountActiveRs) == 0 Then 
+	If UBound($aAccountActive) == 0 Then 
 		writeLogFile($logFile, "Khong co account nao active => Ket thuc chuong trinh !")
 		FileClose($logFile)
 		Return
 	EndIf
 
 	; Validate account reset
-	$aAccountActiveRsValidate = validAccountRs($aAccountActiveRs)
+	$aAccValidate = validAccountRs($aAccountActive)
 
-	If UBound($aAccountActiveRsValidate) == 0 Then 
+	If UBound($aAccValidate) == 0 Then 
 		writeLogFile($logFile, "Khong co account valid thoa man => Ket thuc chuong trinh !")
 		FileClose($logFile)
 		Return
@@ -93,39 +59,16 @@ Func startAutoRs()
 		logout($sSession)
 	EndIf
 
-	For $i = 0 To UBound($aAccountActiveRsValidate) - 1
-		writeLogFile($logFile, "Dang xu ly voi account => " & convertJsonToString($aAccountActiveRsValidate[$i]))
-		$charName = getPropertyJson($aAccountActiveRsValidate[$i],"char_name")
-		$resetOnline = getPropertyJson($aAccountActiveRsValidate[$i],"reset_online")
-		$mainNo = getMainNoByChar($charName)
+	For $i = 0 To UBound($aAccValidate) - 1
+		$type = getPropertyJson($aAccValidate[$i], "type")
+		writeLogFile($logFile, "type rs = " & $type & "---" & "Dang xu ly voi account => " & convertJsonToString($aAccValidate[$i]))
 
-		; Neu la rs online thi can thuc hien active main
-		If Not $resetOnline Then
-			; Begin reset
-			$activeMain = activeAndMoveWin($mainNo)
-
-			; Truong hop main hien tai khong duoc active, active main khac
-			If Not $activeMain Then $activeMain = switchOtherChar($charName)
-			If $activeMain Then 
-				; Thuc hien minize main
-				minisizeMain($mainNo)
-				; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
-				$minuteCheck = Number(@MIN)
-				If $minuteCheck > 52 Then
-					$minuteWait = (60 - $minuteCheck) + 8
-					minuteWait($minuteWait)
-				ElseIf $minuteCheck < 8 Then
-					; Wait 1 min
-					$minuteWait = 8 - $minuteCheck
-					minuteWait($minuteWait)
-				EndIf
-				processReset($aAccountActiveRsValidate[$i])
-			EndIf
+		If "withdraw" == $type Then
+			withDrawRs($aAccValidate[$i])
 		Else
-			processReset($aAccountActiveRsValidate[$i])
+			reset($aAccValidate[$i])
 		EndIf
 
-		; Logout account
 		logout($sSession)
 	Next
 
@@ -141,6 +84,124 @@ Func startAutoRs()
 	
 EndFunc
 
+Func reset($jAccountInfo)
+	writeLogMethodStart("resetRs",@ScriptLineNumber,$jAccountInfo)
+	$charName = getPropertyJson($jAccountInfo,"char_name")
+	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
+	$mainNo = getMainNoByChar($charName)
+	If Not $resetOnline Then
+		; Begin reset
+		$activeMain = activeAndMoveWin($mainNo)
+
+		; Truong hop main hien tai khong duoc active, active main khac
+		If Not $activeMain Then $activeMain = switchOtherChar($charName)
+		If $activeMain Then 
+			; Thuc hien minize main
+			minisizeMain($mainNo)
+			; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
+			$minuteCheck = Number(@MIN)
+			If $minuteCheck > 52 Then
+				$minuteWait = (60 - $minuteCheck) + 8
+				minuteWait($minuteWait)
+			ElseIf $minuteCheck < 8 Then
+				; Wait 1 min
+				$minuteWait = 8 - $minuteCheck
+				minuteWait($minuteWait)
+			EndIf
+			processReset($jAccountInfo)
+		EndIf
+	Else
+		processReset($jAccountInfo)
+	EndIf
+	writeLogMethodEnd("resetRs",@ScriptLineNumber,$jAccountInfo)
+EndFunc
+
+Func withDrawRs($jAccountInfo)
+	writeLogMethodStart("processWithDrawReset",@ScriptLineNumber,$jAccountInfo)
+	$username = getPropertyJson($jAccountInfo,"user_name")
+	$password = getPropertyJson($jAccountInfo,"password")
+	$charName = getPropertyJson($jAccountInfo,"char_name")
+	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
+
+	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
+	$isLoginSuccess = login($sSession, $username, $password)
+	secondWait(5)
+	If $isLoginSuccess Then
+		; Check IP
+		$haveIP = checkIP($sSession)
+		If Not $haveIP Then
+			writeLogFile($logFile, "Khong co IP hoac IP khong hop le, ket thuc xu ly !")
+			; Cap nhat time rs de khong thuc hien lai nua ( time = time + 24h)
+			$timeNow = getTimeNow()
+			$hourPerRs = 24
+			$lastTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
+			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+			For $i =0 To UBound($jsonRsGame) - 1
+				$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+				If $charNameTmp == $charName Then
+					_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+				EndIf
+			Next
+			Return False
+		Else
+			writeLogFile($logFile, "Co IP hop le, tiep tuc xu ly !")
+			$timeNow = getTimeNow()
+			$sLogReset = getLogReset($sSession, $charName)
+			$lastTimeRs = getTimeReset($sLogReset,0)
+			$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+			If $timeNow < $nextTimeRs Then 
+				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
+				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
+				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+					For $i =0 To UBound($jsonRsGame) - 1
+						$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+						If $charNameTmp == $charName Then
+							_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+							setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+						EndIf
+					Next
+				Return
+			EndIf
+
+			; withraw reset
+			$errorIp = _Demo_NavigateCheckBanner($sSession,combineUrl("web/bank/reset_in_out.withdraw_confirm.shtml?val=1&char=" & $charName))
+			secondWait(5)
+			writeLogFile($logFile, "$errorIp: " & $errorIp)
+
+			If $errorIp == $_WD_ERROR_Timeout Then
+				; Thuc hien set lai vao file de khong thuc hien rs nua
+				;~ setRsLogByAccountProperty($accountInfo,"is_have_ip", False)
+				findAndClick($sSession, "//button[@type='submit']") 
+				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']") 
+				writeLogFile($logFile, "IP khong chinh chu khong the RS")
+			Else
+				findAndClick($sSession, "//button[@type='submit']") 
+				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']") 
+				writeLogFile($logFile, "Rut reset thanh cong !")
+				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+				For $i = 0 To UBound($jsonRsGame) - 1
+					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+					If $charNameTmp == $charName Then
+						$sLogReset = getLogReset($sSession, $charName)
+						$resetInDay = getRsInDay($sLogReset)
+						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+						; last time rs
+						$sTimeReset = getTimeReset($sLogReset,0)
+						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
+						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+					EndIf
+				Next
+			EndIf
+		EndIf
+	Else
+		writeLogFile($logFile, "Dang nhap that bai voi account: " & $charName)
+		Return False
+	EndIf
+	writeLogMethodEnd("processWithDrawReset",@ScriptLineNumber,$jAccountInfo)
+EndFunc
+
 Func processReset($jAccountInfo)
 	writeLogMethodStart("processReset",@ScriptLineNumber,$jAccountInfo)
 	$username = getPropertyJson($jAccountInfo,"user_name")
@@ -154,6 +215,7 @@ Func processReset($jAccountInfo)
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
+	$activeEndKey = getPropertyJson($jAccountInfo,"active_end_key")
 	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
 	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
 	$postionMoveY = getPropertyJson($jAccountInfo,"postion_move_y")
@@ -162,8 +224,6 @@ Func processReset($jAccountInfo)
 	$isLoginSuccess = login($sSession, $username, $password)
 	secondWait(5)
 	If $isLoginSuccess Then
-		; Check IP
-		$haveIP = checkIP($sSession)
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $charName)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
@@ -209,8 +269,10 @@ Func processReset($jAccountInfo)
 				If $activeWin Then
 					handelWhenFinshDevilEvent()
 					secondWait(3)
-					; 1. Change Char
-					changeChar($mainNo)
+					; 1. Change Char Tu v1.0.15 bo change vi khong cong dc diem nv
+					;~ changeChar($mainNo)
+					; Thuc hien change server
+					changeServer($mainNo)
 				EndIf
 			Else
 				; Neu co active move va co toa do thi thuc hien move
@@ -222,46 +284,30 @@ Func processReset($jAccountInfo)
 			; 2. Reset in web
 			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
 			secondWait(5)
-			; Click radio rs vip
-			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
-			secondWait(2)
 			If $resetOnline Then
 				; Click radio online
 				_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
 				secondWait(2)
 			EndIf
+			; Click radio rs vip
+			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
+			secondWait(2)
 			; Click submit
 			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 			secondWait(2)
 
 			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
 			If Not $resetOnline Then
-				; Kiểm tra xem đã load được <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3> chưa
-				$timeCheckAddPoint = 0
-				$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-				$tElement = getTextElement($sSession, $sElementTitle)
-				While $tElement <> "Cộng điểm nhanh" And $timeCheckAddPoint <= 5
-					secondWait(2)
-					$sElementTitle = findElement($sSession, "//h3[@class='card-title']")
-					$tElement = getTextElement($sSession, $sElementTitle)
-					$timeCheckAddPoint += 1
-				WEnd
-
-				If $tElement == "Cộng điểm nhanh" Then
-					writeLogFile($logFile, "Tim thay nut submit add point cho char: " & $charName)
-					; Click submit add point
-					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-					secondWait(2)
-				Else
-					writeLogFile($logFile, "Khong tim thay nut submit add point cho char: " & $charName)
-					writeLogFile($logFile, "Thuc hien di toi trang add point")
-					;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-					_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-					secondWait(5)
-					; Click submit add point
-					_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-					secondWait(2)
-				EndIf
+				; Click submit
+				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				secondWait(2)
+				; Vao trang add point thuc hien lai 1 lan nua cho chac
+				;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+				_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+				secondWait(5)
+				; Click submit add point
+				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				secondWait(2)
 			EndIf
 
 			; close diaglog confirm
@@ -298,41 +344,47 @@ Func processReset($jAccountInfo)
 			Next
 			; If reset online = true => withow handle in game
 			If Not $resetOnline Then
-				; 3. Return game
+				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
+				returnServer()
 				returnChar($mainNo)
 				; Thuc hien enter 2 lan de thoat khoi bang thong bao
 				;~ sendKeyEnter()
 				;~ sendKeyEnter()
 				; 3.1. Check xem cua so enter co ton tai khong
 				;~ checkEnterChat()
-				; Thuc hien send key home
-				sendKeyHome()
-				; Send tiep key tab de mo ban do
-				sendKeyTab()
-				; 4. Go to sport
-				goToSportLvl1()
-				; Sau khi vao sport thi thuc hien send key H
-				sendKeyH()
-				; Send 1 lan key tab nua de tat ban do
-				sendKeyTab()
-				; Sau do thuc hien send key end de kep chuot
-				sendKeyEnd()
+				firstActionAfterRs()
+				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
+				If $activeEndKey Then sendKeyEnd()
 				; minisize main
 				minisizeMain($mainNo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
 				secondWait(30)
+				; Kiem tra viec tang lvl tren web, neu van bang 1 thi thuc hien activate game va thuc hien laij firstActionAfterRs
+				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+				If $lvlCheckInWeb == 1 Then 
+					; Activate game
+					activeAndMoveWin($mainNo)
+					secondWait(2)
+					; Bam enter 1 lan nua de thoat bang thong bao
+					sendKeyEnter()
+					; Thuc hien first action
+					firstActionAfterRs()
+					; Cho tiep 30s
+					secondWait(30)
+				EndIf
+				; Neu van bang 1 thi thuc hien di chuyen bang web
 				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
-				If $lvlCheckInWeb < 5 Then
+				If $lvlCheckInWeb < 20 Then
 					writeLogFile($logFile, "Khong thay tang lvl! Lvl hien tai: " & $lvlCheckInWeb)
 					writeLogFile($logFile, "Thuc hien chuyen map bang web !")
-					If $postionMoveX <> "" And $postionMoveY <> "" Then
-						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-					EndIf
+					$moveLorenX = 220
+					$moveLorenY = 144
+					moveToPostionInWeb($sSession, $charName, $moveLorenX, $moveLorenY)
+					writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
 					; Doi 50s
-					secondWait(50)
+					minuteWait(2)
 					; Thuc hien check lai lvl
 					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				Else
@@ -354,13 +406,6 @@ Func processReset($jAccountInfo)
 					$lvlStopCheck = Number($lvlMove)
 					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
-
-					; Move other map khi $resetInDay <= 3
-					; Neu $resetInDay > 3 thi khong can thuc hien move
-					;~ If $resetInDay <= 3 Then
-					;~ 	moveOtherMap($charName)
-					;~ 	secondWait(6)
-					;~ EndIf
 					moveOtherMap($charName)
 					secondWait(6)
 
@@ -469,15 +514,33 @@ Func changeChar($mainNo)
 	secondWait(1)
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
-	secondWait(7)
+	secondWait(3)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-	;~ If PixelGetColor(47,764) <> 0xC06A1A Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
-		secondWait(7)
+		secondWait(3)
+	EndIf
+EndFunc 
+
+Func changeServer($mainNo)
+	writeLogFile($logFile, "Begin change server !")
+	sendKeyH()
+	secondWait(1)
+	sendKeyDelay("{ESC}")
+	secondWait(1)
+	; Bam chon nhat vat server
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+	secondWait(3)
+	; Check title 
+	$checkActive = activeAndMoveWin($mainNo)
+	if $checkActive Then
+		sendKeyDelay("{ESC}")
+		; Bam chon nhat vat khac
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+		secondWait(3)
 	EndIf
 EndFunc 
 
@@ -511,6 +574,23 @@ Func returnChar($mainNo)
 
 EndFunc 
 
+Func returnServer() 
+	; thuc hien active title game main
+	$checkActive = activeAndMoveWin($titleGameMain)
+	If $checkActive Then
+		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
+		secondWait(1)
+		; Click button chon server
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+		secondWait(2)
+		; Click vao chon sv 1
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_y"))
+		secondWait(2)
+	Else
+		writeLogFile($logFile, "Khong the active title game main de vao server !")
+	EndIf
+EndFunc
+
 #cs
 	Tim sport de luyen lvl len 20
 #ce
@@ -536,7 +616,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	$tmpLvl = 0
 	$timeCheck = 0
 	$timeCheckMax = 68
-	If $lvlStopCheck == 20 Then $timeCheckMax = 25
+	If $lvlStopCheck == 20 Then $timeCheckMax = 8
 
 	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
 		; Neu > 200 thi moi thuc hien ghi log
@@ -629,8 +709,19 @@ Func goMapLvl()
 EndFunc
 
 Func goMapArena($rsCount)
-	sendKeyEnter()
-	sendKeyEnter()
+	; neu thoi gian tu phut 0 -5, 30 - 35 thi se cho cho toi khi thoi gian nay qua, sau do moi vao sport arena
+	If (@MIN >= 0 And @MIN < 5) Or (@MIN >= 30 And @MIN < 35) Then
+		writeLogFile($logFile, "Thoi gian hien tai: " & @HOUR & ":" & @MIN & " - Chua den thoi gian vao arena, cho toi 5 phut nua !")
+		If (@MIN >= 0 And @MIN < 5) Then
+			; Neu thoi gian tu 0 - 5 thi cho toi den 5 phut
+			; Wait 5 minute
+			minuteWait(5 - @MIN)
+		Else
+			; Neu thoi gian tu 30 - 35 thi cho toi den 35 phut
+			; Wait 5 minute
+			minuteWait(35 - @MIN)
+		EndIf
+	EndIf
 	writeLogFile($logFile, "Bat dau map event arena ! ")
 	; Click event icon then go arena map
 	clickEventIcon()
@@ -647,6 +738,7 @@ Func goMapArena($rsCount)
 EndFunc
 
 Func goSportStadium($sportNo = 1) 
+	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
 	;~ secondWait(2)
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
@@ -667,22 +759,19 @@ Func goSportStadium($sportNo = 1)
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)
-
-	Local $aAccountActiveRsValidate[0]
+	writeLogMethodStart("validAccountRs",@ScriptLineNumber,$aAccountActiveRs)
+	Local $aAccValidate[0]
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i],"user_name")
-		$password = getPropertyJson($aAccountActiveRs[$i],"password")
 		$charName = getPropertyJson($aAccountActiveRs[$i],"char_name")
 		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i],"last_time_reset")
 		$limit = getPropertyJson($aAccountActiveRs[$i],"limit")
 		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
-		$resetOnline = getPropertyJson($aAccountActiveRs[$i],"reset_online")
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
 		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
-		$mainNo = getMainNoByChar($charName)
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
@@ -721,9 +810,22 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
-		Redim $aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) + 1]
-		$aAccountActiveRsValidate[UBound($aAccountActiveRsValidate) - 1] = $aAccountActiveRs[$i]
+		Redim $aAccValidate[UBound($aAccValidate) + 1]
+		$aAccValidate[UBound($aAccValidate) - 1] = $aAccountActiveRs[$i]
 	Next
 	
-	Return $aAccountActiveRsValidate
+	Return $aAccValidate
+EndFunc
+
+Func firstActionAfterRs()
+	; Thuc hien send key home
+	sendKeyHome()
+	; Send tiep key tab de mo ban do
+	sendKeyTab()
+	; 4. Go to sport
+	goToSportLvl1()
+	; Sau khi vao sport thi thuc hien send key H
+	sendKeyH()
+	; Send 1 lan key tab nua de tat ban do
+	sendKeyTab()
 EndFunc

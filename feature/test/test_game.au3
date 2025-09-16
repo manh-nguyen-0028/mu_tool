@@ -275,3 +275,23 @@ Func clickPositionByDevilNo($devilNo)
 	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
 	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
 EndFunc
+
+Func testRedim()
+	Local $aAccountActive[0], $aAccountWithDraw[0], $aAccountActiveRs[0]
+	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+	;~ $aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	;~ $jAccMerge = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+	writeLogFile($logFile, "jAccMerge: " & convertJsonToString($aRsConfig))
+
+	For $i = 0 To UBound($aRsConfig) - 1
+		$active = getPropertyJson($aRsConfig[$i], "active")
+		$type = getPropertyJson($aRsConfig[$i], "type")
+		; Tu gio se chia ra 2 loai type = reset hoac withdraw
+		; "reset" la reset account, "withdraw" la withdraw account
+		If $active Then
+			$aAccountActive = redimArray($aAccountActive, $aRsConfig[$i])
+			writeLogFile($logFile, "aAccountActive: " & convertJsonToString($aAccountActive))
+		EndIf
+	Next
+	Return True
+EndFunc

@@ -18,7 +18,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 ; CONSTANT MU
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
-Global $logFile, $jsonPositionConfig, $jsonConfig
+Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
 Global $aCharInAccount
@@ -31,14 +31,15 @@ Global Const $WM_MOUSEMOVE = 0x0200
 Global Const $WM_LBUTTONDOWN = 0x0201
 Global Const $WM_LBUTTONUP = 0x0202
 
+; Khởi tạo biến logFile
+Global $className = "MuTool"
 
 init()
 
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
 Func init()
-	;~ $jsonPositionConfig = getJsonFromFile($jsonPathRoot & "position_config.json")
-
+	
 	$jsonConfig = getJsonFromFile($jsonPathRoot & "config.json")
 
 	For $i =0 To UBound($jsonConfig) - 1
@@ -122,9 +123,9 @@ EndFunc
 Func logFileCommon($logFile, $sText,$line=Default)
 	$sTextFinal = ''
 	If $line == Default Then
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName &" : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  $className &" : " & $sText
 	Else
-		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  @ScriptName & "[" & $line & "]" & " : " & $sText
+		$sTextFinal = @HOUR & "-" &@MIN & "-" &@SEC & " " &  $className & "[" & $line & "]" & " : " & $sText
 	EndIf
 	writeLog($sTextFinal)
 	FileWriteLine($logFile, $sTextFinal)
@@ -742,4 +743,10 @@ EndFunc
 
 Func getMainNoByChar($charName)
 	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+EndFunc
+
+Func redimArray($arrayRedim, $value = "")
+	Redim $arrayRedim[UBound($arrayRedim) + 1]
+	$arrayRedim[UBound($arrayRedim) - 1] = $value
+	Return $arrayRedim
 EndFunc

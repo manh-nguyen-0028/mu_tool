@@ -102,6 +102,12 @@ Func clickElement($sSession, $sElement)
 	_WD_LoadWait($sSession, 1000)
 EndFunc
 
+Func findAndClick($sSession, $sXpath)
+	$sElement = findElement($sSession, $sXpath) 
+	clickElement($sSession, $sElement)
+	secondWait(4)
+EndFunc
+
 Func getTextElement($sSession, $sElement)
 	Return _WD_ElementAction($sSession, $sElement, 'text')
 EndFunc

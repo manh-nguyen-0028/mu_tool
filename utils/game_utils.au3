@@ -173,6 +173,8 @@ EndFunc
 Func handelWhenFinshDevilEvent()
 	sendKeyEnter()
 	sendKeyEnter()
+	sendKeyEnter()
+	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")
@@ -183,12 +185,14 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
 EndFunc
 
-Func actionWhenCantJoinDevil()
+Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
 	; Thuc hien follow leader
-	_MU_followLeader(1)
-	checkAutoZAfterFollowLead()
+	If $isNeedFollowLeader Then
+		_MU_followLeader(1)
+		checkAutoZAfterFollowLead()
+	EndIf
 	Return True
 EndFunc
 
@@ -449,6 +453,7 @@ Func checkEnterChat()
 	If checkPixelColor($x, $y, $color) Then
 		writeLogFile($logFile,"Ton tai cua so chat, thuc hien enter 1 lan nua")
 		sendKeyEnter()
+		secondWait(1)
 	EndIf
 	Return True
 EndFunc

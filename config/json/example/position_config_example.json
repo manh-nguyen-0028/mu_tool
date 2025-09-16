@@ -3,6 +3,9 @@
 	  "logger": {
 		"override": true
 	 }, 
+	  "auto": {
+		"time_loop_auto_rs": 60
+	  },
 	  "web": {
 		"mu_url": "https://hn.gamethuvn.net/"
 	  },
@@ -48,6 +51,10 @@
 		"y": 200
 	  },
 	  "npc_search": {
+		"npc_search_x": 0,
+		"npc_search_y": 136,
+		"npc_search_x_1": 528,
+		"npc_search_y_1": 471,
 		"deviation_x": 0,
 		"deviation_y": 10
 	  },
@@ -117,6 +124,14 @@
 	  "change_char": {
 		"x": 402,
 		"y": 359
+	  },
+	  "change_server": {
+		"button_x": 392,
+		"button_y": 316,
+		"choise_sv_x": 214,
+		"choise_sv_y": 294,
+		"choise_sv_1_x": 392,
+		"choise_sv_1_y": 296
 	  },
 	  "switch_char": {
 		"icon_x": 775,
