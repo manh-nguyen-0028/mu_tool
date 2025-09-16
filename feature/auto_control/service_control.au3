@@ -28,7 +28,12 @@ Func start()
         If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <=20)) Then 
             startAutoRs()
         EndIf
-        waitToNextHourMinutes(1, 38, 00)
+        $timeLoop = _JSONGet($jsonPositionConfig,"auto.time_loop_auto_rs")
+        If ($timeLoop = "" Or $timeLoop == 60) Then 
+            waitToNextHourMinutes(1, 38, 00)
+        Else
+            minuteWait($timeLoop)
+        EndIf
     WEnd
 EndFunc
 

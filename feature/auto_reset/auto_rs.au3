@@ -257,8 +257,10 @@ Func processReset($jAccountInfo)
 				If $activeWin Then
 					handelWhenFinshDevilEvent()
 					secondWait(3)
-					; 1. Change Char
-					changeChar($mainNo)
+					; 1. Change Char Tu v1.0.15 bo change vi khong cong dc diem nv
+					;~ changeChar($mainNo)
+					; Thuc hien change server
+					changeServer($mainNo)
 				EndIf
 			Else
 				; Neu co active move va co toa do thi thuc hien move
@@ -330,7 +332,8 @@ Func processReset($jAccountInfo)
 			Next
 			; If reset online = true => withow handle in game
 			If Not $resetOnline Then
-				; 3. Return game
+				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
+				returnServer()
 				returnChar($mainNo)
 				; Thuc hien enter 2 lan de thoat khoi bang thong bao
 				;~ sendKeyEnter()
@@ -494,14 +497,33 @@ Func changeChar($mainNo)
 	secondWait(1)
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
-	secondWait(7)
+	secondWait(3)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
-		secondWait(7)
+		secondWait(3)
+	EndIf
+EndFunc 
+
+Func changeServer($mainNo)
+	writeLogFile($logFile, "Begin change server !")
+	sendKeyH()
+	secondWait(1)
+	sendKeyDelay("{ESC}")
+	secondWait(1)
+	; Bam chon nhat vat server
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+	secondWait(3)
+	; Check title 
+	$checkActive = activeAndMoveWin($mainNo)
+	if $checkActive Then
+		sendKeyDelay("{ESC}")
+		; Bam chon nhat vat khac
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+		secondWait(3)
 	EndIf
 EndFunc 
 
@@ -534,6 +556,23 @@ Func returnChar($mainNo)
 	EndIf
 
 EndFunc 
+
+Func returnServer() 
+	; thuc hien active title game main
+	$checkActive = activeAndMoveWin($titleGameMain)
+	If $checkActive Then
+		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
+		secondWait(1)
+		; Click button chon server
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+		secondWait(2)
+		; Click vao chon sv 1
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1.x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1.y"))
+		secondWait(2)
+	Else
+		writeLogFile($logFile, "Khong the active title game main de vao server !")
+	EndIf
+EndFunc
 
 #cs
 	Tim sport de luyen lvl len 20
