@@ -340,16 +340,7 @@ Func processReset($jAccountInfo)
 				;~ sendKeyEnter()
 				; 3.1. Check xem cua so enter co ton tai khong
 				;~ checkEnterChat()
-				; Thuc hien send key home
-				sendKeyHome()
-				; Send tiep key tab de mo ban do
-				sendKeyTab()
-				; 4. Go to sport
-				goToSportLvl1()
-				; Sau khi vao sport thi thuc hien send key H
-				sendKeyH()
-				; Send 1 lan key tab nua de tat ban do
-				sendKeyTab()
+				firstActionAfterRs()
 				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
 				If $activeEndKey Then sendKeyEnd()
 				; minisize main
@@ -357,6 +348,20 @@ Func processReset($jAccountInfo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
 				secondWait(30)
+				; Kiem tra viec tang lvl tren web, neu van bang 1 thi thuc hien activate game va thuc hien laij firstActionAfterRs
+				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+				If $lvlCheckInWeb == 1 Then 
+					; Activate game
+					activeAndMoveWin($mainNo)
+					secondWait(2)
+					; Bam enter 1 lan nua de thoat bang thong bao
+					sendKeyEnter()
+					; Thuc hien first action
+					firstActionAfterRs()
+					; Cho tiep 30s
+					secondWait(30)
+				EndIf
+				; Neu van bang 1 thi thuc hien di chuyen bang web
 				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 				; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
 				If $lvlCheckInWeb < 20 Then
@@ -567,7 +572,7 @@ Func returnServer()
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
 		secondWait(2)
 		; Click vao chon sv 1
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1.x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1.y"))
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_y"))
 		secondWait(2)
 	Else
 		writeLogFile($logFile, "Khong the active title game main de vao server !")
@@ -798,4 +803,17 @@ Func validAccountRs($aAccountActiveRs)
 	Next
 	
 	Return $aAccValidate
+EndFunc
+
+Func firstActionAfterRs()
+	; Thuc hien send key home
+	sendKeyHome()
+	; Send tiep key tab de mo ban do
+	sendKeyTab()
+	; 4. Go to sport
+	goToSportLvl1()
+	; Sau khi vao sport thi thuc hien send key H
+	sendKeyH()
+	; Send 1 lan key tab nua de tat ban do
+	sendKeyTab()
 EndFunc
