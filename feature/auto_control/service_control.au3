@@ -25,10 +25,11 @@ Func start()
     ;~ deleteFileInFolder($outputPathRoot)
 
     While True
+         $timeLoop = _JSONGet($jsonPositionConfig,"common.auto.time_loop_auto_rs")
+        writeLog("time loop: " & $timeLoop)
         If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <=20)) Then 
             startAutoRs()
         EndIf
-        $timeLoop = _JSONGet($jsonPositionConfig,"auto.time_loop_auto_rs")
         If ($timeLoop = "" Or $timeLoop == 60) Then 
             waitToNextHourMinutes(1, 38, 00)
         Else
