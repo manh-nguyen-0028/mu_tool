@@ -6,7 +6,16 @@
 ;~ start()
 
 ;~ getOtherChar("AliceX")
-switchOtherChar("XXXX002")
+;~ switchOtherChar("XXXX002")
+test99()
+
+Func test99()
+    $timeNow = getTimeNow()
+    $hourPerRs = 24
+    $nextTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
+    writeLog("Time now: " & $timeNow)
+    Return True
+EndFunc
 
 Func start()
     $idCaptcha = ""

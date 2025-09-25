@@ -321,7 +321,9 @@ Func processReset($jAccountInfo)
 					$resetInDay = getRsInDay($sLogReset)
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
-					$sTimeReset = getTimeReset($sLogReset,0)
+					;~ $sTimeReset = getTimeReset($sLogReset,0)
+					; From 1.0.16 lay thoi gian la thoi gian hien tai
+					$sTimeReset = getTimeNow()
 					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
 					If $sTimeReset = 0 Then
 						$sTimeReset = getTimeNow()
