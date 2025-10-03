@@ -378,6 +378,12 @@ Func sendKeyH()
 	secondWait(1)
 EndFunc
 
+Func sendKeyS()
+	writeLogFile($logFile, "Send key +h !")
+	sendKeyDelay("s")
+	secondWait(1)
+EndFunc
+
 Func sendKeyEnd()
 	writeLogFile($logFile, "Send key End !")
 	sendKeyDelay("{END}")
@@ -742,7 +748,10 @@ Func ControlMouseMove($hWnd, $ControlID, $toadoX, $toadoY)
 EndFunc
 
 Func getMainNoByChar($charName)
-	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+	; Old -> "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - DavidRyan)"
+	;~ Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+	; New -> "MU GamethuVN - Season 15 (Hà Nội - DavidRyan)"
+	Return "MU GamethuVN - Season 15 (Hà Nội - " & $charName &")"
 EndFunc
 
 Func redimArray($arrayRedim, $value = "")

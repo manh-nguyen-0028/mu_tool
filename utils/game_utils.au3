@@ -21,16 +21,20 @@ Func _MU_followLeader_ControlClick($hWnd, $position)
 EndFunc
 
 Func _MU_followLeader($position)
-	sendKeyEnter()
-	sendKeyEnter()
+	;~ sendKeyEnter()
+	;~ sendKeyEnter()
 	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
 	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
 	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 	_MU_MouseClick_Delay($position_x, $position_y)
 	secondWait(1)
-	sendKeyEnter()
+	;~ sendKeyEnter()
+	$button_follow_x = _JSONGet($jsonPositionConfig,"button.follow_leader.button_x")
+	$button_follow_y = _JSONGet($jsonPositionConfig,"button.follow_leader.button_y")
+	_MU_MouseClick_Delay($button_follow_x, $button_follow_y)
+	secondWait(1)
 	; Di chuot ra giua man hinh
-	mouseMoveCenterChar()
+	;~ mouseMoveCenterChar()
 EndFunc
 
 Func mouseMoveCenterChar()
@@ -321,8 +325,9 @@ Func clickIconDevil($checkRuongK)
 	writeLogFile($logFile,"Click event devil. Check ruong K: " & $checkRuongK)
 	If $checkRuongK Then
 		; Click vao icon event devil
-		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
-		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
+		;~ $devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
+		;~ $devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
+		sendKeyS()
 		_MU_MouseClick_Delay($devilIconX, $devilIconY)
 	Else
 		; Click vao icon event devil khi ruong K khong co
