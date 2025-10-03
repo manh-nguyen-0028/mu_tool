@@ -10,6 +10,7 @@
       "main_char_name": "GameX",
       "is_check_400lv": true,
       "is_need_follow_leader": true,
+      "need_check_auto_z": false,
       "max_hour_go": 25
     },
     {
@@ -23,6 +24,7 @@
       "main_char_name": "GameX",
       "is_check_400lv": true,
       "is_need_follow_leader": true,
+      "need_check_auto_z": false,
       "max_hour_go": 25
     }
   ]

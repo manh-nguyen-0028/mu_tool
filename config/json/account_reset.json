@@ -10,7 +10,8 @@
     "is_buff": false,
     "position_leader": 1,
     "active_move_rs": false, 
-    "active_end_key": false
+    "active_end_key": false,
+    "need_check_auto_z": false
   },
   {
     "active": true,
@@ -23,6 +24,7 @@
     "is_buff": false,
     "position_leader": 1,
     "active_move_rs": false, 
-    "active_end_key": false
+    "active_end_key": false,
+    "need_check_auto_z": false
   }
 ]

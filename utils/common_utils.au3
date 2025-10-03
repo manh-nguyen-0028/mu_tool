@@ -17,7 +17,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 ; CONSTANT MU
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
-Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
+Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 15"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
@@ -296,13 +296,15 @@ EndFunc
 
 ; Method: _MU_MouseClick_Delay
 ; Description: Moves the mouse to specified coordinates, clicks with a delay, and releases the click.
-Func _MU_MouseClick_Delay($toadoX, $toadoY)
+Func _MU_MouseClick_Delay($toadoX, $toadoY, $showLog = False)
 	MouseMove($toadoX, $toadoY)
+	If $showLog Then writeLog("Click den toa do: " & $toadoX & "--" & $toadoY)
+	
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
-	Sleep(400)
+	Sleep(100)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
-	Sleep(400)
+	Sleep(100)
 EndFunc
 
 Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)
@@ -318,6 +320,19 @@ Func mouseClickDelayAlt($toadoX, $toadoY)
 	_MU_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 	Send("{ALTUP}")
+EndFunc
+
+Func mouseClickDelayShift($toadoX, $toadoY)
+	;~ Send("{ALTDOWN}")
+	;~ _MU_MouseClick_Delay($toadoX, $toadoY)
+	;~ Sleep(500)
+	;~ Send("{ALTUP}")
+
+	Send("{SHIFTDOWN}")
+	Sleep(50)                     ; cho hệ thống kịp nhận key down
+	MouseClick("left", $toadoX, $toadoY, 1, 0) ; 1 click, speed 0 (fast)
+	Sleep(50)
+	Send("{SHIFTUP}")
 EndFunc
 
 ; Method: _MU_MouseClick
@@ -373,15 +388,28 @@ Func sendKeyTab()
 EndFunc
 
 Func sendKeyH()
+	; o client moi k can senKeyH dau
+	;~ writeLogFile($logFile, "Send key +h !")
+	;~ sendKeyDelay("+h")
+	;~ secondWait(1)
+EndFunc
+
+Func sendKeyEsc()
+	sendKeyDelay("{ESC}")
+	secondWait(1)
+EndFunc
+
+Func sendKeyS()
 	writeLogFile($logFile, "Send key +h !")
-	sendKeyDelay("+h")
+	sendKeyDelay("s")
 	secondWait(1)
 EndFunc
 
 Func sendKeyEnd()
-	writeLogFile($logFile, "Send key End !")
-	sendKeyDelay("{END}")
-	secondWait(1)
+	; o client moi k can senKeyEn dau
+	;~ writeLogFile($logFile, "Send key End !")
+	;~ sendKeyDelay("{END}")
+	;~ secondWait(1)
 EndFunc
 
 ; Method: activeMain
@@ -407,25 +435,6 @@ Func minisizeAllMain()
 	While WinExists("GamethuVN.net - MU Online Season 15 part 2*")
 		WinSetState("GamethuVN.net - MU Online Season 15 part 2*", "", @SW_MINIMIZE)
 	WEnd
-EndFunc
-
-; Method: activeAndMoveWin
-; Description: Activates and moves a specified window to the top-left corner of the screen.
-Func activeAndMoveWin($mainName)
-	$isActive = False;
-	If WinActivate($mainName) Then
-		$winActive = WinActivate($mainName)
-		WinMove($winActive,"",0,0)
-		$isActive = True
-	Else
-		writeLogFile($logFile,"Window not activated : " & $mainName)
-	EndIf
-	Return $isActive
-EndFunc
-
-Func activeAndMoveWinByChar($charName)
-	$mainName = getMainNoByChar($charName)
-	Return activeAndMoveWin($mainName)
 EndFunc
 
 ; Method: readFileText
@@ -742,7 +751,10 @@ Func ControlMouseMove($hWnd, $ControlID, $toadoX, $toadoY)
 EndFunc
 
 Func getMainNoByChar($charName)
-	Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+	; Old -> "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - DavidRyan)"
+	;~ Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
+	; New -> "MU GamethuVN - Season 15 (Hà Nội - DavidRyan)"
+	Return "MU GamethuVN - Season 15 (Hà Nội - " & $charName &")"
 EndFunc
 
 Func redimArray($arrayRedim, $value = "")
