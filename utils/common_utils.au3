@@ -17,7 +17,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 ; CONSTANT MU
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
-Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "GamethuVN.net - MU Online Season 15 part 2"
+Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 15"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
@@ -300,9 +300,9 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
-	Sleep(400)
+	Sleep(50)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
-	Sleep(400)
+	Sleep(50)
 EndFunc
 
 Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)
@@ -318,6 +318,19 @@ Func mouseClickDelayAlt($toadoX, $toadoY)
 	_MU_MouseClick_Delay($toadoX, $toadoY)
 	Sleep(500)
 	Send("{ALTUP}")
+EndFunc
+
+Func mouseClickDelayShift($toadoX, $toadoY)
+	;~ Send("{ALTDOWN}")
+	;~ _MU_MouseClick_Delay($toadoX, $toadoY)
+	;~ Sleep(500)
+	;~ Send("{ALTUP}")
+
+	Send("{SHIFTDOWN}")
+	Sleep(50)                     ; cho hệ thống kịp nhận key down
+	MouseClick("left", $toadoX, $toadoY, 1, 0) ; 1 click, speed 0 (fast)
+	Sleep(50)
+	Send("{SHIFTUP}")
 EndFunc
 
 ; Method: _MU_MouseClick
@@ -373,9 +386,10 @@ Func sendKeyTab()
 EndFunc
 
 Func sendKeyH()
-	writeLogFile($logFile, "Send key +h !")
-	sendKeyDelay("+h")
-	secondWait(1)
+	; o client moi k can senKeyH dau
+	;~ writeLogFile($logFile, "Send key +h !")
+	;~ sendKeyDelay("+h")
+	;~ secondWait(1)
 EndFunc
 
 Func sendKeyS()
@@ -385,9 +399,10 @@ Func sendKeyS()
 EndFunc
 
 Func sendKeyEnd()
-	writeLogFile($logFile, "Send key End !")
-	sendKeyDelay("{END}")
-	secondWait(1)
+	; o client moi k can senKeyEn dau
+	;~ writeLogFile($logFile, "Send key End !")
+	;~ sendKeyDelay("{END}")
+	;~ secondWait(1)
 EndFunc
 
 ; Method: activeMain

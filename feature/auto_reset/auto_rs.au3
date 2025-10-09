@@ -527,25 +527,6 @@ Func changeChar($mainNo)
 	EndIf
 EndFunc 
 
-Func changeServer($mainNo)
-	writeLogFile($logFile, "Begin change server !")
-	sendKeyH()
-	secondWait(1)
-	sendKeyDelay("{ESC}")
-	secondWait(1)
-	; Bam chon nhat vat server
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
-	secondWait(3)
-	; Check title 
-	$checkActive = activeAndMoveWin($mainNo)
-	if $checkActive Then
-		sendKeyDelay("{ESC}")
-		; Bam chon nhat vat khac
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
-		secondWait(3)
-	EndIf
-EndFunc 
-
 #cs
 	Dang nhap lai vao nhan vat
 #ce
@@ -690,9 +671,11 @@ EndFunc
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
 	; Click event icon
-	$eventIconX = _JSONGet($jsonPositionConfig,"button.event_icon.x")
-	$eventIconY = _JSONGet($jsonPositionConfig,"button.event_icon.y")
-	_MU_MouseClick_Delay($eventIconX, $eventIconY)
+	;~ $eventIconX = _JSONGet($jsonPositionConfig,"button.event_icon.x")
+	;~ $eventIconY = _JSONGet($jsonPositionConfig,"button.event_icon.y")
+	;~ _MU_MouseClick_Delay($eventIconX, $eventIconY)
+	; Chuyen sang bam S
+	sendKeyS()
 	
 	; Click map lvl
 	$mapLvlX = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x")
@@ -737,27 +720,6 @@ Func goMapArena($rsCount)
 	EndIf
 	; Go to sport
 	goSportStadium($sportArenaNo)
-EndFunc
-
-Func goSportStadium($sportNo = 1) 
-	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
-	sendKeyTab()
-	;~ secondWait(2)
-	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
-	$sportArenaX = 269 
-	$sportArenaY = 329
-	If ($sportNo == 1) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_1.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_1.y")
-	ElseIf ($sportNo == 2) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_2.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_2.y")
-	ElseIf ($sportNo == 3) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_3.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
-	EndIf
-	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
-	sendKeyTab()
 EndFunc
 
 Func validAccountRs($aAccountActiveRs)

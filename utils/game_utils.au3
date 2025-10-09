@@ -23,15 +23,18 @@ EndFunc
 Func _MU_followLeader($position)
 	;~ sendKeyEnter()
 	;~ sendKeyEnter()
-	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
-	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
-	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
-	_MU_MouseClick_Delay($position_x, $position_y)
-	secondWait(1)
+	; khi can follow lead thi bam 2 lan cho chac an
+	For $i = 0 To 1 Step +1
+		$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
+		$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+		writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
+		;~ _MU_MouseClick_Delay($position_x, $position_y)
+		mouseClickDelayShift($position_x, $position_y)
+	Next
 	;~ sendKeyEnter()
-	$button_follow_x = _JSONGet($jsonPositionConfig,"button.follow_leader.button_x")
-	$button_follow_y = _JSONGet($jsonPositionConfig,"button.follow_leader.button_y")
-	_MU_MouseClick_Delay($button_follow_x, $button_follow_y)
+	;~ $button_follow_x = _JSONGet($jsonPositionConfig,"button.follow_leader.button_x")
+	;~ $button_follow_y = _JSONGet($jsonPositionConfig,"button.follow_leader.button_y")
+	;~ _MU_MouseClick_Delay($button_follow_x, $button_follow_y)
 	secondWait(1)
 	; Di chuot ra giua man hinh
 	;~ mouseMoveCenterChar()
@@ -223,7 +226,7 @@ Func openConsoleThenClear()
 EndFunc
 
 Func clickEventIcon()
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.event_icon.x"), _JSONGet($jsonPositionConfig,"button.event_icon.y"))
+	sendKeyS()
 	secondWait(1)
 EndFunc
 
@@ -323,22 +326,56 @@ EndFunc
 
 Func clickIconDevil($checkRuongK)
 	writeLogFile($logFile,"Click event devil. Check ruong K: " & $checkRuongK)
-	If $checkRuongK Then
-		; Click vao icon event devil
-		;~ $devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
-		;~ $devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
-		sendKeyS()
-		_MU_MouseClick_Delay($devilIconX, $devilIconY)
-	Else
-		; Click vao icon event devil khi ruong K khong co
-		$devilIconNoHadKX = _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.x")
-		$devilIconNoHadKY = _JSONGet($jsonPositionConfig,"button.event_devil_icon_no_had_k.y")
-		_MU_MouseClick_Delay($devilIconNoHadKX, $devilIconNoHadKY)
+	$haveIp = True
+	$haveAddPoint = True
+	$typeCheck = 1
+	; 1. co ip, co ruong k, co + diem
+	; 2. co ip, co ruong k, chua + diem
+	; 3. ko co ip, co ruong k, co + diem
+	; 4. ko co ip, co ruong k, chua + diem
+	If $haveIp And $haveAddPoint Then 
+		$typeCheck = 1
+	ElseIf $haveIp And Not $haveAddPoint Then 
+		$typeCheck = 2
+	ElseIf Not $haveIp And Not $haveAddPoint Then 
+		$typeCheck = 3
 	EndIf
+	clickIconDevilByCondition($typeCheck)
+
+	secondWait(3)
+	
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	;~ ; Sleep 4s
-	secondWait(5)
+	secondWait(3)
+EndFunc
+
+Func clickIconDevilByCondition($type)
+	; 1. co ip, co ruong k, co + diem
+	; 2. co ip, co ruong k, chua + diem
+	; 3. co ip, co ruong k, co + diem
+	; 4. ko co ip, co ruong k, chua + diem
+	If $type == 1 Then 
+		; Click vao icon event devil
+		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
+		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
+	ElseIf $type == 2 Then 
+		; Click vao icon event devil
+		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_2")
+		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_2")
+	ElseIf $type == 3 Then 
+		; Click vao icon event devil
+		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_3")
+		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_3")
+	Else
+		; Click vao icon event devil
+		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_3")
+		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_3")
+	EndIf
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($devilIconX, $devilIconY)
+	Next
+	Return True
 EndFunc
 
 Func switchOtherChar($currentChar)
@@ -484,4 +521,157 @@ Func switchToMainChar($jsonAccountActiveDevil)
 			EndIf
 		EndIf
 	Next
+EndFunc
+
+Func changeServer($mainNo)
+	writeLogFile($logFile, "Begin change server !")
+	;~ sendKeyH()
+	;~ secondWait(1)
+	sendKeyDelay("{ESC}")
+	secondWait(1)
+	; Bam chon nhat vat server
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+	secondWait(3)
+	; Check title 
+	$checkActive = activeAndMoveWin($mainNo)
+	if $checkActive Then
+		sendKeyDelay("{ESC}")
+		; Bam chon nhat vat khac
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+		secondWait(3)
+	EndIf
+	secondWait(5)
+	; Click button chon server
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+EndFunc 
+
+Func choise_sv() 
+	; thuc hien active title game main
+	$checkActive = activeAndMoveWin($titleGameMain)
+	If $checkActive Then
+		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
+		; Click vao chon sv 1
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_y"))
+		secondWait(3)
+		sendKeyEnter()
+	Else
+		writeLogFile($logFile, "Khong the active title game main de vao server !")
+	EndIf
+EndFunc
+
+Func goSportStadium($sportNo = 1) 
+	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
+	sendKeyTab()
+	;~ secondWait(2)
+	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
+	$sportArenaX = 269 
+	$sportArenaY = 329
+	If ($sportNo == 1) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_1.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_1.y")
+	ElseIf ($sportNo == 2) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_2.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_2.y")
+	ElseIf ($sportNo == 3) Then
+		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_3.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
+	EndIf
+	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
+	sendKeyTab()
+EndFunc
+
+Func searchNpcDevil($checkRuongK, $devilNo)
+	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+
+	; Search NPC devil
+	$npcSearchX = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x")
+	$npcSearchY = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y")
+	$npcSearchX1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x_1")
+	$npcSearchY1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y_1")
+	;~ $npcSearchColor = 0x8B8171
+	$npcSearchColor = 0xB9AA95
+
+	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
+
+	;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
+
+	;~ _ArrayDisplay($npcSearch)
+	
+	$totalSearch = 0;
+	;~ 671 1050
+	While $npcSearch = 0 And $totalSearch < 5
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
+
+		$countSearchPixel = 0;
+
+		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
+		While $npcSearch  = 0 And $countSearchPixel < 2
+			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
+			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
+			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
+			$countSearchPixel = $countSearchPixel + 1;
+		WEnd
+
+		If $npcSearch  = 0 Then
+			clickIconDevil($checkRuongK)
+			$totalSearch = $totalSearch + 1
+		EndIf
+	WEnd
+	
+	Return $npcSearch
+EndFunc
+
+; Method: clickNpcDevil
+; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
+Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
+	; Kiem tra xem co tim duoc vi tri cua npc khong $npcSearch <> 0
+	If $npcSearch <> 0 Then
+		writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[1]& "-" & $npcSearch[0])
+		$npcSearchDeviationX = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_x")
+		$npcSearchDeviationY = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_y")
+
+		;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
+
+		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
+		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
+		;~ $npcX = $npcSearch[0] - 131
+		;~ $npcY = $npcSearch[1]
+		mouseClickDelayAlt($npcX, $npcY)
+		secondWait(3)
+		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
+		$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
+		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
+		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
+		
+		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		If $checkOpenDevil Then
+			writeLogFile($logFile, "Thuc hien click vao devil")
+			clickPositionByDevilNo($devilNo)
+			secondWait(6)
+			_MU_Start_AutoZ()
+		Else
+			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
+			If $isNeedFollowLeader Then 
+				writeLogFile($logFile, "Thuc hien follow leader")
+				_MU_followLeader(1)
+			EndIf
+		EndIf
+	Else
+		writeLogFile($logFile, "Search NPC khong thanh cong")
+		If $isNeedFollowLeader Then 
+			writeLogFile($logFile, "Thuc hien follow leader")
+			_MU_followLeader(1)
+		EndIf
+	EndIf
+EndFunc
+
+; Method: clickPositionByDevilNo
+; Description: Clicks on the specific devil event icon based on the devil number.
+Func clickPositionByDevilNo($devilNo)
+	writeLogFile($logFile, "Click position by devil no: " & $devilNo)
+	$devil_position_x = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_x")
+	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
+	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
+	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
 EndFunc
