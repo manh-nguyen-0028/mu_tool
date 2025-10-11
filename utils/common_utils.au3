@@ -430,25 +430,6 @@ Func minisizeAllMain()
 	WEnd
 EndFunc
 
-; Method: activeAndMoveWin
-; Description: Activates and moves a specified window to the top-left corner of the screen.
-Func activeAndMoveWin($mainName)
-	$isActive = False;
-	If WinActivate($mainName) Then
-		$winActive = WinActivate($mainName)
-		WinMove($winActive,"",0,0)
-		$isActive = True
-	Else
-		writeLogFile($logFile,"Window not activated : " & $mainName)
-	EndIf
-	Return $isActive
-EndFunc
-
-Func activeAndMoveWinByChar($charName)
-	$mainName = getMainNoByChar($charName)
-	Return activeAndMoveWin($mainName)
-EndFunc
-
 ; Method: readFileText
 ; Description: Reads the contents of a text file and returns it as a string.
 Func readFileText($filePath)

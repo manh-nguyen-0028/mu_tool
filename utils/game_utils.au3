@@ -6,6 +6,16 @@
 #include "../include/json_utils.au3"
 #include <Array.au3>
 #include "common_utils.au3"
+#include <GUIConstantsEx.au3> ; <-- Bổ sung dòng này để có $GUI_RUNDEFMSG
+#include <WinAPI.au3>
+#include <WindowsConstants.au3>
+
+; === Cấu hình giới hạn ===
+Global Const $MIN_W = 800
+Global Const $MIN_H = 600
+Global Const $MAX_W = 1280
+Global Const $MAX_H = 1024
+Global $hWnd
 
 Func _MU_followLeader_ControlClick($hWnd, $position)
 	ControlSend($hWnd, "", "", "{ENTER}")
@@ -690,4 +700,68 @@ Func checkOpenDevil()
 
 	_ArrayDisplay($checkOpenDevil)
 	Return True
+EndFunc
+
+Func resizeGame($GAME_TITLE)
+	; === Tiêu đề cửa sổ MU ===
+	;~ Local $GAME_TITLE = getMainNoByChar($charName)
+
+	; === Đợi game mở ===
+	WinWait($GAME_TITLE)
+	$hWnd = WinGetHandle($GAME_TITLE)
+	If @error Or $hWnd = "" Then
+		MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
+		Exit
+	EndIf
+
+	; === Đặt kích thước khởi đầu 800x600 ===
+	WinMove($hWnd, "", Default, Default, 800, 600)
+
+	; === Đăng ký xử lý thông điệp resize ===
+	GUIRegisterMsg($WM_SIZING, "WM_SIZING_Handler")
+
+	; === Vòng lặp giữ script chạy ===
+	;~ While WinExists($hWnd)
+	;~ 	Sleep(100)
+	;~ WEnd
+
+	Return True
+EndFunc
+
+; === Hàm giới hạn kích thước khi resize ===
+Func WM_SIZING_Handler($hWndMsg, $iMsg, $wParam, $lParam)
+    ; Chỉ xử lý nếu đúng là cửa sổ MU
+    If $hWndMsg <> $hWnd Then Return $GUI_RUNDEFMSG
+
+    Local $tRect = DllStructCreate("long Left; long Top; long Right; long Bottom", $lParam)
+    Local $width = DllStructGetData($tRect, "Right") - DllStructGetData($tRect, "Left")
+    Local $height = DllStructGetData($tRect, "Bottom") - DllStructGetData($tRect, "Top")
+
+    ; Giới hạn kích thước
+    If $width < $MIN_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MIN_W)
+    If $height < $MIN_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MIN_H)
+    If $width > $MAX_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MAX_W)
+    If $height > $MAX_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MAX_H)
+
+    Return True
+EndFunc
+
+; Method: activeAndMoveWin
+; Description: Activates and moves a specified window to the top-left corner of the screen.
+Func activeAndMoveWin($mainName)
+	$isActive = False;
+	If WinActivate($mainName) Then
+		$winActive = WinActivate($mainName)
+		resizeGame($mainName)
+		WinMove($winActive,"",0,0)
+		$isActive = True
+	Else
+		writeLogFile($logFile,"Window not activated : " & $mainName)
+	EndIf
+	Return $isActive
+EndFunc
+
+Func activeAndMoveWinByChar($charName)
+	$mainName = getMainNoByChar($charName)
+	Return activeAndMoveWin($mainName)
 EndFunc
