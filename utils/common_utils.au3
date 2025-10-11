@@ -300,9 +300,9 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY)
 	MouseMove($toadoX, $toadoY)
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
-	Sleep(50)
+	Sleep(100)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
-	Sleep(50)
+	Sleep(100)
 EndFunc
 
 Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)

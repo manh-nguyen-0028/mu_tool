@@ -251,7 +251,10 @@ Func checkActiveAutoHome()
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-	If $imageSearchResult[0] == 1 Then $result = True
+	If $imageSearchResult[0] == 1 Then 
+		$result = True
+		;~ MouseMove(607,541)
+	EndIf
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
 EndFunc
@@ -577,6 +580,7 @@ Func goSportStadium($sportNo = 1)
 		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
 	EndIf
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
+	secondWait(2)
 	sendKeyTab()
 EndFunc
 
@@ -674,4 +678,16 @@ Func clickPositionByDevilNo($devilNo)
 	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
 	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
 	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
+EndFunc
+
+Func checkOpenDevil()
+	; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
+	$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
+	$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
+	$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
+	
+	$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+
+	_ArrayDisplay($checkOpenDevil)
+	Return True
 EndFunc

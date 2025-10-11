@@ -8,7 +8,10 @@
 #RequireAdmin
 
 
-$charName="BeerHalida"
+;~ $charName="CuuBiThuXa"
+;~ $charName="CtrDell"
+$charName="GiaoSu"
+;~ $charName="DacVuAoDen"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
@@ -21,8 +24,9 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testcheckLvl400($charName)
 ;~ testGoToSportArena($charName)
 ;~ testSearchNPC()
+testCheckOpenDevil()
 ;~ testSwithChar()
-testCheckActiveAutoHome()
+;~ testCheckActiveAutoHome()
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -76,7 +80,13 @@ EndFunc
 
 Func testCheckActiveAutoHome()
     secondWait(3)
-    checkActiveAutoHome()
+    $result = checkActiveAutoHome()
+EndFunc
+
+Func testCheckOpenDevil()
+    secondWait(3)
+    checkOpenDevil()
+    Return True
 EndFunc
 
 ;~ Func testControlClick()
