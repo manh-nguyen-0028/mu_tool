@@ -10,7 +10,7 @@
 
 ;~ $charName="CuuBiThuXa"
 ;~ $charName="CtrDell"
-$charName="GiaoSu"
+$charName="BelousSkye"
 ;~ $charName="DacVuAoDen"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
@@ -24,7 +24,7 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testcheckLvl400($charName)
 ;~ testGoToSportArena($charName)
 ;~ testSearchNPC()
-testCheckOpenDevil()
+;~ testCheckOpenDevil()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
 

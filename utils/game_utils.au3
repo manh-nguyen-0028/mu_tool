@@ -8,13 +8,13 @@
 #include "common_utils.au3"
 #include <GUIConstantsEx.au3> ; <-- Bổ sung dòng này để có $GUI_RUNDEFMSG
 #include <WinAPI.au3>
-#include <WindowsConstants.au3>
+;~ #include <WindowsConstants.au3>
 
 ; === Cấu hình giới hạn ===
-Global Const $MIN_W = 800
-Global Const $MIN_H = 600
-Global Const $MAX_W = 1280
-Global Const $MAX_H = 1024
+Global $MIN_W = 800
+Global $MIN_H = 600
+Global $MAX_W = 1280
+Global $MAX_H = 1024
 Global $hWnd
 
 Func _MU_followLeader_ControlClick($hWnd, $position)
@@ -718,7 +718,7 @@ Func resizeGame($GAME_TITLE)
 	WinMove($hWnd, "", Default, Default, 800, 600)
 
 	; === Đăng ký xử lý thông điệp resize ===
-	GUIRegisterMsg($WM_SIZING, "WM_SIZING_Handler")
+	;~ GUIRegisterMsg($WM_SIZING, "WM_SIZING_Handler")
 
 	; === Vòng lặp giữ script chạy ===
 	;~ While WinExists($hWnd)
