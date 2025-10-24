@@ -10,8 +10,11 @@
 
 ;~ $charName="CuuBiThuXa"
 ;~ $charName="CtrDell"
-$charName="BelousSkye"
+;~ $charName="Girlss"
 ;~ $charName="DacVuAoDen"
+$charName="Pucca"
+;~ $charName="NguHo"
+;~ $charName="NguHoBao"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
@@ -23,10 +26,14 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testChangeServer($charName)
 ;~ testcheckLvl400($charName)
 ;~ testGoToSportArena($charName)
+;~ testGoToSportLoren()
 ;~ testSearchNPC()
 ;~ testCheckOpenDevil()
+testCheckSwithCharButton()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
+
+minisizeMain($mainNo)
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -50,6 +57,13 @@ EndFunc
 Func testcheckLvl400($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
     checkLvl400($mainNo)
+    Return True
+EndFunc
+
+Func testGoToSportLoren()
+    ;~ activeAndMoveWin(getMainNoByChar($charName))    
+    secondWait(2)
+    goToSportLvl1()
     Return True
 EndFunc
 
@@ -85,7 +99,13 @@ EndFunc
 
 Func testCheckOpenDevil()
     secondWait(3)
-    checkOpenDevil()
+    checkOpenPopupDevil()
+    Return True
+EndFunc
+
+Func testCheckSwithCharButton()
+    secondWait(1)
+    clickOtherChar()
     Return True
 EndFunc
 

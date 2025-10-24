@@ -497,7 +497,7 @@ Func clickOtherChar()
 	If $result <> False Then
 		$swithCharButtonChangeX = $result[1]
 		$swithCharButtonChangeY = $result[2]
-		_MU_ControlClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+		_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 	EndIf
 	
 	Return True
@@ -506,7 +506,7 @@ EndFunc
 Func clickOtherChar2()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
-	clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
+	;~ clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
 EndFunc
 
 Func moveOtherMap($charName)
