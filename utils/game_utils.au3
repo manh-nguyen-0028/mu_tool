@@ -31,8 +31,8 @@ Func _MU_followLeader_ControlClick($hWnd, $position)
 EndFunc
 
 Func _MU_followLeader($position)
-	;~ sendKeyEnter()
-	;~ sendKeyEnter()
+	sendKeyEnter()
+	sendKeyEnter()
 	; khi can follow lead thi bam 2 lan cho chac an
 	For $i = 0 To 1 Step +1
 		$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")

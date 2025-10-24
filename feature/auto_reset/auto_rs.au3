@@ -122,6 +122,7 @@ Func withDrawRs($jAccountInfo)
 	$password = getPropertyJson($jAccountInfo,"password")
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
+	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 
 	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -193,6 +194,24 @@ Func withDrawRs($jAccountInfo)
 						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
 				Next
+				; deu da rs thanh cong thu thuc hien xem co phai rs online khong, neu ko thi phai thuc hien thay doi nhan vat
+				If Not $resetOnline Then
+					$mainNo = getMainNoByChar($charName)
+					$activeWin = activeAndMoveWin($mainNo)
+					If Not $activeWin Then $activeWin = switchOtherChar($charName)
+					; Click bỏ hết các bảng thông báo
+					If $activeWin Then
+						handelWhenFinshDevilEvent()
+						secondWait(3)
+						; 1. Change Char Tu v1.0.15 bo change vi khong cong dc diem nv
+						changeChar($mainNo)
+						; Thuc hien change server
+						secondWait(3)
+						returnChar($mainNo)
+						secondWait(3)
+						minisizeMain($mainNo)
+					EndIf
+				EndIf
 			EndIf
 		EndIf
 	Else
@@ -321,9 +340,7 @@ Func processReset($jAccountInfo)
 					$resetInDay = getRsInDay($sLogReset)
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
-					;~ $sTimeReset = getTimeReset($sLogReset,0)
-					; From 1.0.16 lay thoi gian la thoi gian hien tai
-					$sTimeReset = getTimeNow()
+					$sTimeReset = getTimeReset($sLogReset,0)
 					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
 					If $sTimeReset = 0 Then
 						$sTimeReset = getTimeNow()
