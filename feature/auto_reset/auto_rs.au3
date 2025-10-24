@@ -320,6 +320,7 @@ Func processReset($jAccountInfo)
 							$checkMove = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
 							If $checkMove Then 
 								writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+								minuteWait(2)
 							Else
 								$moveInWebSuccess = False
 								writeLogFile($logFile, "Khong the thuc hien move den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
