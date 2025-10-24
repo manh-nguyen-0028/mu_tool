@@ -248,6 +248,7 @@ Func processReset($jAccountInfo)
 	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
 	$activeEndKey = getPropertyJson($jAccountInfo,"active_end_key")
+	$needCheckAutoZ = getPropertyJson($jAccountInfo,"need_check_auto_z")
 	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
 	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
 	$postionMoveY = getPropertyJson($jAccountInfo,"postion_move_y")
@@ -291,7 +292,8 @@ Func processReset($jAccountInfo)
 
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 		$mainNo = getMainNoByChar($charName)
-		If $nLvl >= $lvlCanRs Then 
+		If $nLvl >= $lvlCanRs Then
+			$moveInWebSuccess = True
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
 			If Not $resetOnline Then
 				; Active main no 
@@ -307,10 +309,26 @@ Func processReset($jAccountInfo)
 					changeServer($mainNo)
 				EndIf
 			Else
-				; Neu co active move va co toa do thi thuc hien move
-				If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
-					moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-					writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+				; Thuc hien check autoZ tren web
+				If $needCheckAutoZ Then
+					$resultCheck = checkAutoZInWeb($sSession)
+					If Not $resultCheck Then
+						writeLogFile($logFile, "Auto Z khong duoc kich hoat tren web, kich hoat lai !")
+						; Thuc hien activate auto Z
+						; Neu co toa do thi thuc hien move
+						If $postionMoveX <> "" And $postionMoveY <> "" Then
+							$checkMove = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+							If $checkMove Then 
+								writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+							Else
+								$moveInWebSuccess = False
+								writeLogFile($logFile, "Khong the thuc hien move den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+								; Neu khong the move thi thuc hien activate auto Z luon
+							EndIf
+						EndIf
+					Else
+						writeLogFile($logFile, "Auto Z da duoc kich hoat tren web. Khong can thuc hien move nua!")
+					EndIf
 				EndIf
 			EndIf
 			; 2. Reset in web
@@ -324,9 +342,13 @@ Func processReset($jAccountInfo)
 			; Click radio rs vip
 			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
 			secondWait(2)
-			; Click submit
-			_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-			secondWait(2)
+			; Neu khong move dc tren web thi bo qua buoc nay
+			If $moveInWebSuccess Then
+				; Click submit
+				writeLogFile($logFile, "$moveInWebSuccess = True. Thuc hien click submit reset")
+				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+				secondWait(2)
+			EndIf
 
 			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
 			If Not $resetOnline Then
@@ -818,4 +840,32 @@ Func firstActionAfterRs()
 	sendKeyH()
 	; Send 1 lan key tab nua de tat ban do
 	sendKeyTab()
+EndFunc
+
+Func checkAutoZInWeb($sSession)
+	; Giả sử bạn đã có $sSession là session hiện tại
+
+	; 1️⃣ Tìm thẻ có class "t-auto_helper"
+	;~ Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByCSSSelector, ".t-auto_helper")
+	Local $sElement = findElement($sSession, "//div[@class='t-auto_helper']") 
+
+	If @error Then
+		writeLogFile($logFile, "Lỗi khi tìm thẻ t-auto_helper: " & @error)
+		;~ ConsoleWrite("Không tìm thấy thẻ t-auto_helper" & @CRLF)
+		Return False
+	EndIf
+
+	; 2️⃣ Lấy giá trị thuộc tính "style"
+	Local $sStyle = _WD_ElementAction($sSession, $sElement, "attribute", "style")
+
+	writeLogFile($logFile, "Style: " & $sStyle & @CRLF)
+
+	; 3️⃣ Kiểm tra xem có 'display: none' không
+	If StringInStr($sStyle, "display: none") Then
+		writeLogFile($logFile, "❌ Thẻ đang bị ẩn (display: none)" & @CRLF)
+		Return False
+	Else
+		writeLogFile($logFile, "✅ Thẻ đang hiển thị" & @CRLF)
+		Return True
+	EndIf
 EndFunc
