@@ -155,6 +155,10 @@
       "center_char_x": 405,
       "center_char_y": 299
     },
+    "close_shop_chao": {
+      "x": 287,
+      "y": 323
+    },
     "close_shop": {
       "x": 238,
       "y": 125

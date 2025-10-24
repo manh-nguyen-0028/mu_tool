@@ -123,6 +123,7 @@ Func withDrawRs($jAccountInfo)
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
+	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
 
 	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -209,7 +210,18 @@ Func withDrawRs($jAccountInfo)
 						secondWait(3)
 						returnChar($mainNo)
 						secondWait(3)
-						minisizeMain($mainNo)
+						; Neu khong phải main chinh thi thuc hien switch ve main chinh
+						$mainNoMinisize = $mainNo
+						If Not $isMainCharacter Then
+							writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+							$otherChar = $mainCharName
+							If $otherChar <> "" Then 
+								$resultWwithChar = switchOtherChar($otherChar)
+								If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
+							EndIf
+							writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+						EndIf
+						minisizeMain($mainNoMinisize)
 					EndIf
 				EndIf
 			EndIf
@@ -687,10 +699,6 @@ EndFunc
 #ce
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
-	; Click event icon
-	;~ $eventIconX = _JSONGet($jsonPositionConfig,"button.event_icon.x")
-	;~ $eventIconY = _JSONGet($jsonPositionConfig,"button.event_icon.y")
-	;~ _MU_MouseClick_Delay($eventIconX, $eventIconY)
 	; Chuyen sang bam S
 	sendKeyS()
 	

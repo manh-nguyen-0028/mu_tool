@@ -190,16 +190,10 @@ EndFunc
 Func handelWhenFinshDevilEvent()
 	sendKeyEnter()
 	sendKeyEnter()
-	sendKeyEnter()
-	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
-	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop.x")
-	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop.y")
+	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop_chao.x")
+	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop_chao.y")
 	_MU_MouseClick_Delay($closeShopX, $closeShopY)
-	; Neu lo dang click vao quay chao thi loai bo
-	$closeChaoX = _JSONGet($jsonPositionConfig,"button.close_chao.x")
-	$closeChaoY = _JSONGet($jsonPositionConfig,"button.close_chao.y")
-	_MU_MouseClick_Delay($closeChaoX, $closeChaoY)
 EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
@@ -355,12 +349,12 @@ Func clickIconDevil($checkRuongK)
 	EndIf
 	clickIconDevilByCondition($typeCheck)
 
-	secondWait(3)
+	secondWait(1)
 	
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	;~ ; Sleep 4s
-	secondWait(3)
+	secondWait(4)
 EndFunc
 
 Func clickIconDevilByCondition($type)
@@ -623,6 +617,7 @@ Func searchNpcDevil($checkRuongK, $devilNo)
 			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
 			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
 			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+			secondWait(2)
 			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
 			$countSearchPixel = $countSearchPixel + 1;
 		WEnd
