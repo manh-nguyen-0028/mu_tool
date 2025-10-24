@@ -124,6 +124,7 @@ Func withDrawRs($jAccountInfo)
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
 	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
 	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
+	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 
 	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)

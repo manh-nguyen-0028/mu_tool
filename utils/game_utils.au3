@@ -41,10 +41,7 @@ Func _MU_followLeader($position)
 		;~ _MU_MouseClick_Delay($position_x, $position_y)
 		mouseClickDelayShift($position_x, $position_y)
 	Next
-	;~ sendKeyEnter()
-	;~ $button_follow_x = _JSONGet($jsonPositionConfig,"button.follow_leader.button_x")
-	;~ $button_follow_y = _JSONGet($jsonPositionConfig,"button.follow_leader.button_y")
-	;~ _MU_MouseClick_Delay($button_follow_x, $button_follow_y)
+	
 	secondWait(1)
 	; Di chuot ra giua man hinh
 	;~ mouseMoveCenterChar()
@@ -282,6 +279,28 @@ Func checkOpenPopupDevil()
 		;~ MouseMove(607,541)
 	EndIf
 	If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
+	Return $result
+EndFunc
+
+Func withCharButtonImage()
+	; can phai doi 5s de check auto home
+	secondWait(5)
+	; Thuc hien check auto home
+	$pathImage = $imagePathRoot & "common" & "\swith_char_button.bmp"
+	$result = False
+	$x = 0
+	$y = 0
+	$x1 = 800
+	$y1 = 600
+	$imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
+
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
+	If $imageSearchResult[0] == 1 Then 
+		$result = True
+		;~ MouseMove(607,541)
+	EndIf
+	If Not $result Then writeLogFile($logFile, "Khong tim thay button chuyen nhan vat")
 	Return $result
 EndFunc
 
