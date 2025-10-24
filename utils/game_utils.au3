@@ -263,6 +263,28 @@ Func checkActiveAutoHome()
 	Return $result
 EndFunc
 
+Func checkOpenPopupDevil()
+	; can phai doi 5s de check auto home
+	secondWait(5)
+	; Thuc hien check auto home
+	$pathImage = $imagePathRoot & "devil" & "\popup_devil_open.bmp"
+	$result = False
+	$x = 0
+	$y = 0
+	$x1 = 800
+	$y1 = 600
+	$imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
+
+	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
+	If $imageSearchResult[0] == 1 Then 
+		$result = True
+		;~ MouseMove(607,541)
+	EndIf
+	If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
+	Return $result
+EndFunc
+
 Func checkAutoOnBuff()
 	$pathImage = $imagePathRoot & "common" & "\check_on_buff.bmp"
 	Return searchImageFullScreenMu($pathImage)
@@ -653,7 +675,8 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
 		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
 		
-		$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		$checkOpenDevil = checkOpenPopupDevil()
 		If $checkOpenDevil Then
 			writeLogFile($logFile, "Thuc hien click vao devil")
 			clickPositionByDevilNo($devilNo)
