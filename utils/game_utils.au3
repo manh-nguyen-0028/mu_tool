@@ -504,7 +504,8 @@ Func clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
 	; => Click vao icon chuyen
 	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
 	; => Click vao chuyen
-	_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+	withCharButtonImage()
+	;~ _MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 	; Lay lai mainNo cua current char
 	secondWait(3)
 	; De chuot ra man hinh
