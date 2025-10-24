@@ -402,10 +402,19 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		;~ 				</div>
 		$sElement = findElement($sSession, "//div[@id='t-player-text-info']")
 		$cmdText = getTextElement($sSession, $sElement)
-		$cmdText = StringSplit($cmdText, "Còn lại: <b>")[2]
-		$cmdText = StringSplit($cmdText, " lệnh.")[1]
-		writeLogFile($logFile, "cmdText: " & $cmdText)
-		$cmdAmount = Number($cmdText)
+		writeLogFile($logFile, "cmdText full: " & $cmdText)
+		;~ $cmdText = StringSplit($cmdText, "Còn lại: <b>")[2]
+		;~ $cmdText = StringSplit($cmdText, " lệnh.")[1]
+		Local $aMatch = StringRegExp($cmdText, "(\d+)\s*lệnh", $STR_REGEXPARRAYMATCH)
+		Local $iSoLenh = 0
+		If @error Or UBound($aMatch) = 0 Then
+			writeLogFile($logFile, "Không tìm thấy số lượng lệnh" & @CRLF)
+		Else
+			$iSoLenh = $aMatch[0]
+			writeLogFile($logFile, "Số lệnh còn lại: " & $iSoLenh & @CRLF)
+		EndIf
+		;~ writeLogFile($logFile, "cmdText: " & $cmdText)
+		$cmdAmount = Number($iSoLenh)
 		If $cmdAmount < 5 Then
 			writeLogFile($logFile, "Khong du lenh de thuc hien chuyen dong. So lenh con lai: " & $cmdAmount)
 			Return False
