@@ -287,7 +287,6 @@ Func withCharButtonImage()
 	secondWait(5)
 	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\swith_char_button.bmp"
-	$result = False
 	$x = 0
 	$y = 0
 	$x1 = 800
@@ -298,10 +297,12 @@ Func withCharButtonImage()
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
 	If $imageSearchResult[0] == 1 Then 
 		$result = True
+		Return $imageSearchResult
 		;~ MouseMove(607,541)
+	Else
+		writeLogFile($logFile, "Khong tim thay button chuyen nhan vat")
+		Return False
 	EndIf
-	If Not $result Then writeLogFile($logFile, "Khong tim thay button chuyen nhan vat")
-	Return $result
 EndFunc
 
 Func checkAutoOnBuff()
@@ -485,7 +486,20 @@ EndFunc
 Func clickOtherChar()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
-	clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
+
+	; => Click vao icon chuyen
+	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
+
+	secondWait(2)
+
+	; => Click vao chuyen
+	$result = withCharButtonImage()
+	If $result <> False Then
+		$swithCharButtonChangeX = $result[1]
+		$swithCharButtonChangeY = $result[2]
+		_MU_ControlClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+	EndIf
+	
 	Return True
 EndFunc
 
@@ -493,24 +507,6 @@ Func clickOtherChar2()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
 	clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
-EndFunc
-
-Func clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
-	$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
-	$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
-
-	writeLogFile($logFile,"Bat dau click voi toa do: " & $swithCharIconX & " - " & $swithCharIconY & " - " & $swithCharButtonChangeX & " - " & $swithCharButtonChangeY)
-
-	; => Click vao icon chuyen
-	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
-	; => Click vao chuyen
-	withCharButtonImage()
-	;~ _MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
-	; Lay lai mainNo cua current char
-	secondWait(3)
-	; De chuot ra man hinh
-	;~ mouseMoveCenterChar()
-	Return True
 EndFunc
 
 Func moveOtherMap($charName)
