@@ -433,7 +433,7 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		_WD_ElementAction($sSession, $sElement, 'value',$y)
 	
 		; Bam button chay ( submit )
-		$sElement = findElement($sSession, "//input[@type='submit']")
+		$sElement = findElement($sSession, "//button[@type='submit']")
 		clickElement($sSession, $sElement)
 	
 		; close diaglog
