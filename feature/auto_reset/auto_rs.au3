@@ -402,9 +402,6 @@ Func processReset($jAccountInfo)
 				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
 				returnServer()
 				returnChar($mainNo)
-				; Thuc hien enter 2 lan de thoat khoi bang thong bao
-				;~ sendKeyEnter()
-				;~ sendKeyEnter()
 				; 3.1. Check xem cua so enter co ton tai khong
 				;~ checkEnterChat()
 				firstActionAfterRs()
@@ -820,6 +817,11 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
 			ContinueLoop
 		Else
+			; Truong hop la reset vip thi limit khong duoc qua = 10
+			If ($typeRs == 1 And $timeRs >= 10) Then
+				writeLogFile($logFile, "Vuot qua so lan rs vip duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: 10")
+				ContinueLoop
+			EndIf
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 

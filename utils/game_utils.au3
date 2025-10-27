@@ -31,20 +31,15 @@ Func _MU_followLeader_ControlClick($hWnd, $position)
 EndFunc
 
 Func _MU_followLeader($position)
-	sendKeyEnter()
-	sendKeyEnter()
 	; khi can follow lead thi bam 2 lan cho chac an
 	For $i = 0 To 1 Step +1
 		$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
 		$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
 		writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
-		;~ _MU_MouseClick_Delay($position_x, $position_y)
 		mouseClickDelayShift($position_x, $position_y)
 	Next
 	
 	secondWait(1)
-	; Di chuot ra giua man hinh
-	;~ mouseMoveCenterChar()
 EndFunc
 
 Func mouseMoveCenterChar()
@@ -185,6 +180,7 @@ Func getConfigByName($jsonName)
 EndFunc
 
 Func handelWhenFinshDevilEvent()
+	sendKeyEnter()
 	sendKeyEnter()
 	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
@@ -493,7 +489,8 @@ Func clickOtherChar()
 	secondWait(2)
 
 	; => Click vao chuyen
-	$result = withCharButtonImage()
+	;~ $result = withCharButtonImage()
+	$result = False
 	If $result <> False Then
 		$swithCharButtonChangeX = $result[1]
 		$swithCharButtonChangeY = $result[2]
@@ -514,6 +511,7 @@ Func clickOtherChar2()
 EndFunc
 
 Func moveOtherMap($charName)
+	handelWhenFinshDevilEvent()
 	; Thuc hien get mainNo cua charName
 	$mainNo = getMainNoByChar($charName)
 	; Thuc hien active va move win
