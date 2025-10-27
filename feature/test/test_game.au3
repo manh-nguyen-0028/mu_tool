@@ -12,8 +12,9 @@
 ;~ $charName="CtrDell"
 ;~ $charName="Girlss"
 ;~ $charName="DacVuAoDen"
-$charName="Pucca"
-;~ $charName="NguHo"
+;~ $charName="Pucca"
+;~ $charName="BiThuXa"
+$charName="NguHo"
 ;~ $charName="NguHoBao"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
@@ -25,15 +26,16 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
 ;~ testcheckLvl400($charName)
-;~ testGoToSportArena($charName)
+testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
 ;~ testCheckOpenDevil()
-testCheckSwithCharButton()
+;~ testCheckSwithCharButton()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
 
-minisizeMain($mainNo)
+;~ minisizeMain($mainNo
+;~ )
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
