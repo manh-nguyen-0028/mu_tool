@@ -498,6 +498,10 @@ Func clickOtherChar()
 		$swithCharButtonChangeX = $result[1]
 		$swithCharButtonChangeY = $result[2]
 		_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+	Else
+		_MU_MouseClick_Delay(269, 272)
+		secondWait(1)
+		_MU_MouseClick_Delay(408, 70)
 	EndIf
 	
 	Return True
