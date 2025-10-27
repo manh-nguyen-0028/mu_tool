@@ -392,6 +392,11 @@ Func sendKeyH()
 	;~ secondWait(1)
 EndFunc
 
+Func sendKeyEsc()
+	sendKeyDelay("{ESC}")
+	secondWait(1)
+EndFunc
+
 Func sendKeyS()
 	writeLogFile($logFile, "Send key +h !")
 	sendKeyDelay("s")

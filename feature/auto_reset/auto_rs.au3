@@ -403,7 +403,6 @@ Func processReset($jAccountInfo)
 				returnServer()
 				returnChar($mainNo)
 				; 3.1. Check xem cua so enter co ton tai khong
-				;~ checkEnterChat()
 				firstActionAfterRs()
 				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
 				If $activeEndKey Then sendKeyEnd()

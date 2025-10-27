@@ -26,8 +26,6 @@ Func _MU_followLeader_ControlClick($hWnd, $position)
 	_MU_ControlClick_Delay($hWnd, $position_x, $position_y)
 	secondWait(1)
 	ControlSend($hWnd, "", "", "{ENTER}")
-	; Di chuot ra giua man hinh
-	mouseMoveCenterChar_Control($hWnd)
 EndFunc
 
 Func _MU_followLeader($position)
@@ -40,28 +38,6 @@ Func _MU_followLeader($position)
 	Next
 	
 	secondWait(1)
-EndFunc
-
-Func mouseMoveCenterChar()
-	; Di chuot ra giua man hinh
-	writeLogFile($logFile,"Di chuot ra giua man hinh nhan vat")
-	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
-	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
-	MouseMove($position_char_x, $position_char_y)
-	secondWait(1)
-	Return True
-EndFunc
-
-Func mouseMoveCenterChar_Control($hWnd)
-	; Di chuot ra giua man hinh
-	writeLogFile($logFile,"Di chuot ra giua man hinh nhan vat")
-	$position_char_x  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x")
-	$position_char_y  = _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y")
-	ControlMouseMove($hWnd, "", $position_char_x, $position_char_y) ; Di chuyển chuột đến tọa độ (100, 50) trong control
-	secondWait(1)
-	;~ MouseMove($position_char_x, $position_char_y)
-	;~ secondWait(1)
-	Return True
 EndFunc
 
 Func checkLvl400($mainNo)
@@ -207,19 +183,6 @@ Func checkAutoZAfterFollowLead()
 		secondWait(10)
 		$countWaitAutoHome += 1
 	WEnd
-EndFunc
-
-Func openConsoleThenClear()
-	; Send F12
-	Send("{F12}")
-	secondWait(2)
-	; Click into console tab
-	_MU_MouseClick_Delay(217, 782)
-	; click clean console
-	_MU_MouseClick_Delay(56, 815)
-	; Click vao cuoi man hinh
-	_MU_MouseClick_Delay(1837, 1006)
-	secondWait(1)
 EndFunc
 
 Func clickEventIcon()
@@ -468,8 +431,6 @@ Func switchOtherChar($currentChar)
 				writeLogFile($logFile,"Switch account SUCCESS: " & $currentChar)
 			Else
 				writeLogFile($logFile,"Switch account FAIL: " & $currentChar & " affter " & $timeCheck & " time")
-				; De chuot ra man hinh
-				mouseMoveCenterChar()
 				; Minisize main
 				minisizeMainByChar($charName)
 			EndIf
@@ -508,6 +469,7 @@ Func clickOtherChar2()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
 	;~ clickOtherCharWithPosition($swithCharIconX, $swithCharIconY)
+	; TODO:
 EndFunc
 
 Func moveOtherMap($charName)
@@ -532,19 +494,6 @@ Func moveOtherMap($charName)
 	Else
 		writeLogFile($logFile,"Khong the chuyen map khac")
 	EndIf
-EndFunc
-
-Func checkEnterChat()
-	$x = _JSONGet($jsonPositionConfig,"button.check_enter_chat.x")
-	$y = _JSONGet($jsonPositionConfig,"button.check_enter_chat.y")
-	$color = _JSONGet($jsonPositionConfig,"button.check_enter_chat.color")
-	; Truong hop ton tai cua so chat, thuc hien enter 1 lan nua
-	If checkPixelColor($x, $y, $color) Then
-		writeLogFile($logFile,"Ton tai cua so chat, thuc hien enter 1 lan nua")
-		sendKeyEnter()
-		secondWait(1)
-	EndIf
-	Return True
 EndFunc
 
 Func switchToMainChar($jsonAccountActiveDevil)
@@ -572,9 +521,8 @@ EndFunc
 
 Func changeServer($mainNo)
 	writeLogFile($logFile, "Begin change server !")
-	;~ sendKeyH()
-	;~ secondWait(1)
-	sendKeyDelay("{ESC}")
+	
+	sendKeyEsc()
 	secondWait(1)
 	; Bam chon nhat vat server
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
@@ -582,7 +530,7 @@ Func changeServer($mainNo)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-		sendKeyDelay("{ESC}")
+		sendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
 		secondWait(3)
