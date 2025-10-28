@@ -12,9 +12,10 @@
 ;~ $charName="CtrDell"
 ;~ $charName="Girlss"
 ;~ $charName="DacVuAoDen"
-$charName="Pucca"
+;~ $charName="Pucca"
 ;~ $charName="NguHo"
 ;~ $charName="NguHoBao"
+$charName="CuuBiThuXa"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3

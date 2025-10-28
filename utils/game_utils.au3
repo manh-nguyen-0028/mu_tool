@@ -525,6 +525,7 @@ Func moveOtherMap($charName)
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
 		secondWait(1)
+		handelWhenFinshDevilEvent()
 		writeLogFile($logFile,"Bat dau chuyen map khac")
 		sendKeyDelay("m")
 		$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")

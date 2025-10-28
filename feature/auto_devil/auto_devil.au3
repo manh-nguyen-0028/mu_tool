@@ -360,9 +360,9 @@ Func handleAfterDevilEvent()
 			;~ $checkActiveAutoHome = checkActiveAutoHome()
 
 			If $checkActiveWin Then 
-				If $isNeedHandleAffterEvent Then 
+				;~ If $isNeedHandleAffterEvent Then 
 					handelWhenFinshDevilEvent()
-				EndIf
+				;~ EndIf
 				; Check follow leader
 				If $isNeedFollowLeader Then
 					; Thuc hien chuyen map
