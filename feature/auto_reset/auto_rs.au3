@@ -566,7 +566,7 @@ Func changeChar($mainNo)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-		sendKeyDsendKeyEsc()
+		sendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
 		secondWait(3)
