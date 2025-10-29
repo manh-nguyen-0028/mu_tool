@@ -363,6 +363,16 @@ Func processReset($jAccountInfo)
 				; Click submit add point
 				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 				secondWait(2)
+				; Thuc hien vao lao game
+				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
+				returnServer()
+				returnChar($mainNo)
+				; 3.1. Check xem cua so enter co ton tai khong
+				firstActionAfterRs()
+				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
+				If $activeEndKey Then sendKeyEnd()
+				; minisize main
+				minisizeMain($mainNo)
 			EndIf
 
 			; close diaglog confirm
@@ -399,15 +409,6 @@ Func processReset($jAccountInfo)
 			Next
 			; If reset online = true => withow handle in game
 			If Not $resetOnline Then
-				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
-				returnServer()
-				returnChar($mainNo)
-				; 3.1. Check xem cua so enter co ton tai khong
-				firstActionAfterRs()
-				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
-				If $activeEndKey Then sendKeyEnd()
-				; minisize main
-				minisizeMain($mainNo)
 				; 5. Check lvl in web
 				$lvlStopCheck = 20
 				secondWait(30)
