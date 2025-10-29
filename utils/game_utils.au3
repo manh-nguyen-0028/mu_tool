@@ -444,6 +444,9 @@ Func clickOtherChar()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
 
+	$swithCharButtonChangeX = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x")
+	$swithCharButtonChangeY = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y")
+
 	; => Click vao icon chuyen
 	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
 
@@ -455,9 +458,9 @@ Func clickOtherChar()
 	If $result <> False Then
 		$swithCharButtonChangeX = $result[1]
 		$swithCharButtonChangeY = $result[2]
-		_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+		;~ _MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 	Else
-		_MU_MouseClick_Delay(269, 272)
+		_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
 		secondWait(1)
 		_MU_MouseClick_Delay(408, 70)
 	EndIf
