@@ -162,7 +162,7 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay($closeShopX, $closeShopY)
 	sendKeyEnter()
 	sendKeyEnter()
-	sendKeyEnter()
+	;~ sendKeyEnter()
 EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
@@ -535,16 +535,21 @@ Func changeServer($mainNo)
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
 	secondWait(3)
 	; Check title 
-	$checkActive = activeAndMoveWin($mainNo)
-	if $checkActive Then
-		sendKeyEsc()
-		; Bam chon nhat vat khac
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
-		secondWait(3)
-	EndIf
-	secondWait(5)
-	; Click button chon server
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+	For $i = 0 To 3 Step +1
+		$checkActive = activeAndMoveWin($mainNo)
+		if $checkActive Then
+			sendKeyEsc()
+			; Bam chon nhat vat khac
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+			secondWait(3)
+		Else
+			; Click button chon server
+			secondWait(3)
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+			ExitLoop
+		EndIf
+	Next
+	
 EndFunc 
 
 Func choise_sv() 
