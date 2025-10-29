@@ -301,8 +301,6 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
         ; Move other map
         moveOtherMap($charName)
 
-        secondWait(3)
-
         _MU_followLeader(1)    
         
 		checkAutoZAfterFollowLead()
@@ -367,7 +365,6 @@ Func handleAfterDevilEvent()
 				If $isNeedFollowLeader Then
 					; Thuc hien chuyen map
 					moveOtherMap($charName)
-					secondWait(5)
 					writeLogFile($logFile, "Char: " & $charName & " - can follow leader => thuc hien follow leader")
 					_MU_followLeader(1)
 					secondWait(8)

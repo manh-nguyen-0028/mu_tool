@@ -458,7 +458,6 @@ Func processReset($jAccountInfo)
 					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
 					activeAndMoveWin($mainNo)
 					moveOtherMap($charName)
-					secondWait(6)
 
 					; 9. Follow leader
 					If IsNumber($positionLeader) Then 
@@ -525,7 +524,6 @@ Func processReset($jAccountInfo)
 					If $lvlCheckInWeb < $lvlStopCheck Then
 						writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
 						moveOtherMap($charName)
-						secondWait(6)
 					Else
 						writeLogFile($logFile, "Du lvl de reset ! Follow leader !")
 					EndIf
@@ -561,15 +559,14 @@ Func changeChar($mainNo)
 	writeLogFile($logFile, "Begin change char !")
 	sendKeyH()
 	secondWait(1)
-	sendKeyDelay("{ESC}")
-	secondWait(1)
+	sendKeyEsc()
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
 	secondWait(3)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-		sendKeyDelay("{ESC}")
+		sendKeyDsendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
 		secondWait(3)

@@ -156,13 +156,13 @@ Func getConfigByName($jsonName)
 EndFunc
 
 Func handelWhenFinshDevilEvent()
-	sendKeyEnter()
-	sendKeyEnter()
-	sendKeyEnter()
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop_chao.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop_chao.y")
 	_MU_MouseClick_Delay($closeShopX, $closeShopY)
+	sendKeyEnter()
+	sendKeyEnter()
+	sendKeyEnter()
 EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
@@ -492,6 +492,7 @@ Func moveOtherMap($charName)
 		$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
 		_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
 		writeLogFile($logFile,"Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
+		secondWait(5)
 	Else
 		writeLogFile($logFile,"Khong the chuyen map khac")
 	EndIf
