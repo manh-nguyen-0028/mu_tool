@@ -166,9 +166,7 @@ Func handelWhenFinshDevilEvent()
 		_MU_MouseClick_Delay($closeShopX, $closeShopY)
 	Next
 	; Click ra ngaoi 1 lan nua cho chac
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay(150, 228)
-	Next
+	_MU_MouseClick_Delay(150, 228)
 EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
@@ -498,7 +496,7 @@ Func moveOtherMap($charName)
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
 		secondWait(1)
-		handelWhenFinshDevilEvent()
+		;~ handelWhenFinshDevilEvent()
 		writeLogFile($logFile,"Bat dau chuyen map khac")
 		sendKeyDelay("m")
 		$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
