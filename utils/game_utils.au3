@@ -156,13 +156,19 @@ Func getConfigByName($jsonName)
 EndFunc
 
 Func handelWhenFinshDevilEvent()
+	For $i = 0 To 3 Step +1
+		sendKeyEnter()
+	Next
 	; Neu dang bat shop thi thuc hien tat shop
 	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop_chao.x")
 	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop_chao.y")
-	_MU_MouseClick_Delay($closeShopX, $closeShopY)
-	sendKeyEnter()
-	sendKeyEnter()
-	;~ sendKeyEnter()
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($closeShopX, $closeShopY)
+	Next
+	; Click ra ngaoi 1 lan nua cho chac
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay(150, 228)
+	Next
 EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
@@ -478,7 +484,7 @@ Func clickOtherChar2()
 EndFunc
 
 Func moveOtherMap($charName)
-	handelWhenFinshDevilEvent()
+	clickCenterChar()
 	; Thuc hien get mainNo cua charName
 	$mainNo = getMainNoByChar($charName)
 	; Thuc hien active va move win
@@ -760,4 +766,9 @@ EndFunc
 Func activeAndMoveWinByChar($charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
+EndFunc
+
+Func clickCenterChar()
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y"))
+	Return True
 EndFunc
