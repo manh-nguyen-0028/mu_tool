@@ -177,18 +177,20 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
-		checkAutoZAfterFollowLead()
+		checkAutoZAfterFollowLead(True)
 	EndIf
 	Return True
 EndFunc
 
-Func checkAutoZAfterFollowLead()
-	secondWait(10)
-	$countWaitAutoHome = 0
-	While Not checkActiveAutoHome() And $countWaitAutoHome < 2
+Func checkAutoZAfterFollowLead($needCheck = False)
+	If $needCheck Then
 		secondWait(10)
-		$countWaitAutoHome += 1
-	WEnd
+		$countWaitAutoHome = 0
+		While Not checkActiveAutoHome() And $countWaitAutoHome < 2
+			secondWait(10)
+			$countWaitAutoHome += 1
+		WEnd
+	EndIf
 EndFunc
 
 Func clickEventIcon()

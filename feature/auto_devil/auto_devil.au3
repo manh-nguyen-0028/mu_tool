@@ -290,6 +290,7 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
 
     For $i = 0 To UBound($jsonAccountFastJoin) - 1
         Local $charName = _JSONGet($jsonAccountFastJoin[$i], "char_name")
+		Local $needCheckAutoZ = _JSONGet($jsonAccountFastJoin[$i], "need_check_auto_z")
         Local $mainNo = getMainNoByChar($charName)
         
         Local $checkActiveWin = activeAndMoveWin($mainNo)
@@ -303,7 +304,7 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
 
         _MU_followLeader(1)    
         
-		checkAutoZAfterFollowLead()
+		checkAutoZAfterFollowLead($needCheckAutoZ)
 		
 		minisizeMain($mainNo)
     Next
