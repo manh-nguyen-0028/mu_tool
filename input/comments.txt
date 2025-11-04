@@ -1,0 +1,60 @@
+false|1|Client|Cá tầm tươi quá shop ơi, mai giao cho mình 2kg nhé
+true|2|Client|Chép giòn làm lẩu ngon tuyệt, tối nay mình qua lấy 1 con
+false|3|Client|Cua Cà Mau bao nhiêu 1kg vậy shop?
+false|4|Client|Ngao hôm nay có loại to không ạ, em muốn hấp bia
+false|5|Client|Hàu ngon quá, cho mình 50 con ăn cùng bạn bè
+false|6|Client|Cá nục ướp sẵn được không shop, nhà mình thích nướng
+false|7|Client|Cá bạc má bao lâu thì về tới Hà Nội vậy ạ?
+false|8|Client|Tôm 320k/kg size bao nhiêu con vậy shop?
+false|9|Client|Mới ăn thử cá tầm hôm qua, thịt ngọt lắm, lần sau sẽ ủng hộ tiếp
+false|10|Client|Hàu sữa hôm nay béo ngậy, cảm ơn shop giao nhanh
+false|11|Client|Hôm trước đặt cá tầm bên shop, thịt ngọt và chắc lắm, cả nhà khen ngon
+false|12|Client|Chép giòn ăn lẩu siêu hợp, nước ngọt tự nhiên luôn
+false|13|Client|Cua Cà Mau thịt chắc, gạch đầy, lần sau sẽ đặt thêm
+false|14|Client|Ngao hấp bia chuẩn vị quán nhậu, cảm ơn shop giao nhanh
+false|15|Client|Hàu ăn sống béo ngậy, sạch sẽ, rất ưng
+false|16|Client|Cá nục nướng cả nhà ăn hết veo trong bữa tối
+false|17|Client|Cá bạc má chiên giòn chấm mắm tỏi ngon tuyệt
+false|18|Client|Tôm sú tươi, bóc vỏ dễ, nấu lẩu quá hợp
+false|19|Client|Mua combo hải sản về nấu lẩu, bạn bè khen ngon rần rần
+false|20|Client|Shop đóng gói cẩn thận, hải sản còn tươi rói khi nhận
+false|21|Client|Cua hôm qua được giao siêu to, thịt chắc hơn mong đợi
+false|22|Client|Ngao không có cát, rửa sơ là nấu ngay, tiện lắm
+false|23|Client|Hàu nướng phô mai ngon hết sảy, bé nhà mình mê luôn
+false|24|Client|Cá tầm nấu canh chua ăn rất hợp trong những ngày mát trời
+false|25|Client|Chép giòn làm món nướng giấy bạc cả nhà đều thích
+false|26|Client|Tôm hấp sả chấm muối ớt xanh, ngon khỏi bàn
+false|27|Client|Đặt gấp mà shop vẫn giao kịp, hải sản còn tươi
+false|28|Client|Mỗi lần mua là mỗi lần hài lòng, giá cả hợp lý
+false|29|Client|Bạn bè đến nhà ăn lẩu hải sản, ai cũng hỏi mua ở đâu
+false|30|Client|Sẽ tiếp tục ủng hộ shop dài dài vì đồ rất chất lượng
+false|31|Client|Đây ăn cua Cà Mau bên shop, phải nói thịt chắc ngọt hơn ngoài chợ nhiều
+false|32|Client|Ủng hộ cá bạc má lần 2, ship nhanh, cá tươi rói luôn
+false|33|Client|Mới đặt 2kg ngao, hi vọng tối nay có nồi ngao hấp ngon lành 😋
+false|34|Admin|Hôm nay nhà em về cá tầm tươi mới, ai đặt nhanh kẻo hết ạ
+false|35|Admin|Cua Cà Mau loại to, chắc thịt, giá cực ưu đãi hôm nay
+false|36|Admin|Ngao sạch, giao tận nhà, đảm bảo ăn lẩu siêu ngon
+false|37|Admin|Hàu nướng mỡ hành hết ý, nhà em có sẵn để ship liền tay
+false|38|Admin|Cá nục, bạc má mới về buổi sáng, rất tươi, giá tốt
+false|39|Admin|Tôm sú loại ngon, size vừa dễ chế biến, đang khuyến mãi
+false|40|Admin|Ai ăn thử rồi thì cho em xin ít review ạ ❤️
+false|41|Admin|Cá tầm hôm nay siêu tươi, thịt trắng, ship tận nhà trong ngày
+false|42|Admin|Chép giòn chuẩn vị, ăn lẩu hay nướng đều ngon hết nấc
+false|43|Admin|Cua Cà Mau thịt chắc, gạch nhiều, đặt sớm kẻo hết hàng
+false|44|Admin|Ngao loại to, sạch cát, hấp bia hay nấu canh ngọt nước
+false|45|Admin|Hàu đang có giá tốt, ăn sống chấm mù tạt hay nướng phô mai đều hợp
+false|46|Admin|Cá nục vừa về sáng nay, nướng than là số 1
+false|47|Admin|Cá bạc má nhiều omega, hợp cho các bữa cơm gia đình
+false|48|Admin|Tôm sú size đẹp, tươi sống, chế biến nhanh gọn
+false|49|Admin|Đặt combo hải sản lẩu gồm hàu + ngao + tôm được freeship nội thành
+false|50|Admin|Hôm nay có ưu đãi cho khách mua từ 2kg cá tầm trở lên
+false|51|Admin|Ship nhanh trong ngày, đảm bảo hải sản còn tươi rói
+false|52|Admin|Ai ở gần có thể ghé lấy trực tiếp để chọn hải sản
+false|53|Admin|Mỗi con cua Cà Mau nặng từ 300–500g, đảm bảo thịt chắc
+false|54|Admin|Ngao bên em đã được xử lý sạch sẽ, về chỉ cần rửa sơ là nấu
+false|55|Admin|Hàu sữa nhiều dinh dưỡng, tốt cho sức khỏe, giá cực hời hôm nay
+false|56|Admin|Cá bạc má rán giòn ăn cùng cơm nóng là hết sảy
+false|57|Admin|Tôm tươi nên khi chế biến giữ được vị ngọt tự nhiên
+false|58|Admin|Khách đặt lẩu hải sản trọn gói em chuẩn bị đầy đủ nguyên liệu
+false|59|Admin|Đảm bảo 100% hải sản giao trong ngày, không để qua đêm
+false|60|Admin|Cảm ơn khách đã ủng hộ, hôm nay còn ít cua Cà Mau, ai cần đặt nhanh nhé

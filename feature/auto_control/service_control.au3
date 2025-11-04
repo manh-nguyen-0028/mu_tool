@@ -29,7 +29,7 @@ Func start()
             startAutoRs()
         EndIf
         $timeLoop = _JSONGet($jsonPositionConfig,"auto.time_loop_auto_rs")
-        If ($timeLoop = "" Or $timeLoop == 60) Then 
+        If (Number($timeLoop) = 0 Or Number($timeLoop) == 60) Then 
             waitToNextHourMinutes(1, 38, 00)
         Else
             minuteWait($timeLoop)
