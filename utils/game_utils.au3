@@ -249,11 +249,11 @@ Func checkOpenPopupDevil()
 	;~ Return $result
 EndFunc
 
-Func withCharButtonImage()
+Func searchNvpNotActiveAutoZ()
 	; can phai doi 5s de check auto home
 	secondWait(5)
 	; Thuc hien check auto home
-	$pathImage = $imagePathRoot & "common" & "\swith_char_button.bmp"
+	$pathImage = $imagePathRoot & "common" & "\nvp_not_active_auto_z.bmp"
 	$x = 0
 	$y = 0
 	$x1 = 800
@@ -263,11 +263,11 @@ Func withCharButtonImage()
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
 	If $imageSearchResult[0] == 1 Then 
-		$result = True
-		Return $imageSearchResult
+		;~ $result = True
+		Return True
 		;~ MouseMove(607,541)
 	Else
-		writeLogFile($logFile, "Khong tim thay button chuyen nhan vat")
+		writeLogFile($logFile, "Khong tim thay button nvp_not_active_auto_z")
 		Return False
 	EndIf
 EndFunc
@@ -460,17 +460,19 @@ Func clickOtherChar()
 
 	secondWait(2)
 
-	; => Click vao chuyen
-	;~ $result = withCharButtonImage()
-	$result = False
-	If $result <> False Then
-		$swithCharButtonChangeX = $result[1]
-		$swithCharButtonChangeY = $result[2]
+	; => Kiem tra tinh trang active AutoZ cua nhan vat phu
+	$result = searchNvpNotActiveAutoZ()
+	; Truong hop nvp khong duoc active autoZ ( result = true ) thi click vao vi tri 1
+	If $result Then
+		;~ $swithCharButtonChangeX = $result[1]
+		;~ $swithCharButtonChangeY = $result[2]
 		;~ _MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+		_MU_MouseClick_Delay(269, 259, True)
 	Else
-		_MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+		;~ _MU_MouseClick_Delay($swithCharButtonChangeX, $swithCharButtonChangeY)
+		_MU_MouseClick_Delay(265, 285, True)
 		secondWait(1)
-		_MU_MouseClick_Delay(408, 70)
+		;~ _MU_MouseClick_Delay(408, 70)
 	EndIf
 	
 	Return True

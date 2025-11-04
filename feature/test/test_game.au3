@@ -12,10 +12,11 @@
 ;~ $charName="CtrDell"
 ;~ $charName="Girlss"
 ;~ $charName="DacVuAoDen"
-;~ $charName="Pucca"
+$charName="Pucca"
 ;~ $charName="NguHo"
 ;~ $charName="NguHoBao"
-$charName="CuuBiThuXa"
+;~ $charName="BiThuXa"
+;~ $charName="TronVo1"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
@@ -30,11 +31,12 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
 ;~ testCheckOpenDevil()
-testCheckSwithCharButton()
-;~ testSwithChar()
+;~ testCheckSwithCharButton()
+;~ testWithCharButtonImage()
+testSwithChar()
 ;~ testCheckActiveAutoHome()
 
-minisizeMain($mainNo)
+;~ minisizeMain($mainNo)
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -51,7 +53,7 @@ EndFunc
 Func testChangeServer($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
     changeServer($mainNo)
-    choise_sv()
+    ;~ choise_sv()
     Return True
 EndFunc
 
@@ -107,6 +109,12 @@ EndFunc
 Func testCheckSwithCharButton()
     secondWait(1)
     clickOtherChar()
+    Return True
+EndFunc
+
+Func testWithCharButtonImage()
+    secondWait(1)
+    searchNvpNotActiveAutoZ()
     Return True
 EndFunc
 

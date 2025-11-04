@@ -296,8 +296,10 @@ EndFunc
 
 ; Method: _MU_MouseClick_Delay
 ; Description: Moves the mouse to specified coordinates, clicks with a delay, and releases the click.
-Func _MU_MouseClick_Delay($toadoX, $toadoY)
+Func _MU_MouseClick_Delay($toadoX, $toadoY, $showLog = False)
 	MouseMove($toadoX, $toadoY)
+	If $showLog Then writeLog("Click den toa do: " & $toadoX & "--" & $toadoY)
+	
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
 	Sleep(100)
