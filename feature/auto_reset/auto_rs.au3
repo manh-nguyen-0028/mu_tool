@@ -194,7 +194,8 @@ Func withDrawRs($jAccountInfo)
 						$sTimeReset = getTimeReset($sLogReset,0)
 						; Trong truong hop reset khong thanh cong ($sTimeReset == $lastTimeRs) thi thuc hien set thoi gian thanh thoi gian hien tai
 						If $sTimeReset == $lastTimeRs Then
-							$sTimeReset = getTimeNow()
+							$timeNow = getTimeNow()
+							$sTimeReset = _DateAdd('n', 30, $timeNow)
 							writeLogFile($logFile, "$sTimeReset == $lastTimeRs, set thanh thoi gian hien tai: " & $sTimeReset)
 						EndIf
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
@@ -506,6 +507,12 @@ Func processReset($jAccountInfo)
 		Else
 			writeLogFile($logFile, "Khong du lvl de reset !")
 			writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
+			writeLogFile($logFile, "Thuc hien update time reset ")
+			; Cap nhat lai thoi gian reset de thuc hien check lai lan nua
+			; Thuc hien add them 30p nua
+			$timeNow = getTimeNow()
+			$timeUpdateInFile = _DateAdd('n', 30, $timeNow)
+			writeTimeRs($charName, $timeUpdateInFile)
 			If Not $resetOnline Then
 				;~ minisizeMain($mainNo)
 				$mainNoMinisize = $mainNo
@@ -873,4 +880,15 @@ Func checkAutoZInWeb($sSession)
 		writeLogFile($logFile, "✅ Thẻ đang hiển thị" & @CRLF)
 		Return True
 	EndIf
+EndFunc
+
+Func writeTimeRs($charName, $sTimeReset)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i = 0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+		If $charNameTmp == $charName Then
+			_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+		EndIf
+	Next
 EndFunc
