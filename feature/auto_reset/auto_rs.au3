@@ -192,6 +192,12 @@ Func withDrawRs($jAccountInfo)
 						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 						; last time rs
 						$sTimeReset = getTimeReset($sLogReset,0)
+						; Trong truong hop reset khong thanh cong ($sTimeReset == $lastTimeRs) thi thuc hien set thoi gian thanh thoi gian hien tai
+						If $sTimeReset == $lastTimeRs Then
+							$timeNow = getTimeNow()
+							$sTimeReset = _DateAdd('n', 30, $timeNow)
+							writeLogFile($logFile, "$sTimeReset == $lastTimeRs, set thanh thoi gian hien tai: " & $sTimeReset)
+						EndIf
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
@@ -501,6 +507,12 @@ Func processReset($jAccountInfo)
 		Else
 			writeLogFile($logFile, "Khong du lvl de reset !")
 			writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
+			writeLogFile($logFile, "Thuc hien update time reset ")
+			; Cap nhat lai thoi gian reset de thuc hien check lai lan nua
+			; Thuc hien add them 30p nua
+			$timeNow = getTimeNow()
+			$timeUpdateInFile = _DateAdd('n', 30, $timeNow)
+			writeTimeRs($charName, $timeUpdateInFile)
 			If Not $resetOnline Then
 				;~ minisizeMain($mainNo)
 				$mainNoMinisize = $mainNo
@@ -815,7 +827,7 @@ Func validAccountRs($aAccountActiveRs)
 			ContinueLoop
 		Else
 			; Truong hop la reset vip thi limit khong duoc qua = 10
-			If ($typeRs == 1 And $timeRs >= 10) Then
+			If ($typeRs == 1 And $timeRs >= 10 And StringLeft($lastTimeRs, 10) ==  $sDateCheck) Then
 				writeLogFile($logFile, "Vuot qua so lan rs vip duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: 10")
 				ContinueLoop
 			EndIf
@@ -868,4 +880,15 @@ Func checkAutoZInWeb($sSession)
 		writeLogFile($logFile, "✅ Thẻ đang hiển thị" & @CRLF)
 		Return True
 	EndIf
+EndFunc
+
+Func writeTimeRs($charName, $sTimeReset)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i = 0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+		If $charNameTmp == $charName Then
+			_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+		EndIf
+	Next
 EndFunc
