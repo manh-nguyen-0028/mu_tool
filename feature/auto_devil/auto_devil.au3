@@ -232,10 +232,6 @@ Func processGoEvent()
 				EndIf
 			EndIf
 
-			; Thuc hien send enter 1 lan truoc khi click icon devil
-			sendKeyEnter()
-			secondWait(1)
-
 			; Bat dau click icon devil
 			clickIconDevil($checkRuongK)
 

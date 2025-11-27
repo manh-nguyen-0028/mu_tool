@@ -388,7 +388,7 @@ Func clickIconDevilByCondition($type)
 		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_3")
 		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_3")
 	EndIf
-	For $i = 0 To 1 Step +1
+	For $i = 0 To 2 Step +1
 		_MU_MouseClick_Delay($devilIconX, $devilIconY)
 	Next
 	Return True
