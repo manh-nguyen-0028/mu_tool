@@ -11,12 +11,19 @@
 ;~ $charName="CuuBiThuXa"
 ;~ $charName="CtrDell"
 ;~ $charName="Girlss"
+;~ $charName="Maisy"
+$charName="TamGiaoChu"
+;~ $charName="SuTruTri"
+;~ $charName="GiaoSu"
+
 ;~ $charName="DacVuAoDen"
-$charName="Pucca"
+;~ $charName="Pucca"
 ;~ $charName="NguHo"
 ;~ $charName="NguHoBao"
+;~ $charName="CuuBiThuXa"
 ;~ $charName="BiThuXa"
 ;~ $charName="TronVo1"
+
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
@@ -29,12 +36,14 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testcheckLvl400($charName)
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
-;~ testSearchNPC()
+testSearchNPC()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
+;~ testSwithChar()
 ;~ testWithCharButtonImage()
-testSwithChar()
+;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
+;~ testClickCenterChar()
 
 ;~ minisizeMain($mainNo)
 
@@ -87,7 +96,7 @@ EndFunc
 
 Func testSwithChar()
     secondWait(3)
-    switchOtherChar($charName)
+    If Not activeAndMoveWin($mainNo) Then switchOtherChar($charName)
 EndFunc
 
 Func testCloseShop()
@@ -112,10 +121,13 @@ Func testCheckSwithCharButton()
     Return True
 EndFunc
 
+Func testClickCenterChar()
+    clickCenterChar()
+EndFunc
+
 Func testWithCharButtonImage()
     secondWait(1)
     searchNvpNotActiveAutoZ()
-    Return True
 EndFunc
 
 ;~ Func testControlClick()
