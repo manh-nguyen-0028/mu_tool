@@ -302,9 +302,9 @@ Func _MU_MouseClick_Delay($toadoX, $toadoY, $showLog = False)
 	
 	secondWait(1)
 	MouseDown($MOUSE_CLICK_LEFT) ; Set the left mouse button state as down.
-	Sleep(100)
+	Sleep(200)
 	MouseUp($MOUSE_CLICK_LEFT) ; Set the left mouse button state as up.
-	Sleep(100)
+	Sleep(200)
 EndFunc
 
 Func _MU_ControlClick_Delay($charName, $toadoX, $toadoY)
@@ -367,49 +367,6 @@ Func sendKeyDelay($keyPress)
 	Opt("SendKeyDownDelay", 500)  ;5 second delay
 	Send($keyPress)
 	Opt("SendKeyDownDelay", 5)  ;reset to default when done
-EndFunc
-
-; Send key enter
-Func sendKeyEnter()
-	sendKeyDelay("{Enter}")
-EndFunc
-
-; Send key home
-Func sendKeyHome()
-	writeLogFile($logFile, "Send key home !")
-	sendKeyDelay("{Home}")
-	secondWait(1)
-EndFunc
-
-Func sendKeyTab()
-	writeLogFile($logFile, "Send key tab !")
-	sendKeyDelay("{Tab}")
-	secondWait(1)
-EndFunc
-
-Func sendKeyH()
-	; o client moi k can senKeyH dau
-	;~ writeLogFile($logFile, "Send key +h !")
-	;~ sendKeyDelay("+h")
-	;~ secondWait(1)
-EndFunc
-
-Func sendKeyEsc()
-	sendKeyDelay("{ESC}")
-	secondWait(1)
-EndFunc
-
-Func sendKeyS()
-	writeLogFile($logFile, "Send key +h !")
-	sendKeyDelay("s")
-	secondWait(1)
-EndFunc
-
-Func sendKeyEnd()
-	; o client moi k can senKeyEn dau
-	;~ writeLogFile($logFile, "Send key End !")
-	;~ sendKeyDelay("{END}")
-	;~ secondWait(1)
 EndFunc
 
 ; Method: activeMain
@@ -761,4 +718,77 @@ Func redimArray($arrayRedim, $value = "")
 	Redim $arrayRedim[UBound($arrayRedim) + 1]
 	$arrayRedim[UBound($arrayRedim) - 1] = $value
 	Return $arrayRedim
+EndFunc
+
+; Function: sortArrayByProperty
+; Description: Sorts an array of JSON objects by a specific property
+; Parameters:
+;   $array - Array of JSON objects to sort
+;   $propertyName - Name of the property to sort by
+;   $ascending - True for ascending order, False for descending order (default: True)
+; Returns: Sorted array
+Func sortArrayByProperty($array, $propertyName, $ascending = True)
+    writeLogFile($logFile, "Starting sortArrayByProperty - Property: " & $propertyName & ", Ascending: " & $ascending)
+    
+    If UBound($array) <= 1 Then
+        writeLogFile($logFile, "Array has 1 or 0 elements, no sorting needed")
+        Return $array
+    EndIf
+    
+    ; Create a temporary array to store values with original indices
+    Local $tempArray[UBound($array)][2]
+    
+    ; Extract property values and store with original index
+    For $i = 0 To UBound($array) - 1
+        $tempArray[$i][0] = getPropertyJson($array[$i], $propertyName) ; Property value
+        $tempArray[$i][1] = $i ; Original index
+    Next
+    
+    ; Bubble sort implementation
+    Local $swapped = True
+    Local $n = UBound($tempArray)
+    
+    While $swapped
+        $swapped = False
+        For $i = 0 To $n - 2
+            Local $shouldSwap = False
+            
+            If $ascending Then
+                ; Ascending order comparison
+                $shouldSwap = (StringCompare($tempArray[$i][0], $tempArray[$i + 1][0]) > 0)
+            Else
+                ; Descending order comparison
+                $shouldSwap = (StringCompare($tempArray[$i][0], $tempArray[$i + 1][0]) < 0)
+            EndIf
+            
+            If $shouldSwap Then
+                ; Swap values
+                Local $tempValue = $tempArray[$i][0]
+                Local $tempIndex = $tempArray[$i][1]
+                
+                $tempArray[$i][0] = $tempArray[$i + 1][0]
+                $tempArray[$i][1] = $tempArray[$i + 1][1]
+                
+                $tempArray[$i + 1][0] = $tempValue
+                $tempArray[$i + 1][1] = $tempIndex
+                
+                $swapped = True
+            EndIf
+        Next
+        $n -= 1
+    WEnd
+    
+    ; Create sorted result array based on sorted indices
+    Local $sortedArray[UBound($array)]
+    For $i = 0 To UBound($tempArray) - 1
+        $sortedArray[$i] = $array[$tempArray[$i][1]]
+        writeLogFile($logFile, "Sorted item " & $i & ": " & getPropertyJson($sortedArray[$i], $propertyName))
+    Next
+    
+    writeLogFile($logFile, "sortArrayByProperty completed successfully")
+    Return $sortedArray
+EndFunc
+
+Func getProperty($propertyName)
+	Return _JSONGet($jsonPositionConfig,$propertyName)
 EndFunc

@@ -112,9 +112,6 @@ Func processLogin($username, $password, $charName)
     
     If activeAndMoveWin($mainName) Then
         writeLogFile($logFile, "Login success.")
-        ; Bam shift + h
-        sendKeyH()
-
         ; minimize window
         minisizeMain($mainName)
     Else

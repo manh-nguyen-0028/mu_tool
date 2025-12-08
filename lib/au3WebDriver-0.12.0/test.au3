@@ -1,4 +1,5 @@
 #include <Array.au3>
+;~ #include <Map.au3>
 #include <MsgBoxConstants.au3>
 #include "wd_helper.au3"
 #include "wd_capabilities.au3"
@@ -9,7 +10,134 @@ Global Const $_EXAMPLE_PROFILE_CHROME = @LocalAppDataDir & '\Google\Chrome\User 
 
 ;~ demo()
 
-testGetElement()
+;~ testGetElement()
+
+; Gọi test function
+runTest()
+
+; Mock dữ liệu JSON account info
+Func createMockAccountInfo()
+    ; Tạo mock data dưới dạng string JSON hoặc object
+    ; Cách 1: Sử dụng Dictionary để mock JSON object
+    Local $mockAccountInfo = ObjCreate("Scripting.Dictionary")
+    
+    $mockAccountInfo.Item("user_name") = "testuser123"
+    $mockAccountInfo.Item("password") = "testpass456"
+    $mockAccountInfo.Item("char_name") = "TestCharacter"
+    $mockAccountInfo.Item("type_rs") = "1"
+    $mockAccountInfo.Item("lvl_move") = "200"
+    $mockAccountInfo.Item("hour_per_reset") = "8"
+    $mockAccountInfo.Item("reset_online") = True
+    $mockAccountInfo.Item("is_buff") = False
+    $mockAccountInfo.Item("is_main_character") = True
+    $mockAccountInfo.Item("main_char_name") = "MainChar"
+    $mockAccountInfo.Item("position_leader") = "1"
+    $mockAccountInfo.Item("active_end_key") = True
+    $mockAccountInfo.Item("need_check_auto_z") = False
+    $mockAccountInfo.Item("active_move_rs") = True
+    $mockAccountInfo.Item("postion_move_x") = "100"
+    $mockAccountInfo.Item("postion_move_y") = "200"
+    
+    Return $mockAccountInfo
+EndFunc
+
+; Mock function getPropertyJson 
+Func getPropertyJson($jAccountInfo, $propertyName)
+    ; Giả sử $jAccountInfo là Dictionary object
+    If IsObj($jAccountInfo) And $jAccountInfo.Exists($propertyName) Then
+        Return $jAccountInfo.Item($propertyName)
+    Else
+        ; Trả về giá trị mặc định nếu không tìm thấy
+        Return ""
+    EndIf
+EndFunc
+
+; Test function đã sửa
+Func testScriptDiction()
+    ; Tạo mock data
+    Local $jAccountInfo = createMockAccountInfo()
+    
+    ; Test extract account info
+    Local $oAccountInfo = extractAccountInfo($jAccountInfo)
+    
+    ; In ra kết quả để kiểm tra
+    ConsoleWrite("=== Test Results ===" & @CRLF)
+    ConsoleWrite("Username: " & $oAccountInfo.Item("username") & @CRLF)
+    ConsoleWrite("Password: " & $oAccountInfo.Item("password") & @CRLF)
+    ConsoleWrite("Char Name: " & $oAccountInfo.Item("charName") & @CRLF)
+    ConsoleWrite("Type RS: " & $oAccountInfo.Item("typeRs") & @CRLF)
+    ConsoleWrite("Level Move: " & $oAccountInfo.Item("lvlMove") & @CRLF)
+    ConsoleWrite("Hour Per Reset: " & $oAccountInfo.Item("hourPerRs") & @CRLF)
+    ConsoleWrite("Reset Online: " & $oAccountInfo.Item("resetOnline") & @CRLF)
+    ConsoleWrite("Is Buff: " & $oAccountInfo.Item("isBuff") & @CRLF)
+    ConsoleWrite("Is Main Character: " & $oAccountInfo.Item("isMainCharacter") & @CRLF)
+    ConsoleWrite("Main Char Name: " & $oAccountInfo.Item("mainCharName") & @CRLF)
+    ConsoleWrite("Position Leader: " & $oAccountInfo.Item("positionLeader") & @CRLF)
+    ConsoleWrite("Active End Key: " & $oAccountInfo.Item("activeEndKey") & @CRLF)
+    ConsoleWrite("Need Check Auto Z: " & $oAccountInfo.Item("needCheckAutoZ") & @CRLF)
+    ConsoleWrite("Active Move Before RS: " & $oAccountInfo.Item("activeMoveBeforRs") & @CRLF)
+    ConsoleWrite("Position Move X: " & $oAccountInfo.Item("postionMoveX") & @CRLF)
+    ConsoleWrite("Position Move Y: " & $oAccountInfo.Item("postionMoveY") & @CRLF)
+    
+    ; Test một số logic
+    If $oAccountInfo.Item("resetOnline") Then
+        ConsoleWrite("This is ONLINE reset mode" & @CRLF)
+    Else
+        ConsoleWrite("This is OFFLINE reset mode" & @CRLF)
+    EndIf
+    
+    If $oAccountInfo.Item("isMainCharacter") Then
+        ConsoleWrite("This is MAIN character" & @CRLF)
+    Else
+        ConsoleWrite("This is NOT main character, main is: " & $oAccountInfo.Item("mainCharName") & @CRLF)
+    EndIf
+    
+    Return $oAccountInfo
+EndFunc
+
+; Thêm function này vào file test.au3 để chạy test
+Func runTest()
+    ConsoleWrite("Starting Dictionary Test..." & @CRLF)
+    Local $result = testScriptDiction()
+    
+    If IsObj($result) Then
+        ConsoleWrite("Test completed successfully!" & @CRLF)
+        ConsoleWrite("Dictionary contains " & $result.Count & " items" & @CRLF)
+        
+        ; Hiển thị tất cả keys
+        Local $aKeys = $result.Keys()
+        ConsoleWrite("All keys: ")
+        For $i = 0 To UBound($aKeys) - 1
+            ConsoleWrite($aKeys[$i] & ", ")
+        Next
+        ConsoleWrite(@CRLF)
+    Else
+        ConsoleWrite("Test failed!" & @CRLF)
+    EndIf
+EndFunc
+
+Func extractAccountInfo($jAccountInfo)
+    Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
+    
+    $oAccountInfo.Item("username") = getPropertyJson($jAccountInfo, "user_name")
+    $oAccountInfo.Item("password") = getPropertyJson($jAccountInfo, "password")
+    $oAccountInfo.Item("charName") = getPropertyJson($jAccountInfo, "char_name")
+    $oAccountInfo.Item("typeRs") = getPropertyJson($jAccountInfo, "type_rs")
+    $oAccountInfo.Item("lvlMove") = getPropertyJson($jAccountInfo, "lvl_move")
+    $oAccountInfo.Item("hourPerRs") = getPropertyJson($jAccountInfo, "hour_per_reset")
+    $oAccountInfo.Item("resetOnline") = getPropertyJson($jAccountInfo, "reset_online")
+    $oAccountInfo.Item("isBuff") = getPropertyJson($jAccountInfo, "is_buff")
+    $oAccountInfo.Item("isMainCharacter") = getPropertyJson($jAccountInfo, "is_main_character")
+    $oAccountInfo.Item("mainCharName") = getPropertyJson($jAccountInfo, "main_char_name")
+    $oAccountInfo.Item("positionLeader") = getPropertyJson($jAccountInfo, "position_leader")
+    $oAccountInfo.Item("activeEndKey") = getPropertyJson($jAccountInfo, "active_end_key")
+    $oAccountInfo.Item("needCheckAutoZ") = getPropertyJson($jAccountInfo, "need_check_auto_z")
+    $oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
+    $oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
+    $oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
+    
+    Return $oAccountInfo
+EndFunc
 
 Func demo()
 	Local $sSession = SetupChrome()

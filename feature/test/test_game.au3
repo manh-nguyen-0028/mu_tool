@@ -4,6 +4,7 @@
 #include "../auto_reset/auto_rs.au3"
 ;~ #include "../auto_devil/auto_devil.au3"
 
+
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
@@ -12,7 +13,10 @@
 ;~ $charName="CtrDell"
 ;~ $charName="Girlss"
 ;~ $charName="Maisy"
-$charName="TamGiaoChu"
+;~ $charName="TamGiaoChu"
+$charName="Goode"
+;~ $charName="JoyBoy"
+;~ $charName="DonMapNho"
 ;~ $charName="SuTruTri"
 ;~ $charName="GiaoSu"
 
@@ -27,16 +31,23 @@ $charName="TamGiaoChu"
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
+$isHaveQuest = False
+
+;~ activeAndMoveWin($titleGameMain)
 
 activeAndMoveWin(getMainNoByChar($charName))
 
+;~ activeAllMainActive()
+;~ testChoiseServer()
+;~ testReturnChar()
+;~ testMoveOtherMap()
 ;~ testFollowLead($charName)
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
 ;~ testcheckLvl400($charName)
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
-testSearchNPC()
+;~ testSearchNPC()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
 ;~ testSwithChar()
@@ -55,13 +66,13 @@ EndFunc
 
 Func testClickDevil($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
-    clickIconDevil(true)
+    clickIconDevil($charName, true, $isHaveQuest)
     Return True
 EndFunc
 
 Func testChangeServer($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
-    changeServer($mainNo)
+    ;~ changeServer($mainNo)
     ;~ choise_sv()
     Return True
 EndFunc
@@ -90,7 +101,7 @@ EndFunc
 
 Func testSearchNPC()
     secondWait(3)
-    $npcSearch = searchNpcDevil($checkRuongK, 3)
+    $npcSearch = searchNpcDevil($charName,$checkRuongK, 3, $isHaveQuest)
     clickNpcDevil($npcSearch, 3, True)
 EndFunc
 
@@ -128,6 +139,52 @@ EndFunc
 Func testWithCharButtonImage()
     secondWait(1)
     searchNvpNotActiveAutoZ()
+EndFunc
+
+Func testGoMapLvl()
+    goMapLvl()
+    Return True
+EndFunc
+
+Func activeAllMainActive()
+    ; Active toan bo main co title co tien to MU GamethuVN - Season 15 (Hà Nội
+    $arrMain = getAllMainActive()
+    writeLogFile($logFile, "So main hoat dong: " & UBound($arrMain) - 1)
+
+    For $i = 0 To UBound($arrMain) - 1
+        activeAndMoveWin($arrMain[$i])
+        secondWait(2)
+    Next
+EndFunc
+
+Func getAllMainActive()
+    Local $arrMain[0]
+    ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 15 (Hà Nội"
+    Local $aWindows = WinList("MU GamethuVN - Season 15 (Hà Nội")
+    writeLogFile($logFile, "So cua so main dang hoat dong: " & $aWindows[0][0])
+    ; In ra danh sach
+    ;~ _ArrayDisplay($aWindows, "Danh sach cua so main dang hoat dong")
+    
+    ; Duyệt qua danh sách cửa sổ và lấy handle của các cửa sổ hợp lệ
+    For $i = 1 To $aWindows[0][0]
+        If WinExists($aWindows[$i][1]) Then
+            ; Thêm handle của cửa sổ vào mảng kết quả
+            $arrMain = RedimArray($arrMain, $aWindows[$i][1])
+        EndIf
+    Next
+    
+    Return $arrMain
+    
+EndFunc
+
+Func testMoveOtherMap()
+    moveOtherMap($charName)
+    Return True
+EndFunc
+
+Func testChoiseServer()
+    choise_sv()
+    Return True
 EndFunc
 
 ;~ Func testControlClick()
@@ -360,3 +417,8 @@ EndFunc
 ;~ 	Next
 ;~ 	Return True
 ;~ EndFunc
+
+Func testReturnChar()
+    returnChar($mainNo)
+    Return True
+EndFunc
