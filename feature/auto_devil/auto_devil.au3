@@ -64,7 +64,7 @@ Func checkThenGoDevilEvent()
 		Sleep($diffTime)
 		processGoEvent()
 		;Sleep 26 minute
-		sleep26Min($nextHour)
+		sleep26Min()
 
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
@@ -78,14 +78,20 @@ Func checkThenGoDevilEvent()
 	EndIf
 EndFunc
 
-Func sleep26Min($nextHour)
-	Local $nextMinFollowLeader = 21, $secondFollowLeader = 10
-	Local $nextHourFollowLeader = $nextHour
+Func sleep26Min()
+	; Neu $jsonAccountActiveDevil = 0 thi khong can thuc hien sleep
+	$jsonAccountActiveDevil = getArrayActiveDevil()
+	If UBound($jsonAccountActiveDevil) == 0 Then 
+		writeLogFile($logFile, "Khong co tai khoan active devil. Ket thuc xu ly sleep26Min")
+		Return
+	EndIf
+	
+	Local $nextMinFollowLeader = 21
 	Local $currentTime = getCurrentTime()
 
 	If @MIN >= 30 Then $nextMinFollowLeader = 51
 
-	Local $nextTimeFollowLeader = createTimeToTicks($nextHourFollowLeader, $nextMinFollowLeader, $secondFollowLeader)
+	Local $nextTimeFollowLeader = createTimeToTicks(@HOUR, $nextMinFollowLeader, 10)
 	$timeLeft = timeLeft($currentTime, $nextTimeFollowLeader)
 	$diffTime = diffTime($currentTime, $nextTimeFollowLeader)
 	writeLogFile($logFile, "Current time: " & $currentTime & " - Next time follow leader: " & $nextTimeFollowLeader)
@@ -101,7 +107,7 @@ Func sleep26Min($nextHour)
 				$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 				$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
 				; Truong hop khong can follow leader thi khong can xu ly
-				If Not $isNeedFollowLeader Then ContinueLoop
+				;~ If Not $isNeedFollowLeader Then ContinueLoop
 				$mainNo = getMainNoByChar($charName)
 				If activeAndMoveWin($mainNo) Then 
 					handelWhenFinshDevilEvent()
@@ -170,6 +176,12 @@ Func processGoEvent()
 	; Get account devil
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 
+	; Truong hop khong co acc active devil thi ket thuc luon
+	If UBound($jsonAccountActiveDevil) == 0 Then 
+		writeLogFile($logFile, "Khong co tai khoan active devil. Ket thuc xu ly")
+		Return
+	EndIf
+
 	Local $jsonAccountFastJoin[0]
 
 	; Get account devil fast move
@@ -196,8 +208,9 @@ Func processGoEvent()
 			$isCheck400Lvl = _JSONGet($jsonAccountActiveDevil[$i], "is_check_400lv")
 			$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
 			$mainNo = getMainNoByChar($charName)
+			$isHaveQuest = _JSONGet($jsonAccountActiveDevil[$i], "have_quest")
 
-			writeLogFile($logFile, "Account: " & $charName & " - Devil No: " & $devilNo)
+			writeLogFile($logFile, "Account processGoEvent: " & $charName & " - Devil No: " & $devilNo)
 
 			; Truong hop main hien tai khong duoc active, active main khac
 			If Not activeAndMoveWin($mainNo) Then switchOtherChar($charName)
@@ -210,7 +223,7 @@ Func processGoEvent()
 
 			$checkLvl400 = True
 			; Check 400 lvl
-			If $isCheck400Lvl Then $checkLvl400 = checkLvl400($mainNo)
+			If $isCheck400Lvl Then $checkLvl400 = check400LvlImage()
 
 			If Not $checkLvl400 Or (@MIN > 5 And @MIN < 29) Or (@MIN > 35 And @MIN < 59) Then 
 				$reason = "Khong du dieu kien di devil. Ly do: "
@@ -233,10 +246,10 @@ Func processGoEvent()
 			EndIf
 
 			; Bat dau click icon devil
-			clickIconDevil($checkRuongK)
+			clickIconDevil($charName,$checkRuongK, $isHaveQuest)
 
 			; Check and click into NPC devil
-			$npmSearchResult = searchNpcDevil($checkRuongK, $devilNo)
+			$npmSearchResult = searchNpcDevil($charName,$checkRuongK, $devilNo, $isHaveQuest)
 
 			; Click into NPC devil
 			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)

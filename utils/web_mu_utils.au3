@@ -439,7 +439,11 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		; close diaglog
 		closeDiaglogConfim($sSession)
 		
-		Return True
+		writeLogFile($logFile, "Di chuyen den vi tri X: " & $x & " - Y: " & $y & " thanh cong!" & @CRLF)
+		; Doi 2 phut roi kiem tra lai auto z
+		minuteWait(2)
+		; Kiem tra auto z con hoat dong khong
+		Return checkAutoZEnable($sSession, $charNameWeb)
 	EndIf
 EndFunc
 
@@ -450,4 +454,78 @@ Func logoutAndCloseChromeDriver($sSession)
 	If $sSession Then _WD_DeleteSession($sSession)
 	
 	_WD_Shutdown()
+EndFunc
+
+Func checkAutoZEnable($sSession, $charName) 
+	; 1️⃣ Tìm thẻ div với class 't-auto_helper'
+	writeLogFile($logFile, "Bắt đầu kiểm tra Auto Z có được kích hoạt không...")
+	; Vao trang check lvl
+	_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
+	secondWait(5)
+	; 2️⃣ Lấy thuộc tính style của thẻ
+	Local $sElementAutoZ = findElement($sSession, "//div[@class='t-auto_helper']")
+	If @error Then
+		writeLogFile($logFile, "Không tìm thấy thẻ t-auto_helper => Auto Z khong hoat dong => Ket thuc xu ly reset !")
+		Return False
+	EndIf
+	
+	Local $styleAutoZ = _WD_ElementAction($sSession, $sElementAutoZ, 'getAttribute', 'style')
+	writeLogFile($logFile, "styleAutoZ: " & $styleAutoZ)
+	; 3️⃣ Kiểm tra xem có 'display: none' không
+	If StringInStr($styleAutoZ, "display: none") Then
+		writeLogFile($logFile, "❌ Thẻ đang bị ẩn (display: none) => Auto Z khong hoat dong => Ket thuc xu ly reset !")
+		Return False
+	Else
+		writeLogFile($logFile, "✅ Thẻ đang hiển thị" & @CRLF)
+		Return True
+	EndIf
+EndFunc
+
+Func resetInWeb($sSession, $oAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$resetOnline = $oAccountInfo.Item("resetOnline")
+	writeLogFile($logFile, "resetInWeb: Bắt đầu thực hiện reset cho nhân vật " & $charName & " - resetOnline: " & $resetOnline)
+	; 2. Reset in web
+	_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
+	secondWait(5)
+	If $resetOnline Then
+		; Click radio online
+		_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
+		secondWait(2)
+	EndIf
+	; Click radio rs vip
+	_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$oAccountInfo.Item("typeRs")&"].click()")
+	secondWait(2)
+	; Click submit
+	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+	secondWait(2)
+
+	; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
+	If Not $resetOnline Then
+		; Click submit
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(2)
+		; Vao trang add point thuc hien lai 1 lan nua cho chac
+		;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
+		_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
+		secondWait(5)
+		; Click submit add point
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(2)
+	EndIf
+
+	; close diaglog confirm
+	closeDiaglogConfim($sSession)
+	Return True
+EndFunc
+
+Func goPageBuffChar($sSession)
+	; https://hn.mugamethuvn.info/web/char/charbuff.shtml
+	writeLogFile($logFile, "Begin buff char ")
+	_WD_Navigate($sSession, $baseMuUrl & "web/char/charbuff.shtml")
+	secondWait(5)
+	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+	secondWait(2)
+	; close diaglog confirm
+	closeDiaglogConfim($sSession)
 EndFunc

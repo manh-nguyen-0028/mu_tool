@@ -80,6 +80,8 @@
       "y_2": 165,
       "x_3": 130, 
       "y_3": 166,
+      "x_quest": 22,
+      "y_quest": 261,
       "chap_nhan_x": 476,
       "chap_nhan_y": 476,
       "huy_bo_x": 554,
@@ -139,15 +141,25 @@
       "choise_sv_x": 230,
       "choise_sv_y": 234,
       "choise_sv_1_x": 401,
-      "choise_sv_1_y": 234
+      "choise_sv_1_y": 234,
+      "choise_sv_6_x": 401,
+      "choise_sv_6_y": 234,
+      "choise_sv_8_x": 401,
+      "choise_sv_8_y": 234,
+      "choise_sv_10_x": 401,
+      "choise_sv_10_y": 234
     },
     "switch_char": {
       "icon_x": 646, 
       "icon_y": 538,
       "icon_x_2": 443,
       "icon_y_2": 386,
-      "button_change_x": 443,
-      "button_change_y": 386
+      "button_change_x_active_autoz": 265,
+      "button_change_y_active_autoz": 285,
+      "button_change_x_not_active_autoz": 269,
+      "button_change_y_not_active_autoz": 259,
+      "close_popup_x": 407,
+      "close_popup_y": 66
     },
     "screen_mouse_move": {
       "center_x": 389,

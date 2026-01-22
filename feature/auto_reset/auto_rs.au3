@@ -12,6 +12,8 @@
 
 $className = "auto_rs.au3"
 
+;~ startAutoRs()
+
 Func startAutoRs()
 	Local $aAccountActive[0], $aAccountWithDraw[0], $aAccountActiveRs[0]
 	; get array account need withdraw reset
@@ -57,6 +59,8 @@ Func startAutoRs()
 		$sSession = SetupChrome()
 		; Logout account cho chac, nhieu luc se bi cache account cu
 		logout($sSession)
+		; Thuc hien sap xep lai thu tu $aAccValidate theo user_name
+		$aAccValidate = sortArrayByProperty($aAccValidate, "user_name", True)
 	EndIf
 
 	For $i = 0 To UBound($aAccValidate) - 1
@@ -69,7 +73,17 @@ Func startAutoRs()
 			reset($aAccValidate[$i])
 		EndIf
 
-		logout($sSession)
+		; Trong truong hop van con user trong $aAccValidate va user $aAccValidate[$i +1] trung username voi user hien tai thi khong thuc hien logout
+		Local $currentUser = getPropertyJson($aAccValidate[$i], "user_name")
+		Local $nextUser = ""
+		If $i + 1 < UBound($aAccValidate) Then
+			$nextUser = getPropertyJson($aAccValidate[$i + 1], "user_name")
+		EndIf
+		writeLogFile($logFile," $currentUser: "  & $currentUser & " - $nextUser: "  & $nextUser)
+		If $currentUser <> $nextUser Then 
+			writeLogFile($logFile," $currentUser <> $nextUser => Thuc hien logut")
+			logout($sSession)
+		EndIf
 	Next
 
 	writeLogMethodEnd("startAutoRs",@ScriptLineNumber)
@@ -122,9 +136,6 @@ Func withDrawRs($jAccountInfo)
 	$password = getPropertyJson($jAccountInfo,"password")
 	$charName = getPropertyJson($jAccountInfo,"char_name")
 	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
-	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
-	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
-	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
 
 	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -175,7 +186,7 @@ Func withDrawRs($jAccountInfo)
 
 			If $errorIp == $_WD_ERROR_Timeout Then
 				; Thuc hien set lai vao file de khong thuc hien rs nua
-				;~ setRsLogByAccountProperty($accountInfo,"is_have_ip", False)
+				;~ setRsLogByAccountProperty($oAccountInfo,"is_have_ip", False)
 				findAndClick($sSession, "//button[@type='submit']") 
 				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']") 
 				writeLogFile($logFile, "IP khong chinh chu khong the RS")
@@ -192,45 +203,10 @@ Func withDrawRs($jAccountInfo)
 						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 						; last time rs
 						$sTimeReset = getTimeReset($sLogReset,0)
-						; Trong truong hop reset khong thanh cong ($sTimeReset == $lastTimeRs) thi thuc hien set thoi gian thanh thoi gian hien tai
-						If $sTimeReset == $lastTimeRs Then
-							$timeNow = getTimeNow()
-							$sTimeReset = _DateAdd('n', 30, $timeNow)
-							writeLogFile($logFile, "$sTimeReset == $lastTimeRs, set thanh thoi gian hien tai: " & $sTimeReset)
-						EndIf
 						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
 				Next
-				; deu da rs thanh cong thu thuc hien xem co phai rs online khong, neu ko thi phai thuc hien thay doi nhan vat
-				If Not $resetOnline Then
-					$mainNo = getMainNoByChar($charName)
-					$activeWin = activeAndMoveWin($mainNo)
-					If Not $activeWin Then $activeWin = switchOtherChar($charName)
-					; Click bỏ hết các bảng thông báo
-					If $activeWin Then
-						handelWhenFinshDevilEvent()
-						secondWait(3)
-						; 1. Change Char Tu v1.0.15 bo change vi khong cong dc diem nv
-						changeChar($mainNo)
-						; Thuc hien change server
-						secondWait(3)
-						returnChar($mainNo)
-						secondWait(3)
-						; Neu khong phải main chinh thi thuc hien switch ve main chinh
-						$mainNoMinisize = $mainNo
-						If Not $isMainCharacter Then
-							writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
-							$otherChar = $mainCharName
-							If $otherChar <> "" Then 
-								$resultWwithChar = switchOtherChar($otherChar)
-								If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
-							EndIf
-							writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
-						EndIf
-						minisizeMain($mainNoMinisize)
-					EndIf
-				EndIf
 			EndIf
 		EndIf
 	Else
@@ -240,45 +216,73 @@ Func withDrawRs($jAccountInfo)
 	writeLogMethodEnd("processWithDrawReset",@ScriptLineNumber,$jAccountInfo)
 EndFunc
 
+Func extractAccountInfo($jAccountInfo)
+    Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
+    
+    $oAccountInfo.Item("username") = getPropertyJson($jAccountInfo, "user_name")
+    $oAccountInfo.Item("password") = getPropertyJson($jAccountInfo, "password")
+    $oAccountInfo.Item("charName") = getPropertyJson($jAccountInfo, "char_name")
+    $oAccountInfo.Item("typeRs") = getPropertyJson($jAccountInfo, "type_rs")
+    $oAccountInfo.Item("lvlMove") = getPropertyJson($jAccountInfo, "lvl_move")
+    $oAccountInfo.Item("hourPerRs") = getPropertyJson($jAccountInfo, "hour_per_reset")
+    $oAccountInfo.Item("resetOnline") = getPropertyJson($jAccountInfo, "reset_online")
+    $oAccountInfo.Item("isBuff") = getPropertyJson($jAccountInfo, "is_buff")
+    $oAccountInfo.Item("isMainCharacter") = getPropertyJson($jAccountInfo, "is_main_character")
+    $oAccountInfo.Item("mainCharName") = getPropertyJson($jAccountInfo, "main_char_name")
+    $oAccountInfo.Item("positionLeader") = getPropertyJson($jAccountInfo, "position_leader")
+    $oAccountInfo.Item("activeEndKey") = getPropertyJson($jAccountInfo, "active_end_key")
+	$oAccountInfo.Item("serverNumber") = getPropertyJson($jAccountInfo, "server_number")
+    $oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
+    $oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
+    $oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
+    $oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
+    
+    Return $oAccountInfo
+EndFunc
+
+Func updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
+	writeLogFile($logFile, "Chua den thoi gian reset.")
+	writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i =0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
+		If $charNameTmp == $charName Then
+			_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+		EndIf
+	Next
+EndFunc
+
+Func calculateRequiredLevelForReset($rsCount)
+	$lvlCanRs = 400
+	If $rsCount < 50 Then
+		$lvlCanRs = 200 + ($rsCount * 5)
+		If $lvlCanRs > 400 Then $lvlCanRs = 400
+	EndIf
+	Return $lvlCanRs
+EndFunc
+
 Func processReset($jAccountInfo)
 	writeLogMethodStart("processReset",@ScriptLineNumber,$jAccountInfo)
-	$username = getPropertyJson($jAccountInfo,"user_name")
-	$password = getPropertyJson($jAccountInfo,"password")
-	$charName = getPropertyJson($jAccountInfo,"char_name")
-	$typeRs = getPropertyJson($jAccountInfo,"type_rs")
-	$lvlMove = getPropertyJson($jAccountInfo,"lvl_move")
-	$hourPerRs = getPropertyJson($jAccountInfo,"hour_per_reset")
-	$resetOnline = getPropertyJson($jAccountInfo,"reset_online")
-	$isBuff = getPropertyJson($jAccountInfo,"is_buff")
-	$isMainCharacter = getPropertyJson($jAccountInfo,"is_main_character")
-	$mainCharName = getPropertyJson($jAccountInfo,"main_char_name")
-	$positionLeader = getPropertyJson($jAccountInfo,"position_leader")
-	$activeEndKey = getPropertyJson($jAccountInfo,"active_end_key")
-	$needCheckAutoZ = getPropertyJson($jAccountInfo,"need_check_auto_z")
-	$activeMoveBeforRs = getPropertyJson($jAccountInfo,"active_move_rs")
-	$postionMoveX = getPropertyJson($jAccountInfo,"postion_move_x")
-	$postionMoveY = getPropertyJson($jAccountInfo,"postion_move_y")
+	Local $oAccountInfo = extractAccountInfo($jAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$resetOnline = $oAccountInfo.Item("resetOnline")
+	; Neu co active move va co toa do thi thuc hien move
+	$activeMoveBeforRs = $oAccountInfo.Item("$activeMoveBeforRs")
+	$postionMoveX = $oAccountInfo.Item("$postionMoveX")
+	$postionMoveY = $oAccountInfo.Item("$postionMoveY")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
-	$isLoginSuccess = login($sSession, $username, $password)
+	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
 	secondWait(5)
 	If $isLoginSuccess Then
 		$timeNow = getTimeNow()
-		$sLogReset = getLogReset($sSession, $charName)
+		$sLogReset = getLogReset($sSession, $oAccountInfo.Item("charName"))
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
-		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
 		If $timeNow < $nextTimeRs Then 
-			writeLogFile($logFile, "Chua den thoi gian reset.")
-			writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-				For $i =0 To UBound($jsonRsGame) - 1
-					$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
-					If $charNameTmp == $charName Then
-						_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-					EndIf
-				Next
+			updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
 			Return
 		EndIf
 
@@ -287,19 +291,13 @@ Func processReset($jAccountInfo)
 		secondWait(5)
 		; find lvl
 		$sElement = findElement($sSession, "//span[@class='t-level']") 
-		$tLvl = getTextElement($sSession, $sElement)
-		$nLvl = Number($tLvl)
+		$nLvl = Number(getTextElement($sSession, $sElement))
 		; implement them viec check lvl rs theo rs 
-		$lvlCanRs = 400
-		If $rsCount < 50 Then
-			$lvlCanRs = 200 + ($rsCount * 5)
-			If $lvlCanRs > 400 Then $lvlCanRs = 400
-		EndIf
+		$lvlCanRs = calculateRequiredLevelForReset($rsCount)
 
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 		$mainNo = getMainNoByChar($charName)
-		If $nLvl >= $lvlCanRs Then
-			$moveInWebSuccess = True
+		If $nLvl >= $lvlCanRs Then 
 			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
 			If Not $resetOnline Then
 				; Active main no 
@@ -309,80 +307,46 @@ Func processReset($jAccountInfo)
 				If $activeWin Then
 					handelWhenFinshDevilEvent()
 					secondWait(3)
-					; 1. Change Char Tu v1.0.15 bo change vi khong cong dc diem nv
-					;~ changeChar($mainNo)
 					; Thuc hien change server
 					changeServer($mainNo)
 				EndIf
 			Else
-				; Thuc hien check autoZ tren web
-				If $needCheckAutoZ Then
-					$resultCheck = checkAutoZInWeb($sSession)
-					If Not $resultCheck Then
-						writeLogFile($logFile, "Auto Z khong duoc kich hoat tren web, kich hoat lai !")
-						; Thuc hien activate auto Z
-						; Neu co toa do thi thuc hien move
-						If $postionMoveX <> "" And $postionMoveY <> "" Then
-							$checkMove = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-							If $checkMove Then 
-								writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-								minuteWait(2)
-							Else
-								$moveInWebSuccess = False
-								writeLogFile($logFile, "Khong the thuc hien move den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-								; Neu khong the move thi thuc hien activate auto Z luon
-							EndIf
-						EndIf
+				; Thuc hien check auto z tren web neu co active
+				;~ tôi có đoạn code html như sau: <div class="t-auto_helper"> <div> <div class="t-text t-text-timer"> <div>Thời gian đi săn <span>00:05:42</span></div> </div> <div class="t-text"> <div class="t-text-header"> ST thường: </div> <div class="t-text-value t-normal_dmg">110,398</div> </div> <div class="t-text"> <div class="t-text-header"> ST thuộc tính: </div> <div class="t-text-value t-element_dmg">926</div> </div> <div class="t-text"> <div class="t-text-header"> Lượng phục hồi: </div> <div class="t-text-value t-healing">0</div> </div> <div class="t-text"> <div class="t-text-header"> Giết quái: </div> <div class="t-text-value t-kill">0.055</div> </div> <div class="t-text"> <div class="t-text-header"> EXP nhận được: </div> <div class="t-text-value t-exp">3,243,182</div> </div> </div> </div>
+				; de xac dinh auto z dang hoat dong hay khong thi kiem tra thoi gian di san class="t-auto_helper". Neu co hien thi dang auto z va khong chua style="display: none;" thi coi nhu la pass
+				; Neu chua style="display: none;" thi ket thuc luon
+				$sElementAutoZ = findElement($sSession, "//div[@class='t-auto_helper']")
+				$statusAutoZ = False
+				If @error Then
+					$statusAutoZ = False
+				Else
+					writeLogFile($logFile, "Tìm thấy thẻ t-auto_helper => Tiep tuc kiem tra auto z !")
+					; 2️⃣ Lấy giá trị thuộc tính "style"
+					Local $styleAutoZ = _WD_ElementAction($sSession, $sElement, "attribute", "style")
+
+					writeLogFile($logFile, "styleAutoZ: " & $styleAutoZ)
+					; 3️⃣ Kiểm tra xem có 'display: none' không
+					If StringInStr($styleAutoZ, "display: none") Then
+						$statusAutoZ = False
 					Else
-						writeLogFile($logFile, "Auto Z da duoc kich hoat tren web. Khong can thuc hien move nua!")
+						writeLogFile($logFile, "✅ Thẻ t-auto_helper đang hiển thị => Auto Z dang hoat dong => Tiep tuc xu ly reset !")
+						$statusAutoZ = True
+					EndIf
+				EndIf
+				If Not $statusAutoZ Then
+					writeLogFile($logFile, "Auto Z khong hoat dong => Thu move = web xem co dc ko !")
+					If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+						$statusAutoZ = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+					EndIf
+					If Not $statusAutoZ Then 
+						writeLogFile($logFile, "Khong the move den vi tri mong muon => Ket thuc xu ly reset !")
+						Return
 					EndIf
 				EndIf
 			EndIf
 			; 2. Reset in web
-			_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
-			secondWait(5)
-			If $resetOnline Then
-				; Click radio online
-				_WD_ExecuteScript($sSession, "$(""input[name='rsonline']"").click()")
-				secondWait(2)
-			EndIf
-			; Click radio rs vip
-			_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")["&$typeRs&"].click()")
-			secondWait(2)
-			; Neu khong move dc tren web thi bo qua buoc nay
-			If $moveInWebSuccess Then
-				; Click submit
-				writeLogFile($logFile, "$moveInWebSuccess = True. Thuc hien click submit reset")
-				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-				secondWait(2)
-			EndIf
+			resetInWeb($sSession, $oAccountInfo)
 
-			; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
-			If Not $resetOnline Then
-				; Click submit
-				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-				secondWait(2)
-				; Vao trang add point thuc hien lai 1 lan nua cho chac
-				;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-				_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-				secondWait(5)
-				; Click submit add point
-				_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-				secondWait(2)
-				; Thuc hien vao lao game
-				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
-				returnServer()
-				returnChar($mainNo)
-				; 3.1. Check xem cua so enter co ton tai khong
-				firstActionAfterRs()
-				; Sau do thuc hien send key end de kep chuot, neu $activeEndKey = true
-				If $activeEndKey Then sendKeyEnd()
-				; minisize main
-				minisizeMain($mainNo)
-			EndIf
-
-			; close diaglog confirm
-			closeDiaglogConfim($sSession)
 			; Update info account json config
 			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 			For $i = 0 To UBound($jsonRsGame) - 1
@@ -401,158 +365,34 @@ Func processReset($jAccountInfo)
 					
 					_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-					If $resetInDay == 1 And $isBuff Then
-						; https://hn.mugamethuvn.info/web/char/charbuff.shtml
-						writeLogFile($logFile, "Begin buff char: " & $charName)
-						_WD_Navigate($sSession, $baseMuUrl & "web/char/charbuff.shtml")
-						secondWait(5)
-						_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-						secondWait(2)
-						; close diaglog confirm
-						closeDiaglogConfim($sSession)
+					If $resetInDay == 1 And $oAccountInfo.Item("isBuff") Then
+						goPageBuffChar($sSession)
 					EndIf
 				EndIf
 			Next
 			; If reset online = true => withow handle in game
 			If Not $resetOnline Then
-				; 5. Check lvl in web
-				$lvlStopCheck = 20
-				secondWait(30)
-				; Kiem tra viec tang lvl tren web, neu van bang 1 thi thuc hien activate game va thuc hien laij firstActionAfterRs
-				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-				If $lvlCheckInWeb == 1 Then 
-					; Activate game
-					activeAndMoveWin($mainNo)
-					secondWait(2)
-					; Bam enter 1 lan nua de thoat bang thong bao
-					sendKeyEnter()
-					; Thuc hien first action
-					firstActionAfterRs()
-					; Cho tiep 30s
-					secondWait(30)
+				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
+				returnServer($oAccountInfo)
+				returnChar($mainNo)
+				; Check train_in_game xem co can thuc hien processResetNomal hay khong
+				If Not $oAccountInfo.Item("isTrainInGame") Then
+					processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 				EndIf
-				; Neu van bang 1 thi thuc hien di chuyen bang web
-				$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-				; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
-				If $lvlCheckInWeb < 20 Then
-					writeLogFile($logFile, "Khong thay tang lvl! Lvl hien tai: " & $lvlCheckInWeb)
-					writeLogFile($logFile, "Thuc hien chuyen map bang web !")
-					$moveLorenX = 220
-					$moveLorenY = 144
-					moveToPostionInWeb($sSession, $charName, $moveLorenX, $moveLorenY)
-					writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-					; Doi 50s
-					minuteWait(2)
-					; Thuc hien check lai lvl
-					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-				Else
-					writeLogFile($logFile, "Lvl van tang theo dung quy trinh! Lvl hien tai: " & $lvlCheckInWeb)
-				EndIf
-				
-				; 6. Active main
-				activeAndMoveWin($mainNo)
-				If $lvlCheckInWeb >= 20 Then
-					; 7. Go map lvl
-					If $resetInDay <= 3 Then 
-						writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
-						goMapLvl()
-					Else
-						goMapArena($rsCount)
-					EndIf
 
-					; 8. Check lvl in web
-					$lvlStopCheck = Number($lvlMove)
-					checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-					activeAndMoveWin($mainNo)
-					moveOtherMap($charName)
-
-					; 9. Follow leader
-					If IsNumber($positionLeader) Then 
-						$positionLeader = Number($positionLeader)
-					Else
-						$positionLeader = 1
-					EndIf
-
-					_MU_followLeader($positionLeader)
-					; Neu co active move va co toa do thi thuc hien move
-					If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
-						moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-						writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-					EndIf
-					; 10. Wait in 1 min
-					minuteWait(1)
-				EndIf
-			EndIf
-
-			$mainNoMinisize = $mainNo
-
-			If Not $isMainCharacter Then
-				writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
-				$otherChar = $mainCharName
-				If $otherChar <> "" Then 
-					$resultWwithChar = switchOtherChar($otherChar)
-					If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
-				EndIf
-				writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
-			EndIf
-
-			If Not $resetOnline Then
-				; 10. minisize main 
-				minisizeMain($mainNoMinisize)
+				minisizeMain($mainNo)
 			EndIf
 			
 			; 11. Logout account
-			logout($sSession)
+			;~ logout($sSession)
 			;~ EndIf
 		Else
-			writeLogFile($logFile, "Khong du lvl de reset !")
 			writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
-			writeLogFile($logFile, "Thuc hien update time reset ")
-			; Cap nhat lai thoi gian reset de thuc hien check lai lan nua
-			; Thuc hien add them 30p nua
-			$timeNow = getTimeNow()
-			$timeUpdateInFile = _DateAdd('n', 30, $timeNow)
-			writeTimeRs($charName, $timeUpdateInFile)
 			If Not $resetOnline Then
-				;~ minisizeMain($mainNo)
-				$mainNoMinisize = $mainNo
-				$lvlStopCheck = $lvlCanRs
-				$timeCheck = 0
-				$activeWin = activeAndMoveWin($mainNo)
-				If Not $activeWin Then $activeWin = switchOtherChar($charName)
-				; Click bỏ hết các bảng thông báo
-				If $activeWin Then
-					sendKeyEnter()
-					sendKeyEnter()
-					goMapArena($rsCount)
-					minuteWait(1)
-					$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-					While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
-						writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
-						$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-						$timeCheck += 1
-						minuteWait(1)
-					WEnd
-					
-					If $lvlCheckInWeb < $lvlStopCheck Then
-						writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
-						moveOtherMap($charName)
-					Else
-						writeLogFile($logFile, "Du lvl de reset ! Follow leader !")
-					EndIf
-
-					activeAndMoveWin($mainNo)
-					_MU_followLeader(1)
-
-					If Not $resetOnline Then
-						; 10. minisize main
-						minisizeMain($mainNoMinisize)
-					EndIf
-
-					; 11. Logout account
-					logout($sSession)
+				If $oAccountInfo.Item("isTrainInGame") Then
+					writeLogFile($logFile, "Van dang thuc hien train in game ! Ket thuc xu ly reset !")
 				Else
-					writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
+					actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlCanRs)
 				EndIf
 			EndIf
 		EndIf
@@ -560,6 +400,36 @@ Func processReset($jAccountInfo)
 		If Not $resetOnline Then minisizeMain($mainNo)
 	EndIf
 	writeLogMethodEnd("processReset",@ScriptLineNumber,$jAccountInfo)
+EndFunc
+
+Func handleIsNotMainChar($oAccountInfo)
+	If Not $oAccountInfo.Item("isMainCharacter") Then
+		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+		$otherChar = $oAccountInfo.Item("mainCharName")
+		If $otherChar <> "" Then 
+			$resultWwithChar = switchOtherChar($otherChar)
+			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
+		EndIf
+		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+	EndIf
+EndFunc
+
+Func isMovableUnderLevel20($sSession,$charName,$lvlCheckInWeb,$rsCount,$lvlStopCheck) 
+	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
+	If $lvlCheckInWeb < 20 Then
+		writeLogFile($logFile, "Khong thay tang lvl! Lvl hien tai: " & $lvlCheckInWeb)
+		writeLogFile($logFile, "Thuc hien chuyen map bang web !")
+		$moveLorenX = 220
+		$moveLorenY = 144
+		moveToPostionInWeb($sSession, $charName, $moveLorenX, $moveLorenY)
+		writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $moveLorenX & " - Y: " & $moveLorenY)
+		; Doi 50s
+		minuteWait(2)
+		; Thuc hien check lai lvl
+		$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+	Else
+		writeLogFile($logFile, "Lvl van tang theo dung quy trinh! Lvl hien tai: " & $lvlCheckInWeb)
+	EndIf
 EndFunc
 
 #cs
@@ -570,21 +440,19 @@ Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
 Func changeChar($mainNo)
 	writeLogFile($logFile, "Begin change char !")
-	sendKeyH()
-	secondWait(1)
 	sendKeyEsc()
 	; Bam chon nhat vat khac
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
+	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
 	secondWait(3)
 	; Check title 
 	$checkActive = activeAndMoveWin($mainNo)
 	if $checkActive Then
-		sendKeyEsc()
+		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_char.x"), _JSONGet($jsonPositionConfig,"button.change_char.y"))
+		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
 		secondWait(3)
 	EndIf
-EndFunc 
+EndFunc
 
 #cs
 	Dang nhap lai vao nhan vat
@@ -595,7 +463,7 @@ Func returnChar($mainNo)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	$timeCheck = 0
 	While Not $checkActive And $timeCheck <= 5
-		;~ _MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.y"))
+		;~ _MU_MouseClick_Delay(getProperty("button.screen_mouse_move.x"), getProperty("button.screen_mouse_move.y"))
 		; Active title game main
 		If activeAndMoveWin($titleGameMain) Then
 			; Bam chon nhat vat khac
@@ -616,17 +484,26 @@ Func returnChar($mainNo)
 
 EndFunc 
 
-Func returnServer() 
+Func returnServer($oAccountInfo) 
+	writeLogFile($logFile, "Begin return server !")
+	$serverNumber = Number($oAccountInfo.Item("serverNumber"))
+	writeLogFile($logFile, "Server number: " & $serverNumber)
 	; thuc hien active title game main
 	$checkActive = activeAndMoveWin($titleGameMain)
 	If $checkActive Then
 		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
 		secondWait(1)
 		; Click button chon server
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+		_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_x"), getProperty("button.change_server.choise_sv_y"))
 		secondWait(2)
 		; Click vao chon sv 1
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_y"))
+		If ($serverNumber == 6) Or ($serverNumber == 8) Or ($serverNumber == 10) Then
+			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_"&$serverNumber&"_x"), getProperty("button.change_server.choise_sv_"&$serverNumber&"_y"))
+			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_"&$serverNumber&"_x"), getProperty("button.change_server.choise_sv_"&$serverNumber&"_y"))
+		Else
+			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
+			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
+		EndIf
 		secondWait(2)
 	Else
 		writeLogFile($logFile, "Khong the active title game main de vao server !")
@@ -640,7 +517,7 @@ Func goToSportLvl1()
 	; Khi bat dau se xuat hien tai 182 - 128
 	writeLogFile($logFile, "Bat dau tim vi tri sport 1")
 	; 533, 338
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.loren_sport1.x"), _JSONGet($jsonPositionConfig,"button.loren_sport1.y"))
+	_MU_MouseClick_Delay(getProperty("button.loren_sport1.x"), getProperty("button.loren_sport1.y"))
 	secondWait(1)
 EndFunc
 
@@ -653,8 +530,7 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 
 	; find lvl
 	$sElement = findElement($sSession, "//span[@class='t-level']") 
-	$tLvl = getTextElement($sSession, $sElement)
-	$nLvl = Number($tLvl)
+	$nLvl = Number(getTextElement($sSession, $sElement))
 	$tmpLvl = 0
 	$timeCheck = 0
 	$timeCheckMax = 68
@@ -724,59 +600,6 @@ Func checkLvlInWeb($rsCount,$charName, $lvlStopCheck, $timeDelay)
 	Return $nLvl
 EndFunc
 
-#cs
-	Vao event Lvl 
-#ce
-Func goMapLvl()
-	writeLogFile($logFile, "Bat dau map event lvl ! ")
-	; Chuyen sang bam S
-	sendKeyS()
-	
-	; Click map lvl
-	$mapLvlX = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x")
-	$mapLvlY = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_y")
-	_MU_MouseClick_Delay($mapLvlX, $mapLvlY)
-	secondWait(3)
-
-	; Go to center
-	$mapLvlCenterX = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_x")
-	$mapLvlCenterY = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_y")
-	_MU_MouseClick_Delay($mapLvlCenterX, $mapLvlCenterY)
-	secondWait(2)
-
-	; Enable Auto Home
-	sendKeyHome()
-EndFunc
-
-Func goMapArena($rsCount)
-	; neu thoi gian tu phut 0 -5, 30 - 35 thi se cho cho toi khi thoi gian nay qua, sau do moi vao sport arena
-	If (@MIN >= 0 And @MIN < 5) Or (@MIN >= 30 And @MIN < 35) Then
-		writeLogFile($logFile, "Thoi gian hien tai: " & @HOUR & ":" & @MIN & " - Chua den thoi gian vao arena, cho toi 5 phut nua !")
-		If (@MIN >= 0 And @MIN < 5) Then
-			; Neu thoi gian tu 0 - 5 thi cho toi den 5 phut
-			; Wait 5 minute
-			minuteWait(5 - @MIN)
-		Else
-			; Neu thoi gian tu 30 - 35 thi cho toi den 35 phut
-			; Wait 5 minute
-			minuteWait(35 - @MIN)
-		EndIf
-	EndIf
-	writeLogFile($logFile, "Bat dau map event arena ! ")
-	; Click event icon then go arena map
-	clickEventIcon()
-	clickEventStadium()
-	; Trong truong hop rs count < 30 thi chi toi sport 1 thoi, <50 thi ra port 2, nguoc lai thi ra sport 3
-	$sportArenaNo = 3
-	If ($rsCount < 30) Then
-		$sportArenaNo = 1
-	ElseIf ($rsCount < 50) Then
-		$sportArenaNo = 2
-	EndIf
-	; Go to sport
-	goSportStadium($sportArenaNo)
-EndFunc
-
 Func validAccountRs($aAccountActiveRs)
 	writeLogMethodStart("validAccountRs",@ScriptLineNumber,$aAccountActiveRs)
 	Local $aAccValidate[0]
@@ -789,13 +612,12 @@ Func validAccountRs($aAccountActiveRs)
 		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
-		
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 
-		writeLogFile($logFile, "Dang xu ly voi account => " & $username & " - " & $charName)
+		writeLogFile($logFile, "validAccountRs => " & $username & " - " & $charName)
 		
 		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
 		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then 
@@ -826,11 +648,6 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
 			ContinueLoop
 		Else
-			; Truong hop la reset vip thi limit khong duoc qua = 10
-			If ($typeRs == 1 And $timeRs >= 10 And StringLeft($lastTimeRs, 10) ==  $sDateCheck) Then
-				writeLogFile($logFile, "Vuot qua so lan rs vip duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: 10")
-				ContinueLoop
-			EndIf
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
@@ -848,47 +665,123 @@ Func firstActionAfterRs()
 	sendKeyTab()
 	; 4. Go to sport
 	goToSportLvl1()
-	; Sau khi vao sport thi thuc hien send key H
-	sendKeyH()
 	; Send 1 lan key tab nua de tat ban do
 	sendKeyTab()
 EndFunc
 
-Func checkAutoZInWeb($sSession)
-	; Giả sử bạn đã có $sSession là session hiện tại
+Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
+	writeLogMethodStart("processResetNomal",@ScriptLineNumber)
+	$charName = $oAccountInfo.Item("charName")
+	$mainNo = getMainNoByChar($charName)
+	; 3.1. Check xem cua so enter co ton tai khong
+	firstActionAfterRs()
+	minisizeMain($mainNo)
+	; 5. Check lvl in web
+	$lvlStopCheck = 20
+	secondWait(30)
+	; Kiem tra viec tang lvl tren web, neu van bang 1 thi thuc hien activate game va thuc hien laij firstActionAfterRs
+	$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+	If $lvlCheckInWeb == 1 Then 
+		; Activate game
+		activeAndMoveWin($mainNo)
+		secondWait(2)
+		; Bam enter 1 lan nua de thoat bang thong bao
+		sendKeyEnter()
+		; Thuc hien first action
+		firstActionAfterRs()
+		; Cho tiep 30s
+		secondWait(30)
+	EndIf
+	; Neu van bang 1 thi thuc hien di chuyen bang web
+	$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
+	isMovableUnderLevel20($sSession,$charName, $lvlCheckInWeb,$rsCount,$lvlStopCheck)
+	
+	; 6. Active main
+	activeAndMoveWin($mainNo)
+	If $lvlCheckInWeb >= 20 Then
+		; 7. Go map lvl
+		If $resetInDay <= 3 Then 
+			writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
+			goMapLvl()
+		Else
+			goMapArena($rsCount)
+		EndIf
 
-	; 1️⃣ Tìm thẻ có class "t-auto_helper"
-	;~ Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByCSSSelector, ".t-auto_helper")
-	Local $sElement = findElement($sSession, "//div[@class='t-auto_helper']") 
+		; 8. Check lvl in web
+		$lvlStopCheck = Number($oAccountInfo.Item("lvlMove"))
+		checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+		activeAndMoveWin($mainNo)
+		moveOtherMap($charName)
+		secondWait(6)
 
-	If @error Then
-		writeLogFile($logFile, "Lỗi khi tìm thẻ t-auto_helper: " & @error)
-		;~ ConsoleWrite("Không tìm thấy thẻ t-auto_helper" & @CRLF)
-		Return False
+		; 9. Follow leader
+		$positionLeader = $oAccountInfo.Item("positionLeader")
+		If Not IsNumber($positionLeader) Then $positionLeader = 1
+
+		_MU_followLeader($positionLeader)
+		$activeMoveBeforRs = $oAccountInfo.Item("activeMoveBeforRs")
+		$postionMoveX = $oAccountInfo.Item("postionMoveX")	
+		$postionMoveY = $oAccountInfo.Item("postionMoveY")
+		; Neu co active move va co toa do thi thuc hien move
+		If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+			moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+			writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
+		EndIf
+		; 10. Wait in 1 min
+		minuteWait(1)
 	EndIf
 
-	; 2️⃣ Lấy giá trị thuộc tính "style"
-	Local $sStyle = _WD_ElementAction($sSession, $sElement, "attribute", "style")
+	;~ $mainNoMinisize = $mainNo
 
-	writeLogFile($logFile, "Style: " & $sStyle & @CRLF)
-
-	; 3️⃣ Kiểm tra xem có 'display: none' không
-	If StringInStr($sStyle, "display: none") Then
-		writeLogFile($logFile, "❌ Thẻ đang bị ẩn (display: none)" & @CRLF)
-		Return False
-	Else
-		writeLogFile($logFile, "✅ Thẻ đang hiển thị" & @CRLF)
-		Return True
-	EndIf
+	handleIsNotMainChar($oAccountInfo)
+	writeLogMethodEnd("processResetNomal",@ScriptLineNumber)
 EndFunc
 
-Func writeTimeRs($charName, $sTimeReset)
-	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	For $i = 0 To UBound($jsonRsGame) - 1
-		$charNameTmp = getPropertyJson($jsonRsGame[$i],"char_name")
-		If $charNameTmp == $charName Then
-			_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
-			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+; Xu ly khi lan tiep theo reset nhung khong du lvl de reset va reset online = false
+Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
+	$charName = $oAccountInfo.Item("charName")
+	$resetOnline = $oAccountInfo.Item("resetOnline")
+	$mainNo = getMainNoByChar($charName)
+	$mainNoMinisize = $mainNo
+	$timeCheck = 0
+	writeLogFile($logFile, "Van chua du lvl de reset ! Thuc hien tiep viec reset theo quy trinh !")
+	$activeWin = activeAndMoveWin($mainNo)
+	If Not $activeWin Then $activeWin = switchOtherChar($charName)
+	; Click bỏ hết các bảng thông báo
+	If $activeWin Then
+		sendKeyEnter()
+		sendKeyEnter()
+		goMapArena($rsCount)
+		minuteWait(1)
+		$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+		While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
+			writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
+			$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+			$timeCheck += 1
+			minuteWait(1)
+		WEnd
+		
+		If $lvlCheckInWeb < $lvlStopCheck Then
+			writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
+			moveOtherMap($charName)
+			secondWait(6)
+		Else
+			writeLogFile($logFile, "Du lvl de reset ! Follow leader !")
 		EndIf
-	Next
+
+		activeAndMoveWin($mainNo)
+		_MU_followLeader(1)
+
+		If Not $resetOnline Then
+			; 10. minisize main
+			minisizeMain($mainNoMinisize)
+		EndIf
+
+		; 11. Logout account
+		logout($sSession)
+	Else
+		writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
+	EndIf
+	Return True
 EndFunc

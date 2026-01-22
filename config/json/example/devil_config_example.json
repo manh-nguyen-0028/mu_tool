@@ -2,6 +2,7 @@
     {
       "active": false,
       "have_ruong_k": true,
+      "have_quest": false,
       "char_name": "TruongThon",
       "devil_no": 5,
       "is_fast_join": true,
@@ -16,6 +17,7 @@
     {
       "active": false,
       "have_ruong_k": true,
+      "have_quest": false,
       "char_name": "DavidRyan",
       "devil_no": 5,
       "is_fast_join": false,
