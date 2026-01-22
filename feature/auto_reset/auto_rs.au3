@@ -58,7 +58,7 @@ Func startAutoRs()
 		checkThenCloseChrome()
 		$sSession = SetupChrome()
 		; Logout account cho chac, nhieu luc se bi cache account cu
-		logout($sSession)
+		;~ logout($sSession)
 		; Thuc hien sap xep lai thu tu $aAccValidate theo user_name
 		$aAccValidate = sortArrayByProperty($aAccValidate, "user_name", True)
 	EndIf
@@ -230,10 +230,10 @@ Func extractAccountInfo($jAccountInfo)
     $oAccountInfo.Item("isMainCharacter") = getPropertyJson($jAccountInfo, "is_main_character")
     $oAccountInfo.Item("mainCharName") = getPropertyJson($jAccountInfo, "main_char_name")
     $oAccountInfo.Item("positionLeader") = getPropertyJson($jAccountInfo, "position_leader")
-    $oAccountInfo.Item("activeEndKey") = getPropertyJson($jAccountInfo, "active_end_key")
 	$oAccountInfo.Item("serverNumber") = getPropertyJson($jAccountInfo, "server_number")
     $oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
     $oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
+	$oAccountInfo.Item("time_in_night") = getPropertyJson($jAccountInfo, "time_in_night")
     $oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
     $oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
     
@@ -271,6 +271,7 @@ Func processReset($jAccountInfo)
 	$activeMoveBeforRs = $oAccountInfo.Item("$activeMoveBeforRs")
 	$postionMoveX = $oAccountInfo.Item("$postionMoveX")
 	$postionMoveY = $oAccountInfo.Item("$postionMoveY")
+	$timeInNight = $oAccountInfo.Item("time_in_night")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
@@ -281,7 +282,7 @@ Func processReset($jAccountInfo)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
-		If $timeNow < $nextTimeRs Then 
+		If ($timeNow < $nextTimeRs And Not $checkTimeInNight) Then 
 			updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
 			Return
 		EndIf
@@ -612,20 +613,21 @@ Func validAccountRs($aAccountActiveRs)
 		$timeRs = getPropertyJson($aAccountActiveRs[$i],"time_rs")
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
+		$timeInNight = getPropertyJson($aAccountActiveRs[$i],"time_in_night")
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 
 		writeLogFile($logFile, "validAccountRs => " & $username & " - " & $charName)
-		
+		$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)		
 		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
 		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then 
 			MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
 			ContinueLoop 
 		EndIf
 
-		If getTimeNow() < $nextTimeRs Then 
+		If (getTimeNow() < $nextTimeRs And Not $checkTimeInNight) Then 
 			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 			ContinueLoop
 		EndIf
@@ -784,4 +786,10 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
 	EndIf
 	Return True
+EndFunc
+
+Func checkTimeInNight($timeRs, $timeInNight)
+	writeLogMethodStart("checkTimeInNight",@ScriptLineNumber,$timeRs & "," & $timeInNight)
+	If ($timeRs < $timeInNight) Then Return True	
+	Return False
 EndFunc
