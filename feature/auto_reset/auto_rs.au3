@@ -272,8 +272,10 @@ Func processReset($jAccountInfo)
 	$postionMoveX = $oAccountInfo.Item("$postionMoveX")
 	$postionMoveY = $oAccountInfo.Item("$postionMoveY")
 	$timeInNight = $oAccountInfo.Item("time_in_night")
+	$timeRs = $oAccountInfo.Item("time_rs")
 
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
+	$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
 	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
 	secondWait(5)
 	If $isLoginSuccess Then
