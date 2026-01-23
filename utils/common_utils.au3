@@ -792,3 +792,14 @@ EndFunc
 Func getProperty($propertyName)
 	Return _JSONGet($jsonPositionConfig,$propertyName)
 EndFunc
+
+Func checkTimeInNight($timeRs, $timeInNight)
+	writeLogMethodStart("checkTimeInNight",@ScriptLineNumber,$timeRs & "," & $timeInNight)
+	$result = False
+	; Neu timeInNight = 0 thi khong can check
+	If (Number($timeInNight) = 0) Then $result = False
+	; Neu timeRs < timeInNight thi tra ve true
+	If (Number($timeRs) < Number($timeInNight)) Then $result = True	
+	writeLogMethodEnd("checkTimeInNight result = " & $result,@ScriptLineNumber)
+	Return $result
+EndFunc

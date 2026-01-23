@@ -284,9 +284,15 @@ Func processReset($jAccountInfo)
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
-		If ($timeNow < $nextTimeRs And Not $checkTimeInNight) Then 
-			updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
-			Return
+		; Kiem tra xem $checkTimeInNight = true hay khong ? neu = true thi khong can check $timeNow < $nextTimeRs nữa
+		If $checkTimeInNight Then
+			writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
+		Else
+			writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & $timeNow & " - Thoi gian co the reset: " & $nextTimeRs)
+			If ($timeNow < $nextTimeRs) Then 
+				updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
+				Return
+			EndIf
 		EndIf
 
 		; Vào nhân vật kiểm tra lvl
@@ -629,11 +635,17 @@ Func validAccountRs($aAccountActiveRs)
 			ContinueLoop 
 		EndIf
 
-		If (getTimeNow() < $nextTimeRs And Not $checkTimeInNight) Then 
-			writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-			ContinueLoop
+		If $checkTimeInNight Then
+			writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
+		Else
+			writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & getTimeNow() & " - Thoi gian co the reset: " & $nextTimeRs)
+			If (getTimeNow() < $nextTimeRs) Then 
+				writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+				ContinueLoop
+			EndIf
 		EndIf
 
+		
 		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
 		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 
 			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
@@ -788,10 +800,4 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
 	EndIf
 	Return True
-EndFunc
-
-Func checkTimeInNight($timeRs, $timeInNight)
-	writeLogMethodStart("checkTimeInNight",@ScriptLineNumber,$timeRs & "," & $timeInNight)
-	If ($timeRs < $timeInNight) Then Return True	
-	Return False
 EndFunc
