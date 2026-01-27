@@ -19,7 +19,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 15"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
+Global $devilFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
 Global $aCharInAccount
 
@@ -35,6 +35,8 @@ Global Const $WM_LBUTTONUP = 0x0202
 Global $className = "MuTool"
 
 init()
+
+mergeInfoAccountRs()
 
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
@@ -55,6 +57,8 @@ Func init()
 				$devilFileName = $value
 			ElseIf "reset" == $type Then
 				$accountRsFileName = $value
+			ElseIf "reset_info_fixed" == $type Then
+				$accountRsFixedFileName = $value
 			ElseIf "char_in_account" == $type Then
 				$charInAccountFileName = $value
 			ElseIf "buy_gold" == $type Then
@@ -591,12 +595,19 @@ Func getOtherChar($currentChar)
 	Return $result
 EndFunc
 
-Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
-	; Trong file $aRsUpdateInfo chua thong tin update
-	; Trong file $aRsConfig chua thong tin active, type, time rs per hour
-	; Merge 2 file lai voi nhau dua tren thong tin char_name
-	; Tham khao trong 2 file auto_rs_update_info_exam.json va account_reset.json
-	;~ writeLogFile($logFile, "mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo) : " & $aRsConfig & " - " & $aRsUpdateInfo)
+Func mergeInfoAccountRs()
+	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
+	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	$aRsFixed = getJsonFromFile($jsonPathRoot & $accountRsFixedFileName)
+	$firstMerge = merge2Array($aRsConfig, $aRsUpdateInfo)
+	Return merge2Array($firstMerge, $aRsFixed)
+EndFunc
+
+Func merge2Array($firstJson, $secondJson)
+	; merge 2 array json
+	$aRsConfig = $firstJson
+	$aRsUpdateInfo = $secondJson
+	
 	Local $mergeInfo
 
 	For $i = 0 To UBound($aRsConfig) - 1
@@ -642,7 +653,9 @@ Func mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
 	Next
 
 	$textConvert = "[" & $mergeInfo & "]"
+	writeLogFile($logFile, "Text convert merge info account rs: " & $textConvert)
 	$result = _JSONDecode($textConvert)
+	
 	Return $result
 EndFunc
 

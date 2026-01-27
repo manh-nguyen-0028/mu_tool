@@ -21,9 +21,8 @@ Func startAutoRs()
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	writeLogMethodStart("startAutoRs",@ScriptLineNumber)
 	writeLogFile($logFile, "Begin start auto reset !", @ScriptLineNumber)
-	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
-	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	$jAccMerge = mergeInfoAccountRs($aRsConfig, $aRsUpdateInfo)
+	
+	$jAccMerge = mergeInfoAccountRs()
 
 	For $i = 0 To UBound($jAccMerge) - 1
 		$active = getPropertyJson($jAccMerge[$i], "active")
@@ -634,6 +633,7 @@ Func validAccountRs($aAccountActiveRs)
 			MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
 			ContinueLoop 
 		EndIf
+		; Neu so reset = 2000 thi khong duoc reset nua
 
 		If $checkTimeInNight Then
 			writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
