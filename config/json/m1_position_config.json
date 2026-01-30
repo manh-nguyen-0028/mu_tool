@@ -1,0 +1,287 @@
+{
+	"common": {
+	  "logger": {
+		"override": true
+	  },
+	  "auto": {
+		"time_loop_auto_rs": 60
+	  },
+	  "web": {
+		  "mu_url": "https://hn.gamethuvn.com/"
+		},
+		"full_screen": {
+		"x": 0,
+		"y": 0,
+		"x1": 1056,
+		"y1": 789
+		},
+		"chrome": {
+		"path": "chrome\\chromedriver-win64\\chromedriver.exe",
+		"profile": "Default",
+		"binary": "C:\\Users\\MSI\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"
+		},
+	  "edge": {
+		"path": "msedgedriver\\edgedriver_win64_134\\msedgedriver.exe",
+		"profile": "Profile 1",
+		"binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+	  },
+	  "image_search": {
+		"tolerance": 20
+	  }
+	},
+	"button": {
+	  "dong_y": {
+		"x": 100,
+		"y": 200
+	  },
+	  "xac_nhan": {
+		"x": 100,
+		"y": 200
+	  },
+	  "xac_nhan_event": {
+		"x": 100,
+		"y": 200
+	  },
+	  "event_button": {
+		"x": 100,
+		"y": 200
+	  },
+	  "event_lvl_button": {
+		"x": 100,
+		"y": 200
+	  },
+	  "npc_search": {
+		"npc_search_x": 298,
+		"npc_search_y": 181,
+		"npc_search_x_1": 484,
+		"npc_search_y_1": 484,
+		"deviation_x": 0,
+		"deviation_y": 10
+	  },
+	  "event_devil": {
+		"move_check_npc_x": 479,
+		"move_check_npc_y": 372,
+		"check_devil_open_x": 101,
+		"check_devil_open_y": 128,
+		"check_devil_open_color": "0x3B4C01"
+	  },
+	  "event_devil_icon": {
+		"x": 23,
+		"y": 202,
+		"x_2": 109, 
+		"y_2": 165,
+		"x_3": 130, 
+		"y_3": 166,
+		"chap_nhan_x": 476,
+		"chap_nhan_y": 476,
+		"huy_bo_x": 554,
+		"huy_bo_y": 475,
+		"devil_2_x": 125,
+		"devil_2_y": 315,
+		"devil_3_x": 125,
+		"devil_3_y": 350,
+		"devil_4_x": 125,
+		"devil_4_y": 385,
+		"devil_5_x": 125,
+		"devil_5_y": 420,
+		"devil_6_x": 125,
+		"devil_6_y": 455,
+		"devil_7_x": 125,
+		"devil_7_y": 490,
+		"x_quest": 27,
+		"y_quest": 256
+	  },
+	  "event_devil_icon_no_had_k": {
+		"x": 37,
+		"y": 171,
+		"chap_nhan_x": 476,
+		"chap_nhan_y": 476,
+		"huy_bo_x": 554,
+		"huy_bo_y": 475,
+		"devil_3_x": 843,
+		"devil_3_y": 409
+	  },
+	  "follow_leader": {
+		"position_1_x": 731,
+		"position_1_y": 73,
+		"position_2_x": 840,
+		"position_2_y": 118,
+		"button_x":612,
+		"button_y":159
+	  },
+	  "event_icon": {
+		"x": 852,
+		"y": 77,
+		"map_lvl_x": 408,
+		"map_lvl_y": 185,
+		"map_lvl_center_x": 368,
+		"map_lvl_center_y": 205,
+		"map_stadium_x": 407,
+		"map_stadium_y": 323
+	  },
+	  "move": {
+		"other_map_x": 152,
+		"other_map_y": 307
+	  },
+	  "change_char": {
+		"x": 403,
+		"y": 358
+	  },
+	  "change_server": {
+		"button_x": 396,
+		"button_y": 327,
+		"choise_sv_x": 230,
+		"choise_sv_y": 235,
+		"choise_sv_1_x": 388,
+		"choise_sv_1_y": 235,
+		"choise_sv_6_x": 381, 
+		"choise_sv_6_y": 330,
+		"choise_sv_8_x": 373, 
+		"choise_sv_8_y": 354,
+		"choise_sv_10_x": 434,
+		"choise_sv_10_y": 385
+	  },
+	  "switch_char": {
+		"icon_x": 645,
+		"icon_y": 545,
+		"icon_x_2": 443,
+		"icon_y_2": 386,
+		"button_change_x_active_autoz": 265,
+		"button_change_y_active_autoz": 285,
+		"button_change_x_not_active_autoz": 269,
+		"button_change_y_not_active_autoz": 259,
+		"close_popup_x": 407,
+      	"close_popup_y": 66
+	  },
+	  "screen_mouse_move": {
+		"center_x": 389,
+		"center_y": 285,
+		"center_char_x": 405,
+		"center_char_y": 299
+	  },
+	  "close_shop_chao": {
+		"x": 287,
+		"y": 323
+	  },
+	  "close_shop": {
+		"x": 200,
+		"y": 87
+	  },
+	  "close_chao": {
+		"x": 393,
+		"y": 443
+	  },
+	  "loren_sport1": {
+		"x": 359,
+		"y": 338
+	  },
+	  "check_lvl_400": {
+		"x": 135,
+		"y": 587,
+		"color_master_3": "0x7E2FA2",
+		"color_master_4": "0x9C1BBE"
+	  },
+	  "check_empty_map_lvl": {
+		"x": 59,
+		"y": 619,
+		"color": "0x7E2FA2"
+	  },
+	  "check_empty_map_stadium": {
+		"x": 59,
+		"y": 619,
+		"color": "0x7E2FA2"
+	  },
+	  "check_enter_chat": {
+		"x": 386,
+		"y": 534,
+		"color": "0x8B2323"
+	  },
+	  "check_active_auto_home": {
+		"x": 281,
+		"y": 233,
+		"x1": 521,
+		"y1": 567
+	  },
+	  "sport_arena_1": {
+		"x": 257,
+		"y": 329
+	  },
+	  "sport_arena_2": {
+		"x": 253,
+		"y": 399
+	  },
+	  "sport_arena_3": {
+		"x": 204,
+		"y": 448
+	  }
+	},
+	"web": {
+	  "console_tab": {
+		"x": 174,
+		"y": 613
+	  },
+	  "button_clean_console": {
+		"x": 44,
+		"y": 638
+	  },
+	  "input_text_dien_dan": {
+		"x": 582,
+		"y": 281
+	  },
+	  "button_send_dien_dan": {
+		"x": 1372,
+		"y": 367
+	  }
+	},
+	"zalo": {
+	  "tim_kiem_button": {
+		"x": 196,
+		"y": 162
+	  },
+	  "ket_qua_tim_kiem": {
+		"x": 192,
+		"y": 335
+	  }
+	},
+	"event": {
+	  "event_button": {
+		"x": 100,
+		"y": 200
+	  },
+	  "event_lvl_button": {
+		"x": 480,
+		"y": 214
+	  },
+	  "event_arena_button": {
+		"x": 488,
+		"y": 377
+	  }
+	},
+	"follow": {
+	  "leader": {
+		"x": 721,
+		"y": 106
+	  },
+	  "person_second": {
+		"x": 710,
+		"y": 154
+	  }
+	},
+	"position": {
+	  "arena_time": {
+		"x": 100,
+		"y": 200
+	  },
+	  "person_second": {
+		"x": 100,
+		"y": 200
+	  }
+	},
+	"color": {
+	  "arena_time": "0xFFFFFF",
+	  "person_second": {
+		"x": 100,
+		"y": 200
+	  }
+	}
+  }
