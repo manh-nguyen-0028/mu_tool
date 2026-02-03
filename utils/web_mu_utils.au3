@@ -312,8 +312,9 @@ Func getLogReset($sSession, $charName)
 	;~ xxx11 level 400 (Hôm nay reset 3 lượt. Tháng này reset 101 lượt)
 
 	; $currentReset so o giua tri Reset va lần. trong ví dụ trên là 1160
-	$currentReset = Number(StringSplit($charInfoText, "Reset ")[2])
-	$currentReset = Number(StringSplit($currentReset, " lần.")[1])
+	Local $tempSplit = StringSplit($charInfoText, "Reset ", 1)
+	Local $resetPart = $tempSplit[2] ; Lấy phần sau "Reset "
+	Local $currentReset = Number(StringSplit($resetPart, " lần", 1)[1]) 
 	writeLogFile($logFile, "currentReset: " & $currentReset)
 	; Lvl
 	$aMatch = StringRegExp($charInfoText, "level (\d+)\s*\(", 1)

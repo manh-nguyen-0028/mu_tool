@@ -10,10 +10,21 @@
 test99()
 
 Func test99()
-    $timeNow = getTimeNow()
-    $hourPerRs = 24
-    $nextTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
-    writeLog("Time now: " & $timeNow)
+    ;~ $timeNow = getTimeNow()
+    ;~ $hourPerRs = 24
+    ;~ $nextTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
+    ;~ writeLog("Time now: " & $timeNow)
+
+    ;~ $charInfoText = getTextElement($sSession, $sElement)
+	;~ writeLogFile($logFile, "$charInfoText: " & $charInfoText)
+	$charInfoText = "Reset 1160 lần, point dư: 20,000" & "Level Master: 538, skill_3: 0, skill_4: 0, level thuộc tính: 8, điểm quả: 0" & "xxx11 level 400 (Hôm nay reset 3 lượt. Tháng này reset 101 lượt)"
+
+	; $currentReset so o giua tri Reset va lần. trong ví dụ trên là 1160
+	Local $tempSplit = StringSplit($charInfoText, "Reset ", 1)
+	Local $resetPart = $tempSplit[2] ; Lấy phần sau "Reset "
+	Local $currentReset = Number(StringSplit($resetPart, " lần", 1)[1]) ; Lấy số trước " lần"
+	
+	ConsoleWrite("Extracted reset value: " & $currentReset & @CRLF)
     Return True
 EndFunc
 
