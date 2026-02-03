@@ -233,6 +233,8 @@ Func extractAccountInfo($jAccountInfo)
     $oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
     $oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
 	$oAccountInfo.Item("time_in_night") = getPropertyJson($jAccountInfo, "time_in_night")
+	$oAccountInfo.Item("rs") = getPropertyJson($jAccountInfo, "rs")
+	$oAccountInfo.Item("max_rs") = getPropertyJson($jAccountInfo, "max_rs")
     $oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
     $oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
     
@@ -362,6 +364,8 @@ Func processReset($jAccountInfo)
 				If $charNameTmp == $charName Then
 					$sLogReset = getLogReset($sSession, $charName)
 					$resetInDay = getRsInDay($sLogReset)
+					$currentRs = getCurrentReset($sLogReset)
+					_JSONSet($currentRs, $jsonRsGame[$i], "rs")
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset,0)
@@ -621,6 +625,8 @@ Func validAccountRs($aAccountActiveRs)
 		$hourPerRs = getPropertyJson($aAccountActiveRs[$i],"hour_per_reset")
 		$typeRs = getPropertyJson($aAccountActiveRs[$i],"type_rs")
 		$timeInNight = getPropertyJson($aAccountActiveRs[$i],"time_in_night")
+		$rs = getPropertyJson($aAccountActiveRs[$i],"rs")
+		$max_rs = getPropertyJson($aAccountActiveRs[$i],"max_rs")
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$currentTime = getTimeNow()
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
@@ -645,6 +651,16 @@ Func validAccountRs($aAccountActiveRs)
 			EndIf
 		EndIf
 
+		; Truong hop rs >= 2000 thi khong duoc reset nua
+		If $rs >= 2000 Then
+			writeLogFile($logFile, "Da dat so lan reset toi da: " & $rs & " => Khong duoc reset nua!")
+			ContinueLoop
+		EndIf
+
+		If $rs >= $max_rs Then
+			writeLogFile($logFile, "So lan rs da vuot qua: " & $max_rs & " => Khong duoc reset nua!")
+			ContinueLoop
+		EndIf
 		
 		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
 		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then 

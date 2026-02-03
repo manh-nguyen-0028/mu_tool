@@ -307,7 +307,14 @@ Func getLogReset($sSession, $charName)
 	$sElement = findElement($sSession, "//div[@role='alert']")
 	$charInfoText = getTextElement($sSession, $sElement)
 	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
+	;~ 	$charInfoText: Reset 1160 lần, point dư: 20,000
+	;~ Level Master: 538, skill_3: 0, skill_4: 0, level thuộc tính: 8, điểm quả: 0
+	;~ xxx11 level 400 (Hôm nay reset 3 lượt. Tháng này reset 101 lượt)
 
+	; $currentReset so o giua tri Reset va lần. trong ví dụ trên là 1160
+	$currentReset = Number(StringSplit($charInfoText, "Reset ")[2])
+	$currentReset = Number(StringSplit($currentReset, " lần.")[1])
+	writeLogFile($logFile, "currentReset: " & $currentReset)
 	; Lvl
 	$aMatch = StringRegExp($charInfoText, "level (\d+)\s*\(", 1)
 
@@ -346,7 +353,7 @@ Func getLogReset($sSession, $charName)
 
 	writeLogFile($logFile, "Info $charLvl: " & $charLvl&" - $rsInDay: " & $rsInDay &" - $sRsCount: " & $sRsCount)
 
-	Return Number($rsInDay) & "|" & $timeRsText & "|" & Number($sRsCount)
+	Return Number($rsInDay) & "|" & $timeRsText & "|" & Number($sRsCount) & "|" & Number($currentReset)
 EndFunc
 
 Func getRsInDay($sLogReset) 
@@ -355,6 +362,10 @@ EndFunc
 
 Func getRsCount($sLogReset) 
 	Return Number(StringSplit($sLogReset, "|")[3])
+EndFunc
+
+Func getCurrentReset($sLogReset) 
+	Return Number(StringSplit($sLogReset, "|")[4])
 EndFunc
 
 Func getTimeReset($sLogReset, $hourPerRs) 
