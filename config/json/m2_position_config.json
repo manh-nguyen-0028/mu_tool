@@ -1,0 +1,295 @@
+{
+  "common": {
+    "logger": {
+      "override": true
+    },
+    "auto": {
+      "time_loop_auto_rs": 60
+    },
+    "web": {
+      "mu_url": "https://hn.mugamethuvn.info/"
+    },
+    "full_screen": {
+      "x": 0,
+      "y": 0,
+      "x1": 800,
+      "y1": 600
+    },
+    "chrome": {
+      "path": "chromedriver\\chromedriver-win64\\chromedriver.exe",
+      "profile": "Profile 1",
+      "binary": "D:\\Project\\autoit\\mu_tool\\driver\\chromedriver\\126.0.6478.116\\Installer\\Chrome-bin\\chrome.exe"
+    },
+    "edge": {
+      "path": "msedgedriver\\edgedriver_win64_134\\msedgedriver.exe",
+      "profile": "Profile 1",
+      "binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    },
+    "image_search": {
+      "tolerance": 50
+    }
+  },
+  "button": {
+    "dong_y": {
+      "x": 100,
+      "y": 200
+    },
+    "xac_nhan": {
+      "x": 100,
+      "y": 200
+    },
+    "xac_nhan_event": {
+      "x": 100,
+      "y": 200
+    },
+    "event_button": {
+      "x": 100,
+      "y": 200
+    },
+    "event_lvl_button": {
+      "x": 100,
+      "y": 200
+    },
+    "npc_search": {
+      "npc_search_x": 236, 
+      "npc_search_y": 70,
+      "npc_search_x_1": 485,
+      "npc_search_y_1": 402,
+      "deviation_x": 0,
+      "deviation_y": 10
+    },
+    "icon_event_common": {
+      "x": 100,
+      "y": 200
+    },
+    "event_arena_button": {
+      "x": 100,
+      "y": 200
+    },
+    "event_devil": {
+      "move_check_npc_x": 479,
+      "move_check_npc_y": 372,
+      "check_devil_open_x": 778,
+      "check_devil_open_y": 663,
+      "check_devil_open_color": "0x1B1B1B"
+    },
+    "event_devil_icon": {
+      "x": 29,
+      "y": 199,
+      "x_2": 109, 
+      "y_2": 165,
+      "x_3": 130, 
+      "y_3": 166,
+	  "x_quest": 22,
+      "y_quest": 261,
+      "chap_nhan_x": 476,
+      "chap_nhan_y": 476,
+      "huy_bo_x": 554,
+      "huy_bo_y": 475,
+      "devil_2_x": 84,
+      "devil_2_y": 261,
+      "devil_3_x": 92,
+      "devil_3_y": 291,
+      "devil_4_x": 84,
+      "devil_4_y": 322,
+      "devil_5_x": 84,
+      "devil_5_y": 355,
+      "devil_6_x": 84,
+      "devil_6_y": 385,
+      "devil_7_x": 84,
+      "devil_7_y": 415
+    },
+    "event_devil_icon_no_had_k": {
+      "x": 37,
+      "y": 171,
+      "chap_nhan_x": 476,
+      "chap_nhan_y": 476,
+      "huy_bo_x": 554,
+      "huy_bo_y": 475,
+      "devil_3_x": 843,
+      "devil_3_y": 409
+    },
+    "follow_leader": {
+      "position_1_x": 602,
+      "position_1_y": 70,
+      "position_2_x": 596,
+      "position_2_y": 115,
+      "button_x":612,
+      "button_y":159
+    },
+    "event_icon": {
+      "x": 134,
+      "y": 97,
+      "map_lvl_x": 194,
+      "map_lvl_y": 114,
+      "map_lvl_center_x": 383,
+      "map_lvl_center_y": 190,
+      "map_stadium_x": 198,
+      "map_stadium_y": 252
+    },
+    "move": {
+      "other_map_x": 153,
+      "other_map_y": 224
+    },
+    "change_char": {
+      "x": 395,
+      "y": 356
+    },
+    "change_server": {
+      "button_x": 391,
+      "button_y": 326,
+      "choise_sv_x": 230,
+      "choise_sv_y": 234,
+      "choise_sv_1_x": 401,
+      "choise_sv_1_y": 234,
+      "choise_sv_6_x": 370, 
+      "choise_sv_6_y": 330,
+      "choise_sv_8_x": 391, 
+      "choise_sv_8_y": 354,
+      "choise_sv_10_x": 396,
+      "choise_sv_10_y": 377
+    },
+    "switch_char": {
+      "icon_x": 646, 
+      "icon_y": 538,
+      "icon_x_2": 443,
+      "icon_y_2": 386,
+      "button_change_x_active_autoz": 265,
+      "button_change_y_active_autoz": 285,
+      "button_change_x_not_active_autoz": 267,
+      "button_change_y_not_active_autoz": 273,
+		  "close_popup_x": 407,
+      "close_popup_y": 66
+    },
+    "screen_mouse_move": {
+      "center_x": 389,
+      "center_y": 285,
+      "center_char_x": 405,
+      "center_char_y": 299
+    },
+    "close_shop_chao": {
+      "x": 307,
+      "y": 315
+    },
+    "close_shop": {
+      "x": 238,
+      "y": 125
+    },
+    "close_chao": {
+      "x": 512, 
+      "y": 496
+    },
+    "loren_sport1": {
+      "x": 359,
+      "y": 338
+    },
+    "check_lvl_400": {
+      "x": 134,
+      "y": 587,
+      "color_master_3": "0x7E2FA2",
+      "color_master_4": "0x9C1BBE"
+    },
+    "check_empty_map_lvl": {
+      "x": 59,
+      "y": 619,
+      "color": "0x7E2FA2"
+    },
+    "check_empty_map_stadium": {
+      "x": 59,
+      "y": 619,
+      "color": "0x7E2FA2"
+    },
+    "check_enter_chat": {
+      "x": 386,
+      "y": 534,
+      "color": "0x8B2323"
+    },
+    "check_active_auto_home": {
+      "x": 298,
+      "y": 453,
+      "x1": 525,
+      "y1": 564
+    },
+    "sport_arena_1": {
+      "x": 304,
+      "y": 327
+    },
+    "sport_arena_2": {
+      "x": 344,
+      "y": 380
+    },
+    "sport_arena_3": {
+      "x": 301, 
+      "y": 447
+    }
+  },
+  "web": {
+    "console_tab": {
+      "x": 174,
+      "y": 613
+    },
+    "button_clean_console": {
+      "x": 44,
+      "y": 638
+    },
+    "input_text_dien_dan": {
+      "x": 582,
+      "y": 281
+    },
+    "button_send_dien_dan": {
+      "x": 1372,
+      "y": 367
+    }
+  },
+  "zalo": {
+    "tim_kiem_button": {
+      "x": 196,
+      "y": 162
+    },
+    "ket_qua_tim_kiem": {
+      "x": 192,
+      "y": 335
+    }
+  },
+  "event": {
+    "event_button": {
+      "x": 100,
+      "y": 200
+    },
+    "event_lvl_button": {
+      "x": 100,
+      "y": 200
+    },
+    "event_arena_button": {
+      "x": 100,
+      "y": 200
+    }
+  },
+  "follow": {
+    "leader": {
+      "x": 721,
+      "y": 106
+    },
+    "person_second": {
+      "x": 710,
+      "y": 154
+    }
+  },
+  "position": {
+    "arena_time": {
+      "x": 100,
+      "y": 200
+    },
+    "person_second": {
+      "x": 100,
+      "y": 200
+    }
+  },
+  "color": {
+    "arena_time": "0xFFFFFF",
+    "person_second": {
+      "x": 100,
+      "y": 200
+    }
+  }
+}
