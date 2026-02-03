@@ -120,12 +120,12 @@
     "event_icon": {
       "x": 134,
       "y": 97,
-      "map_lvl_x": 194,
-      "map_lvl_y": 114,
+      "map_lvl_x": 196,
+      "map_lvl_y": 138,
       "map_lvl_center_x": 383,
       "map_lvl_center_y": 190,
-      "map_stadium_x": 198,
-      "map_stadium_y": 252
+      "map_stadium_x": 196,
+      "map_stadium_y": 275
     },
     "move": {
       "other_map_x": 153,
