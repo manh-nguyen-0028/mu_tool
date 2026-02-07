@@ -479,10 +479,13 @@ Func switchOtherChar($currentChar)
 	Return $resultSwitch
 EndFunc
 
-Func clickOtherChar()
+Func clickOtherChar() 
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
+	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
+EndFunc
 
+Func clickOtherCharCommon($swithCharIconX, $swithCharIconY)
 	$swithCharButtonChangeX_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x_active_autoz")
 	$swithCharButtonChangeY_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y_active_autoz")
 
@@ -518,6 +521,7 @@ Func clickOtherChar2()
 	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
 	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
 	; TODO:
+	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
 EndFunc
 
 Func moveOtherMap($charName)
