@@ -6,7 +6,7 @@
 #include "../include/json_utils.au3"
 #include <Array.au3>
 #include "common_utils.au3"
-#include <GUIConstantsEx.au3> ; <-- Bổ sung dòng này để có $GUI_RUNDEFMSG
+#include <GUIConstantsEx.au3> ;< - -Bổ sung dòng này để có $GUI_RUNDEFMSG
 #include <WinAPI.au3>
 ;~ #include <WindowsConstants.au3>
 
@@ -20,73 +20,73 @@ Global $hWnd
 Func _MU_followLeader_ControlClick($hWnd, $position)
 	ControlSend($hWnd, "", "", "{ENTER}")
 	ControlSend($hWnd, "", "", "{ENTER}")
-	$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
-	$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+	$position_x = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_x")
+	$position_y = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_y")
 	writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 	_MU_ControlClick_Delay($hWnd, $position_x, $position_y)
 	secondWait(1)
 	ControlSend($hWnd, "", "", "{ENTER}")
-EndFunc
+EndFunc   ;==>_MU_followLeader_ControlClick
 
 Func _MU_followLeader($position)
 	; khi can follow lead thi bam 2 lan cho chac an
 	For $i = 0 To 1 Step +1
-		$position_x  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_x")
-		$position_y  = _JSONGet($jsonPositionConfig,"button.follow_leader.position_"& $position &"_y")
+		$position_x = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_x")
+		$position_y = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_y")
 		writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 		mouseClickDelayShift($position_x, $position_y)
 	Next
-	
+
 	secondWait(1)
-EndFunc
+EndFunc   ;==>_MU_followLeader
 
 Func checkLvl400($mainNo)
-    writeLogFile($logFile, "Start method: checkLvl400 with mainNo: " & $mainNo)
-    
-    Local $is400Lvl = False
-    Local $x = _JSONGet($jsonPositionConfig, "button.check_lvl_400.x")
-    Local $y = _JSONGet($jsonPositionConfig, "button.check_lvl_400.y")
-    Local $color = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_3")
-    Local $color_2 = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_4")
-    
-    ; Check initial pixel color
-    If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
-        $is400Lvl = True
-    Else
-        ; Retry checking pixel color up to 5 times
-        Local $countCheck = 0
-        While Not $is400Lvl And ($countCheck < 5)
-            $countCheck += 1
-            secondWait(1)
-            If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
-                $is400Lvl = True
-            EndIf
-        WEnd
+	writeLogFile($logFile, "Start method: checkLvl400 with mainNo: " & $mainNo)
+
+	Local $is400Lvl = False
+	Local $x = _JSONGet($jsonPositionConfig, "button.check_lvl_400.x")
+	Local $y = _JSONGet($jsonPositionConfig, "button.check_lvl_400.y")
+	Local $color = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_3")
+	Local $color_2 = _JSONGet($jsonPositionConfig, "button.check_lvl_400.color_master_4")
+
+	; Check initial pixel color
+	If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
+		$is400Lvl = True
+	Else
+		; Retry checking pixel color up to 5 times
+		Local $countCheck = 0
+		While Not $is400Lvl And ($countCheck < 5)
+			$countCheck += 1
+			secondWait(1)
+			If checkPixelColor($x, $y, $color) Or checkPixelColor($x, $y, $color_2) Then
+				$is400Lvl = True
+			EndIf
+		WEnd
 		writeLogFile($logFile, "Check 400 lvl after " & $countCheck & " times")
-    EndIf
-    
-    ; Log the result
-    If $is400Lvl Then
-        writeLogFile($logFile, "DA DAT 400 lvl")
-    Else
-        writeLogFile($logFile, "CHUA DAT 400 lvl")
-    EndIf
-    
-    Return $is400Lvl
-EndFunc
+	EndIf
+
+	; Log the result
+	If $is400Lvl Then
+		writeLogFile($logFile, "DA DAT 400 lvl")
+	Else
+		writeLogFile($logFile, "CHUA DAT 400 lvl")
+	EndIf
+
+	Return $is400Lvl
+EndFunc   ;==>checkLvl400
 
 Func _MU_Start_AutoZ()
 	sendKeyHome()
-EndFunc
+EndFunc   ;==>_MU_Start_AutoZ
 
 Func checkEmptyMapStadium($mainNo)
 	writeLogFile($logFile, "Start method: checkEmptyMapStadium with mainNo: " & $mainNo)
-	
+
 	Local $isEmptyMap = False
 	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.x")
 	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.y")
 	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_stadium.color")
-	
+
 	; Check initial pixel color
 	If checkPixelColor($x, $y, $color) Then
 		$isEmptyMap = True
@@ -102,25 +102,25 @@ Func checkEmptyMapStadium($mainNo)
 		WEnd
 		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
 	EndIf
-	
+
 	; Log the result
 	If $isEmptyMap Then
 		writeLogFile($logFile, "Da het luot di map stadium")
 	Else
 		writeLogFile($logFile, "Van con luot di map stadium")
 	EndIf
-	
+
 	Return $isEmptyMap
-EndFunc
+EndFunc   ;==>checkEmptyMapStadium
 
 Func checkEmptyMapLvl($mainNo)
 	writeLogFile($logFile, "Start method: checkEmptyMapLvl with mainNo: " & $mainNo)
-	
+
 	Local $isEmptyMap = False
 	Local $x = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.x")
 	Local $y = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.y")
 	Local $color = _JSONGet($jsonPositionConfig, "button.check_empty_map_lvl.color")
-	
+
 	; Check initial pixel color
 	If checkPixelColor($x, $y, $color) Then
 		$isEmptyMap = True
@@ -136,38 +136,38 @@ Func checkEmptyMapLvl($mainNo)
 		WEnd
 		writeLogFile($logFile, "Check empty map after " & $countCheck & " times")
 	EndIf
-	
+
 	; Log the result
 	If $isEmptyMap Then
 		writeLogFile($logFile, "Da het luot di map lvl")
 	Else
 		writeLogFile($logFile, "Van con luot di map lvl")
 	EndIf
-	
+
 	Return $isEmptyMap
-EndFunc
+EndFunc   ;==>checkEmptyMapLvl
 
 Func getjsonPositionConfig()
 	Return $jsonPositionConfig
-EndFunc
+EndFunc   ;==>getjsonPositionConfig
 
 Func getConfigByName($jsonName)
 	Return _JSONGet($jsonPositionConfig, $jsonName)
-EndFunc
+EndFunc   ;==>getConfigByName
 
 Func handelWhenFinshDevilEvent()
 	For $i = 0 To 3 Step +1
 		sendKeyEnter()
 	Next
 	; Neu dang bat shop thi thuc hien tat shop
-	$closeShopX = _JSONGet($jsonPositionConfig,"button.close_shop_chao.x")
-	$closeShopY = _JSONGet($jsonPositionConfig,"button.close_shop_chao.y")
+	$closeShopX = _JSONGet($jsonPositionConfig, "button.close_shop_chao.x")
+	$closeShopY = _JSONGet($jsonPositionConfig, "button.close_shop_chao.y")
 	For $i = 0 To 1 Step +1
 		_MU_MouseClick_Delay($closeShopX, $closeShopY)
 	Next
 	; Click ra ngaoi 1 lan nua cho chac
 	_MU_MouseClick_Delay(150, 228)
-EndFunc
+EndFunc   ;==>handelWhenFinshDevilEvent
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
@@ -178,7 +178,7 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 		checkAutoZAfterFollowLead(True)
 	EndIf
 	Return True
-EndFunc
+EndFunc   ;==>actionWhenCantJoinDevil
 
 Func checkAutoZAfterFollowLead($needCheck = False)
 	If $needCheck Then
@@ -189,34 +189,34 @@ Func checkAutoZAfterFollowLead($needCheck = False)
 			$countWaitAutoHome += 1
 		WEnd
 	EndIf
-EndFunc
+EndFunc   ;==>checkAutoZAfterFollowLead
 
 Func clickEventIcon()
 	secondWait(3)
 	sendKeyS()
 	secondWait(1)
-EndFunc
+EndFunc   ;==>clickEventIcon
 
-Func clickEventStadium() 
-	$mapStadiumX = _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_x")
-	$mapStadiumY = _JSONGet($jsonPositionConfig,"button.event_icon.map_stadium_y")
+Func clickEventStadium()
+	$mapStadiumX = _JSONGet($jsonPositionConfig, "button.event_icon.map_stadium_x")
+	$mapStadiumY = _JSONGet($jsonPositionConfig, "button.event_icon.map_stadium_y")
 	_MU_MouseClick_Delay($mapStadiumX, $mapStadiumY)
 	secondWait(3)
-EndFunc
+EndFunc   ;==>clickEventStadium
 
-Func clickEventLvl() 
-	$mapLvlX = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_x")
-	$mapLvlY = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_y")
+Func clickEventLvl()
+	$mapLvlX = _JSONGet($jsonPositionConfig, "button.event_icon.map_lvl_x")
+	$mapLvlY = _JSONGet($jsonPositionConfig, "button.event_icon.map_lvl_y")
 	_MU_MouseClick_Delay($mapLvlX, $mapLvlY)
 	secondWait(3)
-EndFunc
+EndFunc   ;==>clickEventLvl
 
 Func goCenterMapLvl()
-	$mapLvlCenterX = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_x")
-	$mapLvlCenterY = _JSONGet($jsonPositionConfig,"button.event_icon.map_lvl_center_y")
+	$mapLvlCenterX = _JSONGet($jsonPositionConfig, "button.event_icon.map_lvl_center_x")
+	$mapLvlCenterY = _JSONGet($jsonPositionConfig, "button.event_icon.map_lvl_center_y")
 	_MU_MouseClick_Delay($mapLvlCenterX, $mapLvlCenterY)
 	secondWait(2)
-EndFunc
+EndFunc   ;==>goCenterMapLvl
 
 Func checkActiveAutoHome()
 	; can phai doi 5s de check auto home
@@ -224,45 +224,45 @@ Func checkActiveAutoHome()
 	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
 	$result = False
-	$x = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x")
-	$y = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y")
-	$x1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.x1")
-	$y1 = _JSONGet($jsonPositionConfig,"button.check_active_auto_home.y1")
-	$imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+	$x = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x")
+	$y = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y")
+	$x1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x1")
+	$y1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y1")
+	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-	If $imageSearchResult[0] == 1 Then 
+	If $imageSearchResult[0] == 1 Then
 		$result = True
-		;~ MouseMove(607,541)
+;~ MouseMove(607,541)
 	EndIf
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
-EndFunc
+EndFunc   ;==>checkActiveAutoHome
 
 Func checkOpenPopupDevil()
 	; TODO: Tam thoi khong check popup devil
 	Return True
 	; can phai doi 5s de check auto home
-	;~ secondWait(5)
-	;~ ; Thuc hien check auto home
-	;~ $pathImage = $imagePathRoot & "devil" & "\popup_devil_open.bmp"
-	;~ $result = False
-	;~ $x = 0
-	;~ $y = 0
-	;~ $x1 = 800
-	;~ $y1 = 600
-	;~ $imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
-	;~ If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
+;~ secondWait(5)
+;~ ; Thuc hien check auto home
+;~ $pathImage = $imagePathRoot & "devil" & "\popup_devil_open.bmp"
+;~ $result = False
+;~ $x = 0
+;~ $y = 0
+;~ $x1 = 800
+;~ $y1 = 600
+;~ $imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+;~ If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
-	;~ $imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-	;~ If $imageSearchResult[0] == 1 Then 
-	;~ 	$result = True
-	;~ 	;~ MouseMove(607,541)
-	;~ EndIf
-	;~ If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
-	;~ Return $result
-EndFunc
+;~ $imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
+;~ If $imageSearchResult[0] == 1 Then
+;~ 	$result = True
+;~ 	;~ MouseMove(607,541)
+;~ EndIf
+;~ If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
+;~ Return $result
+EndFunc   ;==>checkOpenPopupDevil
 
 Func searchNvpNotActiveAutoZ()
 	; can phai doi 5s de check auto home
@@ -273,45 +273,45 @@ Func searchNvpNotActiveAutoZ()
 	$y = 0
 	$x1 = 800
 	$y1 = 600
-	$imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
+	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-	If $imageSearchResult[0] == 1 Then 
-		;~ $result = True
+	If $imageSearchResult[0] == 1 Then
+;~ $result = True
 		Return True
-		;~ MouseMove(607,541)
+;~ MouseMove(607,541)
 	Else
 		writeLogFile($logFile, "Khong tim thay button nvp_not_active_auto_z")
 		Return False
 	EndIf
-EndFunc
+EndFunc   ;==>searchNvpNotActiveAutoZ
 
 Func checkAutoOnBuff()
 	$pathImage = $imagePathRoot & "common" & "\check_on_buff.bmp"
 	Return searchImageFullScreenMu($pathImage)
-EndFunc
+EndFunc   ;==>checkAutoOnBuff
 
 Func checkAutoOffBuff()
 	$pathImage = $imagePathRoot & "common" & "\check_off_buff.bmp"
 	Return searchImageFullScreenMu($pathImage)
-EndFunc
+EndFunc   ;==>checkAutoOffBuff
 
 Func check400LvlImage()
 	$pathImage = $imagePathRoot & "common" & "\400lv.bmp"
 	Return searchImageFullScreenMu($pathImage)
-EndFunc
+EndFunc   ;==>check400LvlImage
 
-Func searchImageFullScreenMu($pathImage) 
+Func searchImageFullScreenMu($pathImage)
 	$result = False
-	$fullScreenX = _JSONGet($jsonPositionConfig,"common.full_screen.x")
-	$fullScreenY = _JSONGet($jsonPositionConfig,"common.full_screen.y")
-	$fullScreenX1 = _JSONGet($jsonPositionConfig,"common.full_screen.x1")
-	$fullScreenY1 = _JSONGet($jsonPositionConfig,"common.full_screen.y1")
+	$fullScreenX = _JSONGet($jsonPositionConfig, "common.full_screen.x")
+	$fullScreenY = _JSONGet($jsonPositionConfig, "common.full_screen.y")
+	$fullScreenX1 = _JSONGet($jsonPositionConfig, "common.full_screen.x1")
+	$fullScreenY1 = _JSONGet($jsonPositionConfig, "common.full_screen.y1")
 	$imageSearchResult = _ImageSearch_Area($pathImage, $fullScreenX, $fullScreenY, $fullScreenX1, $fullScreenY1, 100, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	Return $result
-EndFunc
+EndFunc   ;==>searchImageFullScreenMu
 
 Func checkRuongK($charInfo)
 	$charName = _JSONGet($charInfo, "char_name")
@@ -321,11 +321,11 @@ Func checkRuongK($charInfo)
 	$result = False
 	If $activeWin Then
 		; mouse move to top
-		MouseMove(0,0)
+		MouseMove(0, 0)
 
 		; send key K
 		sendKeyDelay("k")
-		$imageSearch = _ImageSearch_Area($imagePathRoot & "devil" & "\ruong_k.bmp", 0, 0, 1019, 471, 100,False)
+		$imageSearch = _ImageSearch_Area($imagePathRoot & "devil" & "\ruong_k.bmp", 0, 0, 1019, 471, 100, False)
 		If $imageSearch[0] == 1 Then
 			writeLog("Tim thay ruong K")
 			$result = True
@@ -335,35 +335,35 @@ Func checkRuongK($charInfo)
 		minisizeMain($title)
 	EndIf
 	Return $result
-EndFunc
+EndFunc   ;==>checkRuongK
 
 Func getArrayActiveDevil()
 	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 	Local $jsonAccountActiveDevil[0]
-	For $i = 0 To UBound($jsonDevilConfig) -1
+	For $i = 0 To UBound($jsonDevilConfig) - 1
 		; active win and check ruong K
-		;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
+;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
 		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
 		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
 		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil And $maxHourGo >= @HOUR Then 
+		If $activeDevil And $maxHourGo >= @HOUR Then
 			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
 				writeLog("Peak hour can't go devil. Wait to 23h")
 			Else
-				Redim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
+				ReDim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
 				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
 			EndIf
 		EndIf
 	Next
 	Return $jsonAccountActiveDevil
-EndFunc
+EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
 	activeAndMoveWin(getMainNoByChar($charName))
 	secondWait(2)
-	writeLogFile($logFile,"Click event devil. Check ruong K: " & $checkRuongK)
+	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
 	$haveAddPoint = True
 	$typeCheck = 1
@@ -371,63 +371,63 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	; 2. co ip, co ruong k, chua + diem
 	; 3. ko co ip, co ruong k, co + diem
 	; 4. ko co ip, co ruong k, chua + diem
-	If $haveIp And $haveAddPoint Then 
+	If $haveIp And $haveAddPoint Then
 		$typeCheck = 1
-	ElseIf $haveIp And Not $haveAddPoint Then 
+	ElseIf $haveIp And Not $haveAddPoint Then
 		$typeCheck = 2
-	ElseIf Not $haveIp And Not $haveAddPoint Then 
+	ElseIf Not $haveIp And Not $haveAddPoint Then
 		$typeCheck = 3
 	EndIf
 	clickIconDevilByCondition($typeCheck, $isHaveQuest)
 
 	secondWait(1)
-	
+
 	; Nhap enter de vao devil
 	sendKeyEnter()
-	;~ ; Sleep 4s
+;~ ; Sleep 4s
 	secondWait(4)
-EndFunc
+EndFunc   ;==>clickIconDevil
 
 Func clickIconDevilByCondition($type, $isHaveQuest)
 	; 1. co ip, co ruong k, co + diem
 	; 2. co ip, co ruong k, chua + diem
 	; 3. co ip, co ruong k, co + diem
 	; 4. ko co ip, co ruong k, chua + diem
-	If $type == 1 Then 
+	If $type == 1 Then
 		; Click vao icon event devil
-		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x")
-		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y")
-		If $isHaveQuest Then 
-			$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_quest")
-			$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_quest")
+		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x")
+		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y")
+		If $isHaveQuest Then
+			$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_quest")
+			$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_quest")
 		EndIf
-	ElseIf $type == 2 Then 
+	ElseIf $type == 2 Then
 		; Click vao icon event devil
-		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_2")
-		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_2")
-	ElseIf $type == 3 Then 
+		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_2")
+		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_2")
+	ElseIf $type == 3 Then
 		; Click vao icon event devil
-		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_3")
-		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_3")
+		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_3")
+		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_3")
 	Else
 		; Click vao icon event devil
-		$devilIconX = _JSONGet($jsonPositionConfig,"button.event_devil_icon.x_3")
-		$devilIconY = _JSONGet($jsonPositionConfig,"button.event_devil_icon.y_3")
+		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_3")
+		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_3")
 	EndIf
 	For $i = 0 To 2 Step +1
 		_MU_MouseClick_Delay($devilIconX, $devilIconY)
 	Next
 	Return True
-EndFunc
+EndFunc   ;==>clickIconDevilByCondition
 
 Func switchOtherChar($currentChar)
-	writeLogFile($logFile,"Bat dau tim kiem nhan vat khac cung tai khoan cua: " & $currentChar)
+	writeLogFile($logFile, "Bat dau tim kiem nhan vat khac cung tai khoan cua: " & $currentChar)
 
-	$resultSwitch = False	
+	$resultSwitch = False
 
 	$otherCharName = getOtherChar($currentChar)
-	
-	If $otherCharName <> '' Then 
+
+	If $otherCharName <> '' Then
 		; chuoi $otherCharName = "char1|char2|char3"
 		; Tach chuoi dua tren dau | va kiem tra xem co nhan vat nao duoc active hay khong
 		$otherCharNameArray = StringSplit($otherCharName, "|")
@@ -437,11 +437,11 @@ Func switchOtherChar($currentChar)
 		For $i = 1 To UBound($otherCharNameArray) - 1
 			; Neu trung voi currentChar thi bo qua
 			If $otherCharNameArray[$i] == $currentChar Then ContinueLoop
-				
+
 			$charName = $otherCharNameArray[$i]
-			writeLogFile($logFile,"Check nhan vat: " & $charName)
-			If activeAndMoveWinByChar($charName) Then 
-				writeLogFile($logFile,"Tim thay nhan vat: " & $charName & " cung tai khoan va duoc active")
+			writeLogFile($logFile, "Check nhan vat: " & $charName)
+			If activeAndMoveWinByChar($charName) Then
+				writeLogFile($logFile, "Tim thay nhan vat: " & $charName & " cung tai khoan va duoc active")
 				ExitLoop
 			Else
 				$charName = ""
@@ -449,11 +449,11 @@ Func switchOtherChar($currentChar)
 		Next
 
 		If $charName <> "" Then
-			writeLogFile($logFile,"Bat dau chuyen sang main cần thiết: " & $currentChar)
+			writeLogFile($logFile, "Bat dau chuyen sang main cần thiết: " & $currentChar)
 			; Thuc hien click chuyen nhan vat cung tai khoan
 			clickOtherChar()
 
-			$timeCheck = 1;
+			$timeCheck = 1 ;
 
 			While Not activeAndMoveWinByChar($currentChar) And $timeCheck < 5
 				If $timeCheck >= 2 And Number($numberChar) > 1 Then
@@ -465,11 +465,11 @@ Func switchOtherChar($currentChar)
 				$timeCheck += 1
 			WEnd
 
-			If activeAndMoveWinByChar($currentChar) Then 
+			If activeAndMoveWinByChar($currentChar) Then
 				$resultSwitch = True
-				writeLogFile($logFile,"Switch account SUCCESS: " & $currentChar)
+				writeLogFile($logFile, "Switch account SUCCESS: " & $currentChar)
 			Else
-				writeLogFile($logFile,"Switch account FAIL: " & $currentChar & " affter " & $timeCheck & " time")
+				writeLogFile($logFile, "Switch account FAIL: " & $currentChar & " affter " & $timeCheck & " time")
 				; Minisize main
 				minisizeMainByChar($charName)
 			EndIf
@@ -477,23 +477,23 @@ Func switchOtherChar($currentChar)
 		EndIf
 	EndIf
 	Return $resultSwitch
-EndFunc
+EndFunc   ;==>switchOtherChar
 
-Func clickOtherChar() 
-	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x")
-	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y")
+Func clickOtherChar()
+	$swithCharIconX = _JSONGet($jsonPositionConfig, "button.switch_char.icon_x")
+	$swithCharIconY = _JSONGet($jsonPositionConfig, "button.switch_char.icon_y")
 	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
-EndFunc
+EndFunc   ;==>clickOtherChar
 
 Func clickOtherCharCommon($swithCharIconX, $swithCharIconY)
-	$swithCharButtonChangeX_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x_active_autoz")
-	$swithCharButtonChangeY_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y_active_autoz")
+	$swithCharButtonChangeX_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_x_active_autoz")
+	$swithCharButtonChangeY_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_y_active_autoz")
 
-	$swithCharButtonChangeX_not_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_x_not_active_autoz")
-	$swithCharButtonChangeY_not_activeAutoZ = _JSONGet($jsonPositionConfig,"button.switch_char.button_change_y_not_active_autoz")
+	$swithCharButtonChangeX_not_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_x_not_active_autoz")
+	$swithCharButtonChangeY_not_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_y_not_active_autoz")
 
-	$closePopupX = _JSONGet($jsonPositionConfig,"button.switch_char.close_popup_x")
-	$closePopupY = _JSONGet($jsonPositionConfig,"button.switch_char.close_popup_y")
+	$closePopupX = _JSONGet($jsonPositionConfig, "button.switch_char.close_popup_x")
+	$closePopupY = _JSONGet($jsonPositionConfig, "button.switch_char.close_popup_y")
 
 	; => Click vao icon chuyen
 	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
@@ -515,14 +515,14 @@ Func clickOtherCharCommon($swithCharIconX, $swithCharIconY)
 	secondWait(1)
 
 	Return True
-EndFunc
+EndFunc   ;==>clickOtherCharCommon
 
 Func clickOtherChar2()
-	$swithCharIconX = _JSONGet($jsonPositionConfig,"button.switch_char.icon_x_2")
-	$swithCharIconY = _JSONGet($jsonPositionConfig,"button.switch_char.icon_y_2")
+	$swithCharIconX = _JSONGet($jsonPositionConfig, "button.switch_char.icon_x_2")
+	$swithCharIconY = _JSONGet($jsonPositionConfig, "button.switch_char.icon_y_2")
 	; TODO:
 	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
-EndFunc
+EndFunc   ;==>clickOtherChar2
 
 Func moveOtherMap($charName)
 	clickCenterChar()
@@ -537,23 +537,23 @@ Func moveOtherMap($charName)
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
 		secondWait(1)
-		;~ handelWhenFinshDevilEvent()
-		writeLogFile($logFile,"Bat dau chuyen map khac")
+;~ handelWhenFinshDevilEvent()
+		writeLogFile($logFile, "Bat dau chuyen map khac")
 		sendKeyM()
 		secondWait(2)
-		$moveOtherMapX = _JSONGet($jsonPositionConfig,"button.move.other_map_x")
-		$moveOtherMapY = _JSONGet($jsonPositionConfig,"button.move.other_map_y")
+		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
+		$moveOtherMapY = _JSONGet($jsonPositionConfig, "button.move.other_map_y")
 		; Click lien tuc 3 lan
 		For $i = 0 To 1 Step +1
 			_MU_MouseClick_Delay($moveOtherMapX, $moveOtherMapY)
 		Next
-		
-		writeLogFile($logFile,"Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
+
+		writeLogFile($logFile, "Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
 		secondWait(5)
 	Else
-		writeLogFile($logFile,"Khong the chuyen map khac")
+		writeLogFile($logFile, "Khong the chuyen map khac")
 	EndIf
-EndFunc
+EndFunc   ;==>moveOtherMap
 
 Func switchToMainChar($jsonAccountActiveDevil)
 	; Thuc hien check trong $jsonAccountActiveDevil xem acc nao can chuyen sang main chinh hay khong ?
@@ -576,142 +576,142 @@ Func switchToMainChar($jsonAccountActiveDevil)
 			EndIf
 		EndIf
 	Next
-EndFunc
+EndFunc   ;==>switchToMainChar
 
 Func changeServer($mainNo)
 	writeLogFile($logFile, "Begin change server !")
 	sendKeyEsc()
 	secondWait(1)
 	; Bam chon nhat vat server
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "button.change_server.button_x"), _JSONGet($jsonPositionConfig, "button.change_server.button_y"))
 	secondWait(3)
-	; Check title 
+	; Check title
 	For $i = 0 To 3 Step +1
 		$checkActive = activeAndMoveWin($mainNo)
-		if $checkActive Then
+		If $checkActive Then
 			sendKeyEsc()
 			; Bam chon nhat vat khac
-			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.button_x"), _JSONGet($jsonPositionConfig,"button.change_server.button_y"))
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "button.change_server.button_x"), _JSONGet($jsonPositionConfig, "button.change_server.button_y"))
 			secondWait(3)
 		Else
 			; Click button chon server
 			secondWait(3)
-			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_y"))
+			_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "button.change_server.choise_sv_x"), _JSONGet($jsonPositionConfig, "button.change_server.choise_sv_y"))
 			ExitLoop
 		EndIf
 	Next
-	
-EndFunc 
 
-Func choise_sv() 
+EndFunc   ;==>changeServer
+
+Func choise_sv()
 	; thuc hien active title game main
 	$checkActive = activeAndMoveWin($titleGameMain)
 	If $checkActive Then
 		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
-		; Click vi tri 0 - 0 
+		; Click vi tri 0 - 0
 		secondWait(2)
-		;~ _MU_MouseClick_Delay(0,0)
-		;~ secondWait(1)
+;~ _MU_MouseClick_Delay(0,0)
+;~ secondWait(1)
 		; Click button chon server
 		_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_x"), getProperty("button.change_server.choise_sv_y"))
 		secondWait(2)
 		; Click vao chon sv 1
-		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig,"button.change_server.choise_sv_1_y"))
+		_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "button.change_server.choise_sv_1_x"), _JSONGet($jsonPositionConfig, "button.change_server.choise_sv_1_y"))
 		secondWait(3)
 		sendKeyEnter()
 	Else
 		writeLogFile($logFile, "Khong the active title game main de vao server !")
 	EndIf
-EndFunc
+EndFunc   ;==>choise_sv
 
-Func goSportStadium($sportNo = 1) 
+Func goSportStadium($sportNo = 1)
 	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
-	;~ secondWait(2)
+;~ secondWait(2)
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
-	$sportArenaX = 269 
+	$sportArenaX = 269
 	$sportArenaY = 329
 	If ($sportNo == 1) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_1.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_1.y")
+		$sportArenaX = _JSONGet($jsonPositionConfig, "button.sport_arena_1.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig, "button.sport_arena_1.y")
 	ElseIf ($sportNo == 2) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_2.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_2.y")
+		$sportArenaX = _JSONGet($jsonPositionConfig, "button.sport_arena_2.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig, "button.sport_arena_2.y")
 	ElseIf ($sportNo == 3) Then
-		$sportArenaX = _JSONGet($jsonPositionConfig,"button.sport_arena_3.x")
-		$sportArenaY = _JSONGet($jsonPositionConfig,"button.sport_arena_3.y")
+		$sportArenaX = _JSONGet($jsonPositionConfig, "button.sport_arena_3.x")
+		$sportArenaY = _JSONGet($jsonPositionConfig, "button.sport_arena_3.y")
 	EndIf
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
 	secondWait(2)
 	sendKeyTab()
-EndFunc
+EndFunc   ;==>goSportStadium
 
 Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
 	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
 
 	; Search NPC devil
-	$npcSearchX = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x")
-	$npcSearchY = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y")
-	$npcSearchX1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_x_1")
-	$npcSearchY1 = _JSONGet($jsonPositionConfig,"button.npc_search.npc_search_y_1")
-	;~ $npcSearchColor = 0x8B8171
+	$npcSearchX = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x")
+	$npcSearchY = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y")
+	$npcSearchX1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x_1")
+	$npcSearchY1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y_1")
+;~ $npcSearchColor = 0x8B8171
 	$npcSearchColor = 0xB9AA95
 
-	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
+	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
-	;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
+;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
 
-	;~ _ArrayDisplay($npcSearch)
-	
-	$totalSearch = 0;
-	;~ 671 1050
+;~ _ArrayDisplay($npcSearch)
+
+	$totalSearch = 0 ;
+;~ 671 1050
 	While $npcSearch = 0 And $totalSearch < 5
-		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
-		$countSearchPixel = 0;
+		$countSearchPixel = 0 ;
 
 		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $npcSearch  = 0 And $countSearchPixel < 2
-			$moveCheckNpcX = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_x")
-			$moveCheckNpcY = _JSONGet($jsonPositionConfig,"button.event_devil.move_check_npc_y")
+		While $npcSearch = 0 And $countSearchPixel < 2
+			$moveCheckNpcX = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_x")
+			$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
 			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
 			secondWait(2)
-			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor,5)
-			$countSearchPixel = $countSearchPixel + 1;
+			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+			$countSearchPixel = $countSearchPixel + 1 ;
 		WEnd
 
-		If $npcSearch  = 0 Then
-			clickIconDevil($charName, $checkRuongK,$isHaveQuest)
+		If $npcSearch = 0 Then
+			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 			$totalSearch = $totalSearch + 1
 		EndIf
 	WEnd
-	
+
 	Return $npcSearch
-EndFunc
+EndFunc   ;==>searchNpcDevil
 
 ; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
 Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 	; Kiem tra xem co tim duoc vi tri cua npc khong $npcSearch <> 0
 	If $npcSearch <> 0 Then
-		writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[1]& "-" & $npcSearch[0])
-		$npcSearchDeviationX = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_x")
-		$npcSearchDeviationY = _JSONGet($jsonPositionConfig,"button.npc_search.deviation_y")
+		writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[1] & "-" & $npcSearch[0])
+		$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
+		$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
 
-		;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
+;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
 
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
-		;~ $npcX = $npcSearch[0] - 131
-		;~ $npcY = $npcSearch[1]
+;~ $npcX = $npcSearch[0] - 131
+;~ $npcY = $npcSearch[1]
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
-		$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
-		$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
-		$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
-		
-		;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
+		$devil_open_x = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_x")
+		$devil_open_y = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_y")
+		$devil_open_color = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_color")
+
+;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		$checkOpenDevil = checkOpenPopupDevil()
 		If $checkOpenDevil Then
 			writeLogFile($logFile, "Thuc hien click vao devil")
@@ -720,45 +720,45 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 			_MU_Start_AutoZ()
 		Else
 			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
-			If $isNeedFollowLeader Then 
+			If $isNeedFollowLeader Then
 				writeLogFile($logFile, "Thuc hien follow leader")
 				_MU_followLeader(1)
 			EndIf
 		EndIf
 	Else
 		writeLogFile($logFile, "Search NPC khong thanh cong")
-		If $isNeedFollowLeader Then 
+		If $isNeedFollowLeader Then
 			writeLogFile($logFile, "Thuc hien follow leader")
 			_MU_followLeader(1)
 		EndIf
 	EndIf
-EndFunc
+EndFunc   ;==>clickNpcDevil
 
 ; Method: clickPositionByDevilNo
 ; Description: Clicks on the specific devil event icon based on the devil number.
 Func clickPositionByDevilNo($devilNo)
 	writeLogFile($logFile, "Click position by devil no: " & $devilNo)
-	$devil_position_x = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_x")
-	$devil_position_y = _JSONGet($jsonPositionConfig,"button.event_devil_icon.devil_" & $devilNo & "_y")
+	$devil_position_x = _JSONGet($jsonPositionConfig, "button.event_devil_icon.devil_" & $devilNo & "_x")
+	$devil_position_y = _JSONGet($jsonPositionConfig, "button.event_devil_icon.devil_" & $devilNo & "_y")
 	writeLogFile($logFile, "Click position x: " & $devil_position_x & " y: " & $devil_position_y)
 	_MU_MouseClick_Delay($devil_position_x, $devil_position_y)
-EndFunc
+EndFunc   ;==>clickPositionByDevilNo
 
 Func checkOpenDevil()
 	; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
-	$devil_open_x = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_x")
-	$devil_open_y = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_y")
-	$devil_open_color = _JSONGet($jsonPositionConfig,"button.event_devil.check_devil_open_color")
-	
+	$devil_open_x = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_x")
+	$devil_open_y = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_y")
+	$devil_open_color = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_color")
+
 	$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 
 	_ArrayDisplay($checkOpenDevil)
 	Return True
-EndFunc
+EndFunc   ;==>checkOpenDevil
 
 Func resizeGame($GAME_TITLE)
 	; === Tiêu đề cửa sổ MU ===
-	;~ Local $GAME_TITLE = getMainNoByChar($charName)
+;~ Local $GAME_TITLE = getMainNoByChar($charName)
 
 	; === Đợi game mở ===
 	WinWait($GAME_TITLE)
@@ -772,100 +772,100 @@ Func resizeGame($GAME_TITLE)
 	WinMove($hWnd, "", Default, Default, 800, 600)
 
 	; === Đăng ký xử lý thông điệp resize ===
-	;~ GUIRegisterMsg($WM_SIZING, "WM_SIZING_Handler")
+;~ GUIRegisterMsg($WM_SIZING, "WM_SIZING_Handler")
 
 	; === Vòng lặp giữ script chạy ===
-	;~ While WinExists($hWnd)
-	;~ 	Sleep(100)
-	;~ WEnd
+;~ While WinExists($hWnd)
+;~ 	Sleep(100)
+;~ WEnd
 
 	Return True
-EndFunc
+EndFunc   ;==>resizeGame
 
 ; === Hàm giới hạn kích thước khi resize ===
 Func WM_SIZING_Handler($hWndMsg, $iMsg, $wParam, $lParam)
-    ; Chỉ xử lý nếu đúng là cửa sổ MU
-    If $hWndMsg <> $hWnd Then Return $GUI_RUNDEFMSG
+	; Chỉ xử lý nếu đúng là cửa sổ MU
+	If $hWndMsg <> $hWnd Then Return $GUI_RUNDEFMSG
 
-    Local $tRect = DllStructCreate("long Left; long Top; long Right; long Bottom", $lParam)
-    Local $width = DllStructGetData($tRect, "Right") - DllStructGetData($tRect, "Left")
-    Local $height = DllStructGetData($tRect, "Bottom") - DllStructGetData($tRect, "Top")
+	Local $tRect = DllStructCreate("long Left; long Top; long Right; long Bottom", $lParam)
+	Local $width = DllStructGetData($tRect, "Right") - DllStructGetData($tRect, "Left")
+	Local $height = DllStructGetData($tRect, "Bottom") - DllStructGetData($tRect, "Top")
 
-    ; Giới hạn kích thước
-    If $width < $MIN_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MIN_W)
-    If $height < $MIN_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MIN_H)
-    If $width > $MAX_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MAX_W)
-    If $height > $MAX_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MAX_H)
+	; Giới hạn kích thước
+	If $width < $MIN_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MIN_W)
+	If $height < $MIN_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MIN_H)
+	If $width > $MAX_W Then DllStructSetData($tRect, "Right", DllStructGetData($tRect, "Left") + $MAX_W)
+	If $height > $MAX_H Then DllStructSetData($tRect, "Bottom", DllStructGetData($tRect, "Top") + $MAX_H)
 
-    Return True
-EndFunc
+	Return True
+EndFunc   ;==>WM_SIZING_Handler
 
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
 	Local $expected = $mainName
-    Local $list = WinList()
-    Local $i
+	Local $list = WinList()
+	Local $i
 
-    For $i = 1 To $list[0][0]
-        ; so sánh tuyệt đối
-        If $list[$i][0] = $expected Then
-            WinActivate($list[$i][1])
-            WinMove($list[$i][1], "", 0, 0)
-            resizeGame($list[$i][1])
+	For $i = 1 To $list[0][0]
+		; so sánh tuyệt đối
+		If $list[$i][0] = $expected Then
+			WinActivate($list[$i][1])
+			WinMove($list[$i][1], "", 0, 0)
+			resizeGame($list[$i][1])
 			secondWait(2)
-            Return True
-        EndIf
-    Next
+			Return True
+		EndIf
+	Next
 
-    writeLogFile($logFile, "Không tìm thấy MU đúng title: " & $expected)
-    Return False
-EndFunc
+	writeLogFile($logFile, "Không tìm thấy MU đúng title: " & $expected)
+	Return False
+EndFunc   ;==>activeAndMoveWin
 
 Func activeAndMoveWinByChar($charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
-EndFunc
+EndFunc   ;==>activeAndMoveWinByChar
 
 Func clickCenterChar()
-	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_x"), _JSONGet($jsonPositionConfig,"button.screen_mouse_move.center_char_y"))
+	_MU_MouseClick_Delay(_JSONGet($jsonPositionConfig, "button.screen_mouse_move.center_char_x"), _JSONGet($jsonPositionConfig, "button.screen_mouse_move.center_char_y"))
 	Return True
-EndFunc
+EndFunc   ;==>clickCenterChar
 
 ; Send key enter
 Func sendKeyEnter()
 	sendKeyDelay("{Enter}")
-EndFunc
+EndFunc   ;==>sendKeyEnter
 
 ; Send key home
 Func sendKeyHome()
 	writeLogFile($logFile, "Send key home !")
 	sendKeyDelay("{Home}")
 	secondWait(1)
-EndFunc
+EndFunc   ;==>sendKeyHome
 
 Func sendKeyTab()
 	writeLogFile($logFile, "Send key tab !")
 	sendKeyDelay("{Tab}")
 	secondWait(1)
-EndFunc
+EndFunc   ;==>sendKeyTab
 
 Func sendKeyEsc()
 	sendKeyDelay("{ESC}")
 	secondWait(1)
-EndFunc
+EndFunc   ;==>sendKeyEsc
 
 Func sendKeyM()
 	sendKeyDelay("m")
 	secondWait(1)
-EndFunc
+EndFunc   ;==>sendKeyM
 
 Func sendKeyS()
 	clickCenterChar()
 	writeLogFile($logFile, "Send key +S !")
 	sendKeyDelay("s")
 	secondWait(1)
-EndFunc
+EndFunc   ;==>sendKeyS
 
 
 Func goMapArena($rsCount)
@@ -895,17 +895,17 @@ Func goMapArena($rsCount)
 	EndIf
 	; Go to sport
 	goSportStadium($sportArenaNo)
-EndFunc
+EndFunc   ;==>goMapArena
 
 #cs
-	Vao event Lvl 
+	Vao event Lvl
 #ce
 Func goMapLvl()
 	writeLogFile($logFile, "Bat dau map event lvl ! ")
-	
+
 	; Click event icon
 	clickEventIcon()
-	
+
 	; Click map lvl
 	clickEventLvl()
 
@@ -914,4 +914,4 @@ Func goMapLvl()
 
 	; Enable Auto Home
 	sendKeyHome()
-EndFunc
+EndFunc   ;==>goMapLvl
