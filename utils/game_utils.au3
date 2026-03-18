@@ -451,13 +451,13 @@ Func switchOtherChar($currentChar)
 		If $charName <> "" Then
 			writeLogFile($logFile, "Bat dau chuyen sang main cần thiết: " & $currentChar)
 			; Thuc hien click chuyen nhan vat cung tai khoan
-			clickOtherChar()
+			clickOtherChar($currentChar)
 
 			$timeCheck = 1 ;
 
 			While Not activeAndMoveWinByChar($currentChar) And $timeCheck < 5
 				If $timeCheck >= 2 And Number($numberChar) > 1 Then
-					clickOtherChar2()
+					clickOtherChar2($currentChar)
 				Else
 					secondWait(1)
 				EndIf
@@ -479,13 +479,13 @@ Func switchOtherChar($currentChar)
 	Return $resultSwitch
 EndFunc   ;==>switchOtherChar
 
-Func clickOtherChar()
+Func clickOtherChar($charName)
 	$swithCharIconX = _JSONGet($jsonPositionConfig, "button.switch_char.icon_x")
 	$swithCharIconY = _JSONGet($jsonPositionConfig, "button.switch_char.icon_y")
-	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
+	clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 EndFunc   ;==>clickOtherChar
 
-Func clickOtherCharCommon($swithCharIconX, $swithCharIconY)
+Func clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 	$swithCharButtonChangeX_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_x_active_autoz")
 	$swithCharButtonChangeY_activeAutoZ = _JSONGet($jsonPositionConfig, "button.switch_char.button_change_y_active_autoz")
 
@@ -510,18 +510,23 @@ Func clickOtherCharCommon($swithCharIconX, $swithCharIconY)
 	EndIf
 	secondWait(2)
 
-	; Click close popup
-	_MU_MouseClick_Delay($closePopupX, $closePopupY)
-	secondWait(1)
+	; Truong hop khong active duoc thi moi can click close popup
+	If activeAndMoveWinByChar($charName) Then
+		writeLogFile($logFile, "Switch account SUCCESS after click change button: " & $charName)
+	Else
+		writeLogFile($logFile, "Switch account FAIL after click change button: " & $charName & " - Need click close popup")
+		_MU_MouseClick_Delay($closePopupX, $closePopupY)
+		secondWait(2)
+	EndIf
 
 	Return True
 EndFunc   ;==>clickOtherCharCommon
 
-Func clickOtherChar2()
+Func clickOtherChar2($charName)
 	$swithCharIconX = _JSONGet($jsonPositionConfig, "button.switch_char.icon_x_2")
 	$swithCharIconY = _JSONGet($jsonPositionConfig, "button.switch_char.icon_y_2")
 	; TODO:
-	clickOtherCharCommon($swithCharIconX, $swithCharIconY)
+	clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 EndFunc   ;==>clickOtherChar2
 
 Func moveOtherMap($charName)

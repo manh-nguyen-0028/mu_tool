@@ -128,7 +128,7 @@ EndFunc
 
 Func testCheckSwithCharButton()
     secondWait(1)
-    clickOtherChar()
+    clickOtherChar($charName)
     Return True
 EndFunc
 
