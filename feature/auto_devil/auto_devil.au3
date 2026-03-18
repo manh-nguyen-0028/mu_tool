@@ -5,7 +5,7 @@
 #RequireAdmin
 
 
-Global $sCharNotJoinDevil = ""
+Global $sCharNotJoinDevil = "", $timeStartProcess = 0
 
 start()
 ;~ processGoEvent()
@@ -26,6 +26,17 @@ EndFunc   ;==>start
 ; Description: Continuously checks and processes the devil event.
 Func processGoDevil()
 	While True
+		; check timeStartProcess. Neu so lan > 10 thi thuc hien xoa log va tao file log moi. Reset timeStartProcess = 0
+		If $timeStartProcess > 10 Then
+			$sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
+			FileDelete($sFilePath)
+			$logFile = FileOpen($sFilePath, $iLogOverwrite)
+			writeLogFile($logFile, "Reset log file after process more than 10 times")
+			$timeStartProcess = 0
+		Else
+			$timeStartProcess += 1
+			writeLogFile($logFile, "log $timeStartProcess: " & $timeStartProcess)
+		EndIf
 		checkThenGoDevilEvent()
 	WEnd
 EndFunc   ;==>processGoDevil
@@ -50,7 +61,17 @@ Func checkThenGoDevilEvent()
 		$nextMin = $nextMin
 	EndIf
 
-	$nextTime = createTimeToTicks($nextHour, $nextMin, "10")
+	; Truong hop thoi gian hien tai la 23h va phut > 30 thi thoi gian tiep theo se la 00h00 ngay ke tiep
+	If @HOUR == 23 And @MIN > 30 Then
+		$nextHour = 0
+		$nextMin = 0
+		; Thuc hien cho toi 00h00 ngay ke tiep
+		$waitMin = 60 - @MIN
+		writeLogFile($logFile, "Current time is 23h and min > 30. Sleep until next day: " & $waitMin & " minutes")
+		minuteWait($waitMin)
+	EndIf
+
+	$nextTime = createTimeToTicks($nextHour, $nextMin, "20")
 	$diffTime = diffTime(getCurrentTime(), $nextTime)
 
 	If $diffTime > 0 Then

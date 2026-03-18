@@ -503,11 +503,15 @@ Func returnServer($oAccountInfo)
 		; Click button chon server
 		_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_x"), getProperty("button.change_server.choise_sv_y"))
 		secondWait(2)
-		; Click vao chon sv 1
-		If ($serverNumber == 6) Or ($serverNumber == 8) Or ($serverNumber == 10) Then
-			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_" & $serverNumber & "_x"), getProperty("button.change_server.choise_sv_" & $serverNumber & "_y"))
-			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_" & $serverNumber & "_x"), getProperty("button.change_server.choise_sv_" & $serverNumber & "_y"))
+		; Lay gia tri cac server, neu khong tim thay se chon sang sv_1
+		$sv_x = getProperty("button.change_server.choise_sv_" & $serverNumber & "_x")
+		$sv_y = getProperty("button.change_server.choise_sv_" & $serverNumber & "_y")
+		If $sv_x <> "" And $sv_x <> Default And $sv_y <> "" And $sv_y <> Default Then
+			writeLogFile($logFile, "Tim thay toa do server " & $serverNumber & "can vao: X: " & $sv_x & " - Y: " & $sv_y)
+			_MU_MouseClick_Delay($sv_x,$sv_y)
 		Else
+			writeLogFile($logFile, "Khong tim thay toa do server " & $serverNumber & " can vao, mac dinh chon server 1 !")
+			; Click vao chon sv 1
 			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
 			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
 		EndIf
@@ -656,8 +660,8 @@ Func validAccountRs($aAccountActiveRs)
 			ContinueLoop
 		EndIf
 
-		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30
-		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 Then
+		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30. Truong hop so lan rs < 50 thi bo qua check thoi gian reset
+		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then
 			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
 			ContinueLoop
 		EndIf
