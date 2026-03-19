@@ -600,7 +600,8 @@ Func mergeInfoAccountRs()
 	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	$aRsFixed = getJsonFromFile($jsonPathRoot & $accountRsFixedFileName)
 	$firstMerge = merge2Array($aRsConfig, $aRsUpdateInfo)
-	Return merge2Array($firstMerge, $aRsFixed)
+	;~ Return merge2Array($firstMerge, $aRsFixed)
+	Return $firstMerge
 EndFunc
 
 Func merge2Array($firstJson, $secondJson)
