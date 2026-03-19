@@ -565,19 +565,27 @@ Func switchToMainChar($jsonAccountActiveDevil)
 	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
 		$switch_other_main = _JSONGet($jsonAccountActiveDevil[$i], "switch_other_main")
 		$main_char_name = _JSONGet($jsonAccountActiveDevil[$i], "main_char_name")
-		If $switch_other_main Then
+		$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
+		If $active And $switch_other_main Then
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-			$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
 			$mainNo = getMainNoByChar($charName)
-			If $active And activeAndMoveWin($mainNo) Then
+			; Truong hop main cha da duoc active thi khong can switch nua, neu chua thi thuc hien switch
+			If activeAndMoveWinByChar($main_char_name) Then
+				writeLogFile($logFile, "Main cha da duoc active roi. Khong can swith nua: " & $main_char_name)
+				ContinueLoop
+			Else
+				writeLogFile($logFile, "Main cha chua duoc active. Thuc hien swith sang main cha: " & $main_char_name)
+				; Thuc hien check active main con. Neu duoc active thi thuc hien switch sang main cha, neu khong duoc active thi bo qua khong can switch
+				If activeAndMoveWin($mainNo) Then
 				; Thuc hien swith
-				$resultSwitch = switchOtherChar($main_char_name)
-				; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
-				If $resultSwitch Then
-					minisizeMain(getMainNoByChar($main_char_name))
+					$resultSwitch = switchOtherChar($main_char_name)
+					; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
+					If $resultSwitch Then
+						minisizeMain(getMainNoByChar($main_char_name))
 				Else
 					minisizeMain($mainNo)
 				EndIf
+			EndIf
 			EndIf
 		EndIf
 	Next
@@ -920,3 +928,16 @@ Func goMapLvl()
 	; Enable Auto Home
 	sendKeyHome()
 EndFunc   ;==>goMapLvl
+
+Func checkActiveParentMain($charName)
+	$result = False
+	; Check active main cha, neu chua duoc active thi thuc hien switch sang main cha
+	$parentCharName = getOtherChar($charName)
+	If activeAndMoveWinByChar($parentCharName) Then
+		writeLogFile($logFile, "Main cha da duoc active roi: " & $parentCharName)
+		$result = True
+	Else
+		writeLogFile($logFile, "Main cha chua duoc active: " & $parentCharName)
+	EndIf
+	Return $result
+EndFunc   ;==>checkActiveParentMain

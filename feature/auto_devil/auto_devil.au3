@@ -5,7 +5,7 @@
 #RequireAdmin
 
 
-Global $sCharNotJoinDevil = "", $timeStartProcess = 0
+Global $sCharNotJoinDevil = "", $timeStartProcess = 0, $sFilePath
 
 start()
 ;~ processGoEvent()
@@ -13,7 +13,7 @@ start()
 ; Method: start
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
 Func start()
-	Local $sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
+	$sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
 	$jsonAccountActiveDevil = getArrayActiveDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
@@ -26,11 +26,10 @@ EndFunc   ;==>start
 ; Description: Continuously checks and processes the devil event.
 Func processGoDevil()
 	While True
-		; check timeStartProcess. Neu so lan > 10 thi thuc hien xoa log va tao file log moi. Reset timeStartProcess = 0
+		; check timeStartProcess. Neu so lan > 10 thi thuc hien xoa noi dung file log di de tranh truong hop file log qua lon va khong mo duoc file log de ghi log tiep. Neu so lan < 10 thi thuc hien ghi log binh thuong
 		If $timeStartProcess > 10 Then
-			$sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
-			FileDelete($sFilePath)
-			$logFile = FileOpen($sFilePath, $iLogOverwrite)
+			; Ghi đè (write – xóa nội dung cũ)
+			$logFile = FileOpen($sFilePath, 1)
 			writeLogFile($logFile, "Reset log file after process more than 10 times")
 			$timeStartProcess = 0
 		Else
@@ -128,7 +127,7 @@ Func sleep26Min()
 				$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 				$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
 				; Truong hop khong can follow leader thi khong can xu ly
-;~ If Not $isNeedFollowLeader Then ContinueLoop
+				;~ If Not $isNeedFollowLeader Then ContinueLoop
 				$mainNo = getMainNoByChar($charName)
 				If activeAndMoveWin($mainNo) Then
 					handelWhenFinshDevilEvent()
@@ -287,6 +286,8 @@ Func processGoEvent()
 	; Process fast join accounts
 	processFastJoinAccounts($jsonAccountFastJoin)
 	secondWait(30)
+
+	; process swith main char
 	switchToMainChar($jsonAccountActiveDevil)
 
 	writeLogFile($logFile, "Finish processGoEvent")
@@ -376,6 +377,7 @@ Func handleAfterDevilEvent()
 			EndIf
 
 			$checkActiveWin = activeAndMoveWin($mainNo)
+			$isActiveParentMain = checkActiveParentMain($charName)
 
 			$isNeedHandleAffterEvent = True
 			; Truong hop main hien tai khong duoc active va can follow leader thi thuc hien switch main khac
@@ -385,13 +387,9 @@ Func handleAfterDevilEvent()
 				If $checkActiveWin Then $isNeedHandleAffterEvent = False
 			EndIf
 
-			; Trong truong hop khong duoc active auto home thi moi xu ly sau event + follow leader
-;~ $checkActiveAutoHome = checkActiveAutoHome()
-
 			If $checkActiveWin Then
-;~ If $isNeedHandleAffterEvent Then
-				handelWhenFinshDevilEvent()
-;~ EndIf
+				; Truong $isActiveParentMain = True thi khong handelWhenFinshDevilEvent ma chi follow leader thoi
+				If Not $isActiveParentMain Then handelWhenFinshDevilEvent()
 				; Check follow leader
 				If $isNeedFollowLeader Then
 					; Thuc hien chuyen map
