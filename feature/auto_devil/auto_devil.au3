@@ -434,4 +434,5 @@ Func checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
 	Next
 
 	writeLogFile($logFile, "Char not join devil: " & $sCharNotJoinDevil)
+	switchToMainChar($jsonAccountActiveDevil)
 EndFunc   ;==>checkAccountsInDevil
