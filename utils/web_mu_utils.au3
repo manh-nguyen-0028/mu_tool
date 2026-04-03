@@ -290,23 +290,40 @@ Func closeOtherTabs($sSession, $attachedTabHandle)
 	Return True
 EndFunc   ;==>closeOtherTabs
 
-; Format: $rsInDay|$timeReset
 Func getLogReset($sSession, $charName)
+	; Call getLogResetCommon nếu trả về false thì thực hiện retry lại 2 lần nhé
+	For $i = 0 To 2
+		$sLogReset = getLogResetCommon($sSession, $charName)
+		If $sLogReset Then
+			Return $sLogReset
+		EndIf
+		writeLogFile($logFile, "Lấy log reset thất bại, thực hiện retry lần thứ " & ($i + 1))
+	Next
+	Return False
+EndFunc
+
+; Format: $rsInDay|$timeReset
+Func getLogResetCommon($sSession, $charName)
 	Local $charLvl, $rsInDay, $aMatch
 	; Chuyen den site nay de thuc hien check thong tin
 	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
-;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.shtml"))
 	_WD_LoadWait($sSession, 1000)
 
 	; Click vao button nhan vat can check
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
-	secondWait(5)
+	_WD_LoadWait($sSession, 1000)
+	secondWait(6)
 
 	; Thong tin lvl, so lan trong ngay/ thang
 	$sElement = findElement($sSession, "//div[@role='alert']")
 	$charInfoText = getTextElement($sSession, $sElement)
 	writeLogFile($logFile, "$charInfoText: " & $charInfoText)
+	; Truong hop $charInfoText empty thi return false
+	If $charInfoText == "" Then
+		writeLogFile($logFile, "Không lấy được thông tin nhân vật từ web!")
+		Return False
+	EndIf
 ;~ 	$charInfoText: Reset 1160 lần, point dư: 20,000
 ;~ Level Master: 538, skill_3: 0, skill_4: 0, level thuộc tính: 8, điểm quả: 0
 ;~ xxx11 level 400 (Hôm nay reset 3 lượt. Tháng này reset 101 lượt)
@@ -325,15 +342,7 @@ Func getLogReset($sSession, $charName)
 		ConsoleWrite("Lvl: " & $aMatch[0] & @CRLF)
 		$charLvl = $aMatch[0]
 	EndIf
-
-;~ $array = StringSplit($charInfoText, $charName &' level ', 1)
-;~ _ArrayDisplay($array)
-;~ $charLvl = Number(StringLeft ($array[2], 3))
-
-	; Rs trong ngay
-;~ $array = StringSplit($charInfoText, 'Hôm nay reset ', 1)
-;~ $array = StringSplit($array[2], ' lượt.', 1)
-;~ $rsInDay = $array[1]
+	
 	$aMatch = StringRegExp($charInfoText, "reset (\d+)\s*lượt", 1)
 	If @error Then
 		ConsoleWrite("Không tìm lượt rs!" & @CRLF)
@@ -355,7 +364,7 @@ Func getLogReset($sSession, $charName)
 	writeLogFile($logFile, "Info $charLvl: " & $charLvl & " - $rsInDay: " & $rsInDay & " - $sRsCount: " & $sRsCount)
 
 	Return Number($rsInDay) & "|" & $timeRsText & "|" & Number($sRsCount) & "|" & Number($currentReset)
-EndFunc   ;==>getLogReset
+EndFunc
 
 Func getRsInDay($sLogReset)
 	Return Number(StringSplit($sLogReset, "|")[1])
