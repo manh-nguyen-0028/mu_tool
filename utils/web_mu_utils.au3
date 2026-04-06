@@ -309,7 +309,30 @@ Func getLogResetCommon($sSession, $charName)
 	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
 	_WD_LoadWait($sSession, 1000)
 
+	; Kiem tra trang thai online. ; Kiem tra trong div co href="/web/char/char_info.detail.shtml?name=PhapSuNhi" co chua class="text-success" hay khong 
+	; Day la text html:
+	;~ <div class="col-4 col-md-2 col-sm-3 pb-3" href="/web/char/char_info.detail.shtml?name=PhapSuNhi" target="#t-char_info_detail" style="cursor: pointer;">
+
+	;~ 				<div class="d-flex justify-content-center"><img src="/assets/img/char_icon/07_a.png" style="width: 100%; max-width: 90px;"></div>
+	;~ 				<p class="text-center mb-2 mt-1">
+	;~ 					Reset: <b>614</b> lần<br>
+	;~ 											<span class="text-success">Online (sS15)</span>
+	;~ 										</p>
+	;~ 				<button class="btn 
+	;~ 											btn-secondary 
+	;~ 											btn-sm btn-block t-char_info_btn">PhapSuNhi</button>
+	;~ 			</div>
 	; Click vao button nhan vat can check
+	
+	$checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
+	If @error Then
+		writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
+		Return False
+	Else
+		writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
+	EndIf
+	secondWait(99)
+
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
 	_WD_LoadWait($sSession, 1000)
@@ -363,7 +386,7 @@ Func getLogResetCommon($sSession, $charName)
 
 	writeLogFile($logFile, "Info $charLvl: " & $charLvl & " - $rsInDay: " & $rsInDay & " - $sRsCount: " & $sRsCount)
 
-	Return Number($rsInDay) & "|" & $timeRsText & "|" & Number($sRsCount) & "|" & Number($currentReset)
+	Return Number($rsInDay) & "|" & $timeRsText & "|" & Number($sRsCount) & "|" & Number($currentReset) & "|" & Number($charLvl)
 EndFunc
 
 Func getRsInDay($sLogReset)
@@ -376,6 +399,10 @@ EndFunc   ;==>getRsCount
 
 Func getCurrentReset($sLogReset)
 	Return Number(StringSplit($sLogReset, "|")[4])
+EndFunc   ;==>getCurrentReset
+
+Func getCurrentlvl($sLogReset)
+	Return Number(StringSplit($sLogReset, "|")[5])
 EndFunc   ;==>getCurrentReset
 
 Func getTimeReset($sLogReset, $hourPerRs)

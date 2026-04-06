@@ -283,6 +283,7 @@ Func processReset($jAccountInfo)
 		$sLogReset = getLogReset($sSession, $oAccountInfo.Item("charName"))
 		$lastTimeRs = getTimeReset($sLogReset, 0)
 		$rsCount = getRsCount($sLogReset)
+		$nLvl = getCurrentlvl($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
 		; Kiem tra xem $checkTimeInNight = true hay khong ? neu = true thi khong can check $timeNow < $nextTimeRs nữa
 		If $checkTimeInNight Then
@@ -296,11 +297,11 @@ Func processReset($jAccountInfo)
 		EndIf
 
 		; Vào nhân vật kiểm tra lvl
-		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
-		secondWait(5)
-		; find lvl
-		$sElement = findElement($sSession, "//span[@class='t-level']")
-		$nLvl = Number(getTextElement($sSession, $sElement))
+		;~ _WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
+		;~ secondWait(5)
+		;~ ; find lvl
+		;~ $sElement = findElement($sSession, "//span[@class='t-level']")
+		;~ $nLvl = Number(getTextElement($sSession, $sElement))
 		; implement them viec check lvl rs theo rs
 		$lvlCanRs = calculateRequiredLevelForReset($rsCount)
 
@@ -324,34 +325,35 @@ Func processReset($jAccountInfo)
 				; tôi có đoạn code html như sau: <div class="t-auto_helper"> <div> <div class="t-text t-text-timer"> <div>Thời gian đi săn <span>00:05:42</span></div> </div> <div class="t-text"> <div class="t-text-header"> ST thường: </div> <div class="t-text-value t-normal_dmg">110,398</div> </div> <div class="t-text"> <div class="t-text-header"> ST thuộc tính: </div> <div class="t-text-value t-element_dmg">926</div> </div> <div class="t-text"> <div class="t-text-header"> Lượng phục hồi: </div> <div class="t-text-value t-healing">0</div> </div> <div class="t-text"> <div class="t-text-header"> Giết quái: </div> <div class="t-text-value t-kill">0.055</div> </div> <div class="t-text"> <div class="t-text-header"> EXP nhận được: </div> <div class="t-text-value t-exp">3,243,182</div> </div> </div> </div>
 				; de xac dinh auto z dang hoat dong hay khong thi kiem tra thoi gian di san class="t-auto_helper". Neu co hien thi dang auto z va khong chua style="display: none;" thi coi nhu la pass
 				; Neu chua style="display: none;" thi ket thuc luon
-				$sElementAutoZ = findElement($sSession, "//div[@class='t-auto_helper']")
-				$statusAutoZ = False
-				If @error Then
-					$statusAutoZ = False
-				Else
-					writeLogFile($logFile, "Tìm thấy thẻ t-auto_helper => Tiep tuc kiem tra auto z !")
-					; 2️⃣ Lấy giá trị thuộc tính "style"
-					Local $styleAutoZ = _WD_ElementAction($sSession, $sElement, "attribute", "style")
+				writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
+				;~ $sElementAutoZ = findElement($sSession, "//div[@class='t-auto_helper']")
+				;~ $statusAutoZ = False
+				;~ If @error Then
+				;~ 	$statusAutoZ = False
+				;~ Else
+				;~ 	writeLogFile($logFile, "Tìm thấy thẻ t-auto_helper => Tiep tuc kiem tra auto z !")
+				;~ 	; 2️⃣ Lấy giá trị thuộc tính "style"
+				;~ 	Local $styleAutoZ = _WD_ElementAction($sSession, $sElement, "attribute", "style")
 
-					writeLogFile($logFile, "styleAutoZ: " & $styleAutoZ)
-					; 3️⃣ Kiểm tra xem có 'display: none' không
-					If StringInStr($styleAutoZ, "display: none") Then
-						$statusAutoZ = False
-					Else
-						writeLogFile($logFile, "✅ Thẻ t-auto_helper đang hiển thị => Auto Z dang hoat dong => Tiep tuc xu ly reset !")
-						$statusAutoZ = True
-					EndIf
-				EndIf
-				If Not $statusAutoZ Then
-					writeLogFile($logFile, "Auto Z khong hoat dong => Thu move = web xem co dc ko !")
-					If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
-						$statusAutoZ = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-					EndIf
-					If Not $statusAutoZ Then
-						writeLogFile($logFile, "Khong the move den vi tri mong muon => Ket thuc xu ly reset !")
-						Return
-					EndIf
-				EndIf
+				;~ 	writeLogFile($logFile, "styleAutoZ: " & $styleAutoZ)
+				;~ 	; 3️⃣ Kiểm tra xem có 'display: none' không
+				;~ 	If StringInStr($styleAutoZ, "display: none") Then
+				;~ 		$statusAutoZ = False
+				;~ 	Else
+				;~ 		writeLogFile($logFile, "✅ Thẻ t-auto_helper đang hiển thị => Auto Z dang hoat dong => Tiep tuc xu ly reset !")
+				;~ 		$statusAutoZ = True
+				;~ 	EndIf
+				;~ EndIf
+				;~ If Not $statusAutoZ Then
+				;~ 	writeLogFile($logFile, "Auto Z khong hoat dong => Thu move = web xem co dc ko !")
+				;~ 	If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
+				;~ 		$statusAutoZ = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
+				;~ 	EndIf
+				;~ 	If Not $statusAutoZ Then
+				;~ 		writeLogFile($logFile, "Khong the move den vi tri mong muon => Ket thuc xu ly reset !")
+				;~ 		Return
+				;~ 	EndIf
+				;~ EndIf
 			EndIf
 			; 2. Reset in web
 			resetInWeb($sSession, $oAccountInfo)
