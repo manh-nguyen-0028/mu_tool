@@ -102,7 +102,7 @@ Func login($sSession, $username, $password)
 		EndIf
 	EndIf
 
-	While ($sTitle <> $sTitleLoginSuccess) And ($sTitle <> $sTitleLoginSuccess_EN)
+	While (StringInStr($sTitle, $sTitleLoginSuccess) = 0) And (StringInStr($sTitle, $sTitleLoginSuccess_EN) = 0)
 		If $timeLoginFail > 6 Then ExitLoop
 		closeDiaglogConfim($sSession)
 		loginWebsite($sSession, $username, $password)
@@ -110,7 +110,7 @@ Func login($sSession, $username, $password)
 		$timeLoginFail = $timeLoginFail + 1
 	WEnd
 
-	If ($sTitle <> $sTitleLoginSuccess) And ($sTitle <> $sTitleLoginSuccess_EN) Then
+	If (StringInStr($sTitle, $sTitleLoginSuccess) = 0) And (StringInStr($sTitle, $sTitleLoginSuccess_EN) = 0) Then
 		Return False
 	Else
 		writeLogFile($logFile, "Đăng nhập thành công !")
@@ -292,14 +292,14 @@ EndFunc   ;==>closeOtherTabs
 
 Func getLogReset($sSession, $charName)
 	; Call getLogResetCommon nếu trả về false thì thực hiện retry lại 2 lần nhé
-	For $i = 0 To 2
+	For $i = 0 To 1
 		$sLogReset = getLogResetCommon($sSession, $charName)
 		If $sLogReset Then
 			Return $sLogReset
 		EndIf
 		writeLogFile($logFile, "Lấy log reset thất bại, thực hiện retry lần thứ " & ($i + 1))
 	Next
-	Return False
+	Return 0 & "|" & '' & "|" & 0 & "|" & 0 & "|" & 0
 EndFunc
 
 ; Format: $rsInDay|$timeReset
