@@ -19,10 +19,10 @@ Global $sChromeUserDataPath = StringRegExpReplace($sAppDataPath, "Roaming", "Loc
 
 ;~ Global $baseMuUrl = "https://hn.gamethuvn.net/"
 
-Global $sTitleLoginSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Thông báo"
-Global $sTitleLoginSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - Notifications"
-Global $sTitleLogoutSuccess = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Đăng nhập"
-Global $sTitleLogoutSuccess_EN = "MU Hà Nội 2003 | GamethuVN.net - Season 15 - GamethuVN.com / Sign In"
+Global $sTitleLoginSuccess = "Season 15 - Thông báo"
+Global $sTitleLoginSuccess_EN = "Season 15 - Notifications"
+Global $sTitleLogoutSuccess = "/ Đăng nhập"
+Global $sTitleLogoutSuccess_EN = "/ Sign In"
 
 Func checkThenCloseChrome()
 	checkThenCloseProcess("chrome.exe")
@@ -76,9 +76,9 @@ Func login($sSession, $username, $password)
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
 
-	; Truong hop $sTitle = $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
+	; Truong hop $sTitle co chứa chuỗi trong $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
 	; Neu khong dung thi thuc hien logout va lay lai $sTitle
-	If ($sTitle == $sTitleLoginSuccess) Or ($sTitle == $sTitleLoginSuccess_EN) Then
+	If StringInStr($sTitle, $sTitleLoginSuccess) Or StringInStr($sTitle, $sTitleLoginSuccess_EN) Then
 ;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
 		; <div class="t-account-title">
 
@@ -124,14 +124,14 @@ Func logout($sSession)
 	$timeLogoutFail = 0
 	$sTitle = getTitleWebsite($sSession)
 
-	While ($sTitle <> $sTitleLogoutSuccess) And ($sTitle <> $sTitleLogoutSuccess_EN) And ($timeLogoutFail < 3)
+	While (StringInStr($sTitle, $sTitleLogoutSuccess) = 0) And (StringInStr($sTitle, $sTitleLogoutSuccess_EN) = 0) And ($timeLogoutFail < 3)
 		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
 		secondWait(5)
 		$sTitle = getTitleWebsite($sSession)
 		$timeLogoutFail = $timeLogoutFail + 1
 	WEnd
 
-	If ($sTitle == $sTitleLogoutSuccess) Or ($sTitle == $sTitleLogoutSuccess_EN) Then
+	If (StringInStr($sTitle, $sTitleLogoutSuccess) > 0) Or (StringInStr($sTitle, $sTitleLogoutSuccess_EN) > 0) Then
 		writeLogFile($logFile, "Logout success!")
 		$isSuccess = True
 	Else
