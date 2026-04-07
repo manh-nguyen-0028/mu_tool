@@ -56,8 +56,6 @@ Func startAutoRs()
 		; close all chrome browser
 		checkThenCloseChrome()
 		$sSession = SetupChrome()
-		; Logout account cho chac, nhieu luc se bi cache account cu
-;~ logout($sSession)
 		; Thuc hien sap xep lai thu tu $aAccValidate theo user_name
 		$aAccValidate = sortArrayByProperty($aAccValidate, "user_name", True)
 	EndIf
@@ -98,10 +96,10 @@ Func startAutoRs()
 EndFunc   ;==>startAutoRs
 
 Func reset($jAccountInfo)
-	writeLogMethodStart("resetRs", @ScriptLineNumber, $jAccountInfo)
 	$charName = getPropertyJson($jAccountInfo, "char_name")
 	$resetOnline = getPropertyJson($jAccountInfo, "reset_online")
 	$mainNo = getMainNoByChar($charName)
+	writeLogFile($logFile, "Begin handle reset with account: " & $charName & " - reset online: " & $resetOnline & " - main no: " & $mainNo)
 	If Not $resetOnline Then
 		; Begin reset
 		$activeMain = activeAndMoveWin($mainNo)
@@ -126,7 +124,7 @@ Func reset($jAccountInfo)
 	Else
 		processReset($jAccountInfo)
 	EndIf
-	writeLogMethodEnd("resetRs", @ScriptLineNumber, $jAccountInfo)
+	writeLogFile($logFile, "End handle reset with account: " & getPropertyJson($jAccountInfo, "char_name"))
 EndFunc   ;==>reset
 
 Func withDrawRs($jAccountInfo)
@@ -277,7 +275,6 @@ Func processReset($jAccountInfo)
 	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
 	$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
 	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
-	secondWait(5)
 	If $isLoginSuccess Then
 		$timeNow = getTimeNow()
 		$sLogReset = getLogReset($sSession, $oAccountInfo.Item("charName"))
