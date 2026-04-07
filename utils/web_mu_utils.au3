@@ -331,7 +331,6 @@ Func getLogResetCommon($sSession, $charName)
 	Else
 		writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
 	EndIf
-	secondWait(99)
 
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
