@@ -147,7 +147,7 @@ Func testGoMapLvl()
 EndFunc
 
 Func activeAllMainActive()
-    ; Active toan bo main co title co tien to MU GamethuVN - Season 15 (Hà Nội
+    ; Active toan bo main co title co tien to MU GamethuVN - Season 21 (Hà Nội
     $arrMain = getAllMainActive()
     writeLogFile($logFile, "So main hoat dong: " & UBound($arrMain) - 1)
 
@@ -159,7 +159,7 @@ EndFunc
 
 Func getAllMainActive()
     Local $arrMain[0]
-    ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 15 (Hà Nội"
+    ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 21 (Hà Nội"
     Local $aWindows = WinList("MU GamethuVN - Season 21 (Hà Nội")
     writeLogFile($logFile, "So cua so main dang hoat dong: " & $aWindows[0][0])
     ; In ra danh sach

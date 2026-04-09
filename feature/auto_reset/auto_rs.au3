@@ -606,6 +606,49 @@ Func checkLvlInWeb($rsCount, $charName, $lvlStopCheck, $timeDelay)
 	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
 
 	Return $nLvl
+EndFunc
+
+Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
+	$lvlStopCheck = 400
+	$nLvl = 25
+	writeLogFile($logFile, "Bat dau check lvl tren web !" & " - Lvl stop check: " & $lvlStopCheck)
+	; Vào nhân vật kiểm tra lvl
+	$mainNo = getMainNoByChar($charName)
+	$nLvl = 25
+	$tmpLvl = 0
+	$timeCheck = 0
+	$timeCheckMax = 68
+	;~ If $lvlStopCheck == 20 Then $timeCheckMax = 8
+
+	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
+		; Neu > $timeCheck >10 thi moi thuc hien ghi log
+		If ($timeCheck > 10) Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
+		$timeCheck += 1
+		If Not activeAndMoveWin($mainNo) Then 
+			writeLogFile($logFile, "Main khong active ! Thuc hien swith main khac")
+			switchOtherChar($charName)
+		EndIf
+
+		If activeAndMoveWin($mainNo) Then
+			If check400LvlImage() Then
+				writeLogFile($logFile, "Tim thay lvl 400 => Ket thuc check lvl !")
+				$nLvl = 400
+			Else
+				writeLogFile($logFile, "Khong tim thay lvl 400 => Tiep tuc check lvl !")
+				If Not checkActiveAutoHome() Then
+					writeLogFile($logFile, "Auto Home not active !")
+					goMapArena($rsCount)
+				EndIf
+			EndIf
+		EndIf
+
+		minisizeMain($mainNo)
+		minuteWait($timeDelay)
+	WEnd
+
+	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
+
+	Return $nLvl
 EndFunc   ;==>checkLvlInWeb
 
 Func validAccountRs($aAccountActiveRs)
@@ -740,64 +783,34 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	; 3.1. Check xem cua so enter co ton tai khong
 	firstActionAfterRs()
 	minisizeMain($mainNo)
-	; 5. Check lvl in web
-	$lvlStopCheck = 20
-	secondWait(30)
-	; Kiem tra viec tang lvl tren web, neu van bang 1 thi thuc hien activate game va thuc hien laij firstActionAfterRs
-	$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-	If $lvlCheckInWeb == 1 Then
-		; Activate game
-		activeAndMoveWin($mainNo)
-		secondWait(2)
-		; Bam enter 1 lan nua de thoat bang thong bao
-		sendKeyEnter()
-		; Thuc hien first action
-		firstActionAfterRs()
-		; Cho tiep 30s
-		secondWait(30)
-	EndIf
-	; Neu van bang 1 thi thuc hien di chuyen bang web
-	$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
-	isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlStopCheck)
+	; 5. Doi 2phut de cho len lvl > 20
+	minuteWait(2)
 
 	; 6. Active main
 	activeAndMoveWin($mainNo)
-	If $lvlCheckInWeb >= 20 Then
-		; 7. Go map lvl
-		If $resetInDay <= 3 Then
-			writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
-			goMapLvl()
-		Else
-			goMapArena($rsCount)
-		EndIf
-
-		; 8. Check lvl in web
-		$lvlStopCheck = Number($oAccountInfo.Item("lvlMove"))
-		checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
-		activeAndMoveWin($mainNo)
-		moveOtherMap($charName)
-		secondWait(6)
-
-		; 9. Follow leader
-		$positionLeader = $oAccountInfo.Item("positionLeader")
-		If Not IsNumber($positionLeader) Then $positionLeader = 1
-
-		_MU_followLeader($positionLeader)
-		$activeMoveBeforRs = $oAccountInfo.Item("activeMoveBeforRs")
-		$postionMoveX = $oAccountInfo.Item("postionMoveX")
-		$postionMoveY = $oAccountInfo.Item("postionMoveY")
-		; Neu co active move va co toa do thi thuc hien move
-		If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
-			moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-			writeLogFile($logFile, "Da thuc hien move truoc khi reset den toa do X: " & $postionMoveX & " - Y: " & $postionMoveY)
-		EndIf
-		; 10. Wait in 1 min
-		minuteWait(1)
+	; 7. Go map lvl
+	If $resetInDay <= 3 Then
+		writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
+		goMapLvl()
+	Else
+		goMapArena($rsCount)
 	EndIf
 
-;~ $mainNoMinisize = $mainNo
+	; 8. Check lvl 400 trong game
+	checkLvl400WhenRs($rsCount, $charName, 2)
+	
+	; Thuc hien chuyen map neu khong tim thay lvl 400
+	moveOtherMap($charName)
 
+	secondWait(6)
+
+	; 9. Follow leader
+	$positionLeader = $oAccountInfo.Item("positionLeader")
+	If Not IsNumber($positionLeader) Then $positionLeader = 1
+
+	_MU_followLeader($positionLeader)
+	; 10. Wait in 1 min
+	minuteWait(1)
 	handleIsNotMainChar($oAccountInfo)
 	writeLogMethodEnd("processResetNomal", @ScriptLineNumber)
 EndFunc   ;==>processResetNomal
@@ -818,10 +831,10 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		sendKeyEnter()
 		goMapArena($rsCount)
 		minuteWait(1)
-		$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+		$lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
 		While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
 			writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
-			$lvlCheckInWeb = checkLvlInWeb($rsCount, $charName, $lvlStopCheck, 1)
+			$lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
 			$timeCheck += 1
 			minuteWait(1)
 		WEnd
