@@ -17,7 +17,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 
 ; CONSTANT MU
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
-Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 15"
+Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName
@@ -393,8 +393,8 @@ Func minisizeMainByChar($charName)
 EndFunc
 
 Func minisizeAllMain()
-	While WinExists("GamethuVN.net - MU Online Season 15 part 2*")
-		WinSetState("GamethuVN.net - MU Online Season 15 part 2*", "", @SW_MINIMIZE)
+	While WinExists("MU GamethuVN - Season 21*")
+		WinSetState("MU GamethuVN - Season 21*", "", @SW_MINIMIZE)
 	WEnd
 EndFunc
 
@@ -722,10 +722,7 @@ Func ControlMouseMove($hWnd, $ControlID, $toadoX, $toadoY)
 EndFunc
 
 Func getMainNoByChar($charName)
-	; Old -> "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - DavidRyan)"
-	;~ Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
 	; New -> "MU GamethuVN - Season 21 (Hà Nội - DianaST)"
-	;~ Return "MU GamethuVN - Season 15 (Hà Nội - " & $charName &")"
 	Return "MU GamethuVN - Season 21 (Hà Nội - " & $charName &")"
 EndFunc
 

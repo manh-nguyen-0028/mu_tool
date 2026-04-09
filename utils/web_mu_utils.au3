@@ -19,8 +19,8 @@ Global $sChromeUserDataPath = StringRegExpReplace($sAppDataPath, "Roaming", "Loc
 
 ;~ Global $baseMuUrl = "https://hn.gamethuvn.net/"
 
-Global $sTitleLoginSuccess = "Season 15 - Thông báo"
-Global $sTitleLoginSuccess_EN = "Season 15 - Notifications"
+Global $sTitleLoginSuccess = "- Thông báo"
+Global $sTitleLoginSuccess_EN = "- Notifications"
 Global $sTitleLogoutSuccess = "/ Đăng nhập"
 Global $sTitleLogoutSuccess_EN = "/ Sign In"
 
