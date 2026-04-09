@@ -615,6 +615,12 @@ Func validAccountRs($aAccountActiveRs)
 	$timeWaitRsZenRs50 = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
 	$maxRsVip = _JSONGet($jsonPositionConfig, "common.auto.max_rs_vip")
 	$maxRsPo = _JSONGet($jsonPositionConfig, "common.auto.max_rs_po")
+	; Them gia tri mac dinh neu khong co trong file config
+	If $timeWaitRsVip == "" Then $timeWaitRsVip = 20
+	If $timeWaitRsZenRs50 == "" Then $timeWaitRsZenRs50 = 30
+	If $maxRsVip == "" Then $maxRsVip = 10
+	If $maxRsPo == "" Then $maxRsPo = 10
+
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i], "user_name")
@@ -698,8 +704,9 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
-		; Thay doi thong tin neu vuot qua so lan rs duoc phep trong ngay ($maxRsVip hoac $maxRsPo) va type rs = 1 (RS VIP) hoac type rs = 2 (RS PO) va so lan rs da thuc hien < limit trong ngay	
-		If (($typeRs == 1 And $rs >= $maxRsVip) Or ($typeRs == 2 And $rs >= $maxRsPo)) And $rs < $limit Then
+		; Thay doi thong tin neu vuot qua so lan rs duoc phep trong ngay ($maxRsVip hoac $maxRsPo) va type rs = 1 (RS VIP) hoac type rs = 2 (RS PO) 
+		; Va $hourPerRs = 0
+		If (($typeRs == 1 And $rs >= $maxRsVip) Or ($typeRs == 2 And $rs >= $maxRsPo)) And ($hourPerRs == 0) Then
 			; Thay type rs thanh 0 (RS zen) va reset time rs ve 0
 			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay voi type rs: " & $typeRs & " va so lan rs: " & $rs & " => Thay doi type rs ve 0 (RS zen) va reset time rs ve 0")
 			$typeRs = 0
