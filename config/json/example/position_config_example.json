@@ -4,7 +4,11 @@
       "override": true
     },
     "auto": {
-      "time_loop_auto_rs": 60
+      "time_loop_auto_rs": 60,
+      "time_wait_rs_vip": 5,
+      "time_wait_rs_zen_rs_50": 7,
+      "max_rs_vip": 10,
+      "max_rs_po": 10
     },
     "web": {
       "mu_url": "https://hn.mugamethuvn.info/"

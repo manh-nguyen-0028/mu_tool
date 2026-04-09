@@ -469,7 +469,6 @@ Func returnChar($mainNo)
 	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
 	$timeCheck = 0
 	While Not $checkActive And $timeCheck <= 5
-;~ _MU_MouseClick_Delay(getProperty("button.screen_mouse_move.x"), getProperty("button.screen_mouse_move.y"))
 		; Active title game main
 		If activeAndMoveWin($titleGameMain) Then
 			; Bam chon nhat vat khac
@@ -612,6 +611,10 @@ EndFunc   ;==>checkLvlInWeb
 Func validAccountRs($aAccountActiveRs)
 	writeLogMethodStart("validAccountRs", @ScriptLineNumber, $aAccountActiveRs)
 	Local $aAccValidate[0]
+	$timeWaitRsVip = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_vip")
+	$timeWaitRsZenRs50 = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
+	$maxRsVip = _JSONGet($jsonPositionConfig, "common.auto.max_rs_vip")
+	$maxRsPo = _JSONGet($jsonPositionConfig, "common.auto.max_rs_po")
 	; Validate account reset
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i], "user_name")
@@ -626,6 +629,8 @@ Func validAccountRs($aAccountActiveRs)
 		$max_rs = getPropertyJson($aAccountActiveRs[$i], "max_rs")
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
 		$currentTime = getTimeNow()
+		$lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
+		$lastTimeRsAddRsZenRs50 = _DateAdd('n', $timeWaitRsZenRs50, $lastTimeRs)
 		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 
@@ -660,8 +665,21 @@ Func validAccountRs($aAccountActiveRs)
 		EndIf
 
 		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30. Truong hop so lan rs < 50 thi bo qua check thoi gian reset
-		If $typeRs == 0 And $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
+		If $typeRs == 0 Then
+			If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then
+				writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
+				ContinueLoop
+			ElseIf ($currentTime < $lastTimeRsAddRsZenRs50) And ($rs < 50) Then
+				writeLogFile($logFile, "Rs < 50 - Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAddRsZenRs50)
+				ContinueLoop
+			Else
+				writeLogFile($logFile, "Tiep tuc kiem tra reset voi type Zen: " & $typeRs)
+			EndIf
+		EndIf
+
+		; Truong hop type rs = 1 (RS VIP) thi thoi gian rs phai > lastTimeRsAddRsVip
+		If $typeRs == 1 And $currentTime < $lastTimeRsAddRsVip Then
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type VIP: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAddRsVip)
 			ContinueLoop
 		EndIf
 
@@ -680,6 +698,16 @@ Func validAccountRs($aAccountActiveRs)
 			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 		EndIf
 
+		; Thay doi thong tin neu vuot qua so lan rs duoc phep trong ngay ($maxRsVip hoac $maxRsPo) va type rs = 1 (RS VIP) hoac type rs = 2 (RS PO) va so lan rs da thuc hien < limit trong ngay	
+		If (($typeRs == 1 And $rs >= $maxRsVip) Or ($typeRs == 2 And $rs >= $maxRsPo)) And $rs < $limit Then
+			; Thay type rs thanh 0 (RS zen) va reset time rs ve 0
+			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay voi type rs: " & $typeRs & " va so lan rs: " & $rs & " => Thay doi type rs ve 0 (RS zen) va reset time rs ve 0")
+			$typeRs = 0
+			; Set nguoc lai vao $aAccountActiveRs[$i]
+			_JSONSet($typeRs, $aAccountActiveRs[$i], "type_rs")
+			; in ra thong tin $aAccountActiveRs[$i]
+			writeLogFile($logFile, "Thong tin tai khoan sau khi thay doi type rs: " & convertJsonToString($aAccountActiveRs[$i]))
+		EndIf
 		ReDim $aAccValidate[UBound($aAccValidate) + 1]
 		$aAccValidate[UBound($aAccValidate) - 1] = $aAccountActiveRs[$i]
 	Next

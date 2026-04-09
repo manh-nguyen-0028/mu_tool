@@ -439,19 +439,9 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		; Thuc hien chuyen den trang web /control
 		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charNameWeb)
 		secondWait(5)
-
-		; Kiem so luong lenh 794 nam trong ma html sau:
-;~ <div class="alert alert-info" role="alert" id="t-player-text-info">
-;~ 					<h3 class="text-center">GiamDocSo</h3>
-;~ 					- Cấp độ: <span class="t-level">400</span>.lv, <span class="t-master_level">464</span>.mt<br>
-;~ 					- Còn lại: <b>794 lệnh. <a href="/web/char/control.buy_cmd.shtml">Mua thêm</a></b>
-;~ 					<br>
-;~ 				</div>
 		$sElement = findElement($sSession, "//div[@id='t-player-text-info']")
 		$cmdText = getTextElement($sSession, $sElement)
 		writeLogFile($logFile, "cmdText full: " & $cmdText)
-;~ $cmdText = StringSplit($cmdText, "Còn lại: <b>")[2]
-;~ $cmdText = StringSplit($cmdText, " lệnh.")[1]
 		Local $aMatch = StringRegExp($cmdText, "(\d+)\s*lệnh", $STR_REGEXPARRAYMATCH)
 		Local $iSoLenh = 0
 		If @error Or UBound($aMatch) = 0 Then
@@ -460,7 +450,6 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 			$iSoLenh = $aMatch[0]
 			writeLogFile($logFile, "Số lệnh còn lại: " & $iSoLenh & @CRLF)
 		EndIf
-;~ writeLogFile($logFile, "cmdText: " & $cmdText)
 		$cmdAmount = Number($iSoLenh)
 		If $cmdAmount < 5 Then
 			writeLogFile($logFile, "Khong du lenh de thuc hien chuyen dong. So lenh con lai: " & $cmdAmount)
