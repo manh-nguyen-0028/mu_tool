@@ -724,8 +724,9 @@ EndFunc
 Func getMainNoByChar($charName)
 	; Old -> "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - DavidRyan)"
 	;~ Return "GamethuVN.net - MU Online Season 15 part 2 (Hà Nội - " & $charName &")"
-	; New -> "MU GamethuVN - Season 15 (Hà Nội - DavidRyan)"
-	Return "MU GamethuVN - Season 15 (Hà Nội - " & $charName &")"
+	; New -> "MU GamethuVN - Season 21 (Hà Nội - DianaST)"
+	;~ Return "MU GamethuVN - Season 15 (Hà Nội - " & $charName &")"
+	Return "MU GamethuVN - Season 21 (Hà Nội - " & $charName &")"
 EndFunc
 
 Func redimArray($arrayRedim, $value = "")

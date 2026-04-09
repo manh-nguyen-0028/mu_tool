@@ -192,9 +192,10 @@ Func auction($idUrl, $maxPrice, $adminIDs)
 	writeLogFile($logFile, "Bắt đầu đấu giá cho id : " & $idUrl & ". Giá tối đa: " & $maxPrice)
 	_WD_Navigate($sSession, getUrlAuction($idUrl))
 	secondWait(5)
-	; Check title xem dung chua, neu dung thi moi tiep tuc
+	; Check title co chua chuoi Đấu giá vật phẩm BOSS khong. Neu co thi xem nhu thanh cong, neu khong thi bao loi va thoat khoi ham
 	$sTitle = getTitleWebsite($sSession)
-	If $sTitle == 'MU Hà Nội 2003 | GamethuVN.net - Season 15 - Đấu giá vật phẩm BOSS' Then
+	$titleAuctionSuccess = 'Đấu giá vật phẩm BOSS'
+	If StringInStr($sTitle, $titleAuctionSuccess)  > 0 Then
 		$aElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='card']/div[@class='card-body']/form[@action='/web/event/boss-item-bid.submit_bid.shtml']", Default, True)
 
 		$aChildElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, ".//div[@class='col-sm-6 align-self-center']/div[@class='input-group']/span", $aElements[0], True)
