@@ -706,7 +706,7 @@ Func validAccountRs($aAccountActiveRs)
 
 		; Thay doi thong tin neu vuot qua so lan rs duoc phep trong ngay ($maxRsVip hoac $maxRsPo) va type rs = 1 (RS VIP) hoac type rs = 2 (RS PO) 
 		; Va $hourPerRs = 0
-		If (($typeRs == 1 And $rs >= $maxRsVip) Or ($typeRs == 2 And $rs >= $maxRsPo)) And ($hourPerRs == 0) Then
+		If (($typeRs == 1 And $timeRs > $maxRsVip) Or ($typeRs == 2 And $timeRs > $maxRsPo)) And ($hourPerRs == 0) Then
 			; Thay type rs thanh 0 (RS zen) va reset time rs ve 0
 			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay voi type rs: " & $typeRs & " va so lan rs: " & $rs & " => Thay doi type rs ve 0 (RS zen) va reset time rs ve 0")
 			$typeRs = 0
