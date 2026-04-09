@@ -14,7 +14,7 @@
 ;~ $charName="Girlss"
 ;~ $charName="Maisy"
 ;~ $charName="TamGiaoChu"
-$charName="Goode"
+$charName="DianaST"
 ;~ $charName="JoyBoy"
 ;~ $charName="DonMapNho"
 ;~ $charName="SuTruTri"
@@ -50,7 +50,7 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testSearchNPC()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
-;~ testSwithChar()
+testSwithChar()
 ;~ testWithCharButtonImage()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
@@ -160,7 +160,7 @@ EndFunc
 Func getAllMainActive()
     Local $arrMain[0]
     ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 15 (Hà Nội"
-    Local $aWindows = WinList("MU GamethuVN - Season 15 (Hà Nội")
+    Local $aWindows = WinList("MU GamethuVN - Season 21 (Hà Nội")
     writeLogFile($logFile, "So cua so main dang hoat dong: " & $aWindows[0][0])
     ; In ra danh sach
     ;~ _ArrayDisplay($aWindows, "Danh sach cua so main dang hoat dong")
