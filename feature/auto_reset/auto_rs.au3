@@ -784,7 +784,7 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	firstActionAfterRs()
 	minisizeMain($mainNo)
 	; 5. Doi 2phut de cho len lvl > 20
-	minuteWait(2)
+	minuteWait(1)
 
 	; 6. Active main
 	activeAndMoveWin($mainNo)

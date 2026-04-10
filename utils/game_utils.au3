@@ -572,6 +572,7 @@ Func switchToMainChar($jsonAccountActiveDevil)
 			; Truong hop main cha da duoc active thi khong can switch nua, neu chua thi thuc hien switch
 			If activeAndMoveWinByChar($main_char_name) Then
 				writeLogFile($logFile, "Main cha da duoc active roi. Khong can swith nua: " & $main_char_name)
+				minisizeMain(getMainNoByChar($main_char_name))
 				ContinueLoop
 			Else
 				writeLogFile($logFile, "Main cha chua duoc active. Thuc hien swith sang main cha: " & $main_char_name)
@@ -935,6 +936,7 @@ Func checkActiveParentMain($charName)
 	$parentCharName = getOtherChar($charName)
 	If activeAndMoveWinByChar($parentCharName) Then
 		writeLogFile($logFile, "Main cha da duoc active roi: " & $parentCharName)
+		minisizeMainByChar($parentCharName)
 		$result = True
 	Else
 		writeLogFile($logFile, "Main cha chua duoc active: " & $parentCharName)
