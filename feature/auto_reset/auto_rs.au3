@@ -409,6 +409,8 @@ Func processReset($jAccountInfo)
 EndFunc   ;==>processReset
 
 Func handleIsNotMainChar($oAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$mainNoMinisize = getMainNoByChar($charName)
 	If Not $oAccountInfo.Item("isMainCharacter") Then
 		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
 		$otherChar = $oAccountInfo.Item("mainCharName")
@@ -416,9 +418,10 @@ Func handleIsNotMainChar($oAccountInfo)
 			$resultWwithChar = switchOtherChar($otherChar)
 			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
 		EndIf
+		minisizeMain($mainNoMinisize)
 		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 	EndIf
-EndFunc   ;==>handleIsNotMainChar
+EndFunc
 
 Func isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlStopCheck)
 	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
