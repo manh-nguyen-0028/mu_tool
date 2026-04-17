@@ -531,10 +531,27 @@ Func resetInWeb($sSession, $oAccountInfo)
 	EndIf
 	; Click radio rs vip
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")[" & $oAccountInfo.Item("typeRs") & "].click()")
-	secondWait(2)
-	; Click submit
-	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-	secondWait(2)
+	secondWait(20)
+	; Kiem tra xem o captcha da dc nhap chua, neu chua thi thuc hien doi 1p roi check lai
+	;~ <input type="text" autocomplete="off" class="form-control" name="captcha" placeholder="Captcha">
+	$sElement = findElement($sSession, "//input[@name='captcha']")
+	$sValue = _WD_ElementAction($sSession, $sElement, 'value')
+	writeLogFile($logFile, "Giá trị captcha trước khi submit: " & $sValue)
+	If $sValue == "" Then
+		writeLogFile($logFile, "Captcha chưa được nhập, đợi 1 phút rồi kiểm tra lại...")
+		minuteWait(1)
+		$sValue = _WD_ElementAction($sSession, $sElement, 'value')
+		writeLogFile($logFile, "Giá trị captcha sau khi đợi 1 phút: " & $sValue)
+		If $sValue == "" Then
+			writeLogFile($logFile, "Captcha vẫn chưa được nhập sau 1 phút, không thể thực hiện reset!")
+			Return False
+		EndIf
+	Else
+		writeLogFile($logFile, "Captcha đã được nhập: " & $sValue)
+		; Click submit
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(2)
+	EndIf
 
 	; Trong truong hop khong phai rs online = true thi moi thuc hien check add point
 	If Not $resetOnline Then
