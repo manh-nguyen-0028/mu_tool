@@ -531,7 +531,7 @@ Func resetInWeb($sSession, $oAccountInfo)
 	EndIf
 	; Click radio rs vip
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")[" & $oAccountInfo.Item("typeRs") & "].click()")
-	secondWait(20)
+	secondWait(15)
 	; Kiem tra xem o captcha da dc nhap chua, neu chua thi thuc hien doi 1p roi check lai
 	;~ <input type="text" autocomplete="off" class="form-control" name="captcha" placeholder="Captcha">
 	$sElement = findElement($sSession, "//input[@name='captcha']")

@@ -363,12 +363,13 @@ Func processReset($jAccountInfo)
 					$sLogReset = getLogReset($sSession, $charName)
 					$resetInDay = getRsInDay($sLogReset)
 					$currentRs = getCurrentReset($sLogReset)
+					$currentLvl = getCurrentlvl($sLogReset)
 					_JSONSet($currentRs, $jsonRsGame[$i], "rs")
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset, 0)
 					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
-					If $sTimeReset = 0 Then
+					If $sTimeReset = 0 Or $currentLvl <> 1 Then
 						$sTimeReset = getTimeNow()
 						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
 					EndIf
