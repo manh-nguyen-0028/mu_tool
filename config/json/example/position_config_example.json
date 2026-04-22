@@ -34,7 +34,11 @@
     }
   },
   "button": {
-    "dong_y": {
+    "train_in_game": {
+      "x": 100,
+      "y": 200
+    },
+    "train_in_game_start": {
       "x": 100,
       "y": 200
     },

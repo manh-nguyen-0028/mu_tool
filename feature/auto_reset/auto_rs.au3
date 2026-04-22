@@ -784,6 +784,7 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	writeLogMethodStart("processResetNomal", @ScriptLineNumber)
 	$charName = $oAccountInfo.Item("charName")
 	$mainNo = getMainNoByChar($charName)
+	$trainInGame = $oAccountInfo.Item("isTrainInGame")
 	; 3.1. Check xem cua so enter co ton tai khong
 	firstActionAfterRs()
 	minisizeMain($mainNo)
@@ -813,11 +814,23 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	If Not IsNumber($positionLeader) Then $positionLeader = 1
 
 	_MU_followLeader($positionLeader)
+
+	; Truong hop can train in game thi thực hiện active button train in game
+	If $trainInGame Then activeTrainInGame()
+
 	; 10. Wait in 1 min
 	minuteWait(1)
 	handleIsNotMainChar($oAccountInfo)
 	writeLogMethodEnd("processResetNomal", @ScriptLineNumber)
 EndFunc   ;==>processResetNomal
+
+Func activeTrainInGame()
+	; 1. Click vao button train in game
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.x"), getProperty("button.train_in_game.y"))
+	; 2. Click vao button bat dau train
+	_MU_MouseClick_Delay(getProperty("button.train_in_game_start.x"), getProperty("button.train_in_game_start.y"))
+	Return True
+EndFunc
 
 ; Xu ly khi lan tiep theo reset nhung khong du lvl de reset va reset online = false
 Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
