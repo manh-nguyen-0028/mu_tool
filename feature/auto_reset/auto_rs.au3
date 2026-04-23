@@ -828,10 +828,15 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 EndFunc
 
 Func activeTrainInGame($oAccountInfo)
-	; 1. Click vao button train in game
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
-	; 2. Click vao button bat dau train
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_x"))
+	; Dau tien kiem tra xem auto_plus da duoc active chua, neu chua thi mới thuc hien active auto_plus
+	$checkAutoPlus = checkActiveAutoHomePlus()
+	If Not $checkAutoPlus Then
+		writeLogFile($logFile, "Auto Home Plus chua duoc active ! Thuc hien active Auto Home Plus !")
+		activeAutoHomePlus()
+	Else
+		writeLogFile($logFile, "Auto Home Plus da duoc active ! Tiep tuc xu ly train in game !")
+	EndIf
+	
 	; 3. Thuc hien doi server trong game nhe
 	_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.button_x"), getProperty("button.swith_sv_in_game.button_y"))
 	; 4. click vao sv tuong ung voi server
@@ -849,6 +854,13 @@ Func activeTrainInGame($oAccountInfo)
 	EndIf
 
 	Return True
+EndFunc
+
+Func activeAutoHomePlus()
+	; 1. Click vao button train in game
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
+	; 2. Click vao button bat dau train
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_x"))
 EndFunc
 
 ; Xu ly khi lan tiep theo reset nhung khong du lvl de reset va reset online = false

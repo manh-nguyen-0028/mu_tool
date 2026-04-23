@@ -219,26 +219,36 @@ Func goCenterMapLvl()
 EndFunc   ;==>goCenterMapLvl
 
 Func checkActiveAutoHome()
-	; can phai doi 5s de check auto home
-	secondWait(5)
-	; Thuc hien check auto home
-	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
-	$result = False
 	$x = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x")
 	$y = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y")
 	$x1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y1")
+	Return checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+EndFunc
+
+Func checkActiveAutoHomePlus()
+	$x = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_x")
+	$y = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_y")
+	$x1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_x1")
+	$y1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_y1")
+	Return checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+EndFunc
+
+Func checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+	secondWait(5)
+	; Thuc hien check auto home
+	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
+	$result = False
 	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
 	If $imageSearchResult[0] == 1 Then
 		$result = True
-;~ MouseMove(607,541)
 	EndIf
 	If Not $result Then writeLogFile($logFile, "Auto Z khong hoat dong")
 	Return $result
-EndFunc   ;==>checkActiveAutoHome
+EndFunc
 
 Func checkOpenPopupDevil()
 	; TODO: Tam thoi khong check popup devil
