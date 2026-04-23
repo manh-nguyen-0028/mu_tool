@@ -14,7 +14,7 @@
 ;~ $charName="Girlss"
 ;~ $charName="Maisy"
 ;~ $charName="TamGiaoChu"
-$charName="DianaST"
+$charName="PhoGiaoSu"
 ;~ $charName="JoyBoy"
 ;~ $charName="DonMapNho"
 ;~ $charName="SuTruTri"
@@ -33,8 +33,6 @@ $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
 
-;~ activeAndMoveWin($titleGameMain)
-
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
@@ -50,11 +48,15 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testSearchNPC()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
-testSwithChar()
+;~ testSwithChar()
 ;~ testWithCharButtonImage()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
+;~ checkAutoHomePlus()
 ;~ testClickCenterChar()
+;~ testStopAutoPlus()
+;~ testStartAutoPlus()
+testSwitchSvInGame()
 
 ;~ minisizeMain($mainNo)
 
@@ -420,5 +422,30 @@ EndFunc
 
 Func testReturnChar()
     returnChar($mainNo)
+    Return True
+EndFunc
+
+Func checkAutoHomePlus()
+    checkActiveAutoHomePlus()
+    Return True
+EndFunc
+
+Func testStartAutoPlus()
+    startAutoPlus()
+EndFunc
+
+Func testStopAutoPlus()
+    stopAutoPlus()
+    Return True
+EndFunc
+
+Func testSwitchSvInGame()
+    ;~ $oAccountInfo = getAccountInfoByChar($charName)
+    Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
+    $oAccountInfo.Item("serverNumber") = 1
+    switchSvInGame($oAccountInfo)
+
+    $oAccountInfo.Item("serverNumber") = 8
+    switchSvInGame($oAccountInfo)
     Return True
 EndFunc

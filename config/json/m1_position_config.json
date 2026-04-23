@@ -38,8 +38,8 @@
 	  "train_in_game": {
 		"button_x": 155,
 		"button_y": 59,
-		"button_start_x": 331,
-		"button_start_y": 478,
+		"button_start_x": 351,
+		"button_start_y": 472,
 		"button_stop_x": 306,
 		"button_stop_y": 78
 	  },

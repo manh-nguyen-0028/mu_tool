@@ -962,8 +962,8 @@ Func stopAutoPlus()
 	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
 	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
 	; Click ra 1 vi tri khac de an popup
-	secondWait(3)
-	_MU_MouseClick_Delay(558, 220)
+	;~ secondWait(3)
+	;~ _MU_MouseClick_Delay(558, 220)
 	Return True
 EndFunc
 
@@ -971,7 +971,8 @@ Func startAutoPlus()
 	; 1. Click vao button train in game
 	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
 	; 2. Click vao button bat dau train
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_x"))
+	secondWait(2)
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
 EndFunc
 
 Func switchSvInGame($oAccountInfo)
