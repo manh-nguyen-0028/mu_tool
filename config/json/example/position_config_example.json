@@ -30,7 +30,8 @@
       "binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     },
     "image_search": {
-      "tolerance": 50
+      "tolerance": 50,
+      "tolerance_auto_home_plus": 50
     }
   },
   "button": {

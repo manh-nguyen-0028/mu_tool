@@ -219,27 +219,29 @@ Func goCenterMapLvl()
 EndFunc   ;==>goCenterMapLvl
 
 Func checkActiveAutoHome()
+	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
+	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	$x = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x")
 	$y = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y")
 	$x1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.x1")
 	$y1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.y1")
-	Return checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+	Return checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
 Func checkActiveAutoHomePlus()
+	$pathImage = $imagePathRoot & "common" & "\active_auto_home_plus.bmp"
+	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance_auto_home_plus")
 	$x = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_x")
 	$y = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_y")
 	$x1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_x1")
 	$y1 = _JSONGet($jsonPositionConfig, "button.check_active_auto_home.plus_y1")
-	Return checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+	writeLogFile($logFile, "Check active auto home plus with param: x:" & $x & " y:" & $y & " x1:" & $x1 & " y1:" & $y1 & " and path image: " & $pathImage)
+	Return checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
-Func checkActiveAutoHomeCommon($x, $y, $x1, $y1)
+Func checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 	secondWait(5)
-	; Thuc hien check auto home
-	$pathImage = $imagePathRoot & "common" & "\active_auto_home.bmp"
 	$result = False
-	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
 	$imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)

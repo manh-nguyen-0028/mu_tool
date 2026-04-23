@@ -4,32 +4,57 @@
 		"override": true
 	  },
 	  "auto": {
-		"time_loop_auto_rs": 60
+		"time_loop_auto_rs": 60,
+		"time_wait_rs_vip": 5,
+		"time_wait_rs_zen_rs_50": 8,
+		"max_rs_vip": 10,
+		"max_rs_po": 10
 	  },
 	  "web": {
-		  "mu_url": "https://hn.gamethuvn.com/"
-		},
-		"full_screen": {
+		"mu_url": "https://hn.gamethuvn.com/"
+	  },
+	  "full_screen": {
 		"x": 0,
 		"y": 0,
 		"x1": 1056,
 		"y1": 789
-		},
-		"chrome": {
+	  },
+	  "chrome": {
 		"path": "chrome\\chromedriver-win64\\chromedriver.exe",
 		"profile": "Default",
 		"binary": "C:\\Users\\MSI\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"
-		},
+	  },
 	  "edge": {
 		"path": "msedgedriver\\edgedriver_win64_134\\msedgedriver.exe",
 		"profile": "Profile 1",
 		"binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 	  },
 	  "image_search": {
-		"tolerance": 20
+		"tolerance": 20,
+		"tolerance_auto_home_plus": 50
 	  }
 	},
 	"button": {
+	  "train_in_game": {
+		"button_x": 155,
+		"button_y": 59,
+		"button_start_x": 331,
+		"button_start_y": 478
+	  },
+	  "swith_sv_in_game": {
+		"button_x": 50,
+		"button_y": 44,
+		"choise_sv_1_x": 322,
+		"choise_sv_1_y": 286,
+		"choise_sv_5_x": 308,
+		"choise_sv_5_y": 338,
+		"choise_sv_6_x": 464, 
+		"choise_sv_6_y": 339,
+		"choise_sv_8_x": 318,
+		"choise_sv_8_y": 366,
+		"choise_sv_10_x": 468,
+		"choise_sv_10_y": 364
+	  },
 	  "dong_y": {
 		"x": 100,
 		"y": 200
@@ -68,9 +93,9 @@
 	  "event_devil_icon": {
 		"x": 23,
 		"y": 202,
-		"x_2": 109, 
+		"x_2": 109,
 		"y_2": 165,
-		"x_3": 130, 
+		"x_3": 130,
 		"y_3": 166,
 		"chap_nhan_x": 476,
 		"chap_nhan_y": 476,
@@ -106,8 +131,8 @@
 		"position_1_y": 73,
 		"position_2_x": 840,
 		"position_2_y": 118,
-		"button_x":612,
-		"button_y":159
+		"button_x": 612,
+		"button_y": 159
 	  },
 	  "event_icon": {
 		"x": 852,
@@ -134,9 +159,9 @@
 		"choise_sv_y": 235,
 		"choise_sv_1_x": 388,
 		"choise_sv_1_y": 235,
-		"choise_sv_6_x": 381, 
+		"choise_sv_6_x": 381,
 		"choise_sv_6_y": 330,
-		"choise_sv_8_x": 373, 
+		"choise_sv_8_x": 373,
 		"choise_sv_8_y": 354,
 		"choise_sv_10_x": 434,
 		"choise_sv_10_y": 385
@@ -151,7 +176,7 @@
 		"button_change_x_not_active_autoz": 269,
 		"button_change_y_not_active_autoz": 259,
 		"close_popup_x": 407,
-      	"close_popup_y": 66
+		"close_popup_y": 66
 	  },
 	  "screen_mouse_move": {
 		"center_x": 389,
@@ -200,7 +225,11 @@
 		"x": 281,
 		"y": 233,
 		"x1": 521,
-		"y1": 567
+		"y1": 567,
+		"plus_x": 66,
+		"plus_y": 37,
+		"plus_x1": 600,
+		"plus_y1": 400
 	  },
 	  "sport_arena_1": {
 		"x": 257,
