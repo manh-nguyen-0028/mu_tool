@@ -39,7 +39,9 @@
       "button_x": 100,
       "button_y": 200,
       "button_start_x": 100,
-      "button_start_y": 200
+      "button_start_y": 200,
+      "button_stop_x": 306,
+      "button_stop_y": 78
     },
     "swith_sv_in_game": {
       "button_x": 100,

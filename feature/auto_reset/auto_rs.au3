@@ -829,38 +829,23 @@ EndFunc
 
 Func activeTrainInGame($oAccountInfo)
 	; Dau tien kiem tra xem auto_plus da duoc active chua, neu chua thi mới thuc hien active auto_plus
-	$checkAutoPlus = checkActiveAutoHomePlus()
-	If Not $checkAutoPlus Then
-		writeLogFile($logFile, "Auto Home Plus chua duoc active ! Thuc hien active Auto Home Plus !")
-		activeAutoHomePlus()
-	Else
-		writeLogFile($logFile, "Auto Home Plus da duoc active ! Tiep tuc xu ly train in game !")
-	EndIf
-	
+	;~ $checkAutoPlus = checkActiveAutoHomePlus()
+	;~ If Not $checkAutoPlus Then
+	;~ 	writeLogFile($logFile, "Auto Home Plus chua duoc active ! Thuc hien active Auto Home Plus !")
+	;~ 	startAutoPlus()
+	;~ Else
+	;~ 	writeLogFile($logFile, "Auto Home Plus da duoc active ! Tiep tuc xu ly train in game !")
+	;~ EndIf
+	; Thuc hien stop auto home plus truoc da
+	stopAutoPlus()
+	secondWait(2)
+	; Thien hien active auto home plus
+	startAutoPlus()
+	secondWait(2)
 	; 3. Thuc hien doi server trong game nhe
-	_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.button_x"), getProperty("button.swith_sv_in_game.button_y"))
-	; 4. click vao sv tuong ung voi server
-	; Lay thong tin server server_number, sau do thuc hien click vao server tuong ung _MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.choise_sv_1_x"), getProperty("button.swith_sv_in_game.choise_sv_1_u"))
-	$serverNumber = $oAccountInfo.Item("serverNumber")
-	$positionServerX = getProperty("button.swith_sv_in_game.choise_sv_" & $serverNumber & "_x")
-	$positionServerY = getProperty("button.swith_sv_in_game.choise_sv_" & $serverNumber & "_y")
-	If $positionServerX <> "" And $positionServerX <> Default And $positionServerY <> "" And $positionServerY <> Default Then
-		writeLogFile($logFile, "Tim thay toa do server " & $serverNumber & " can vao: X: " & $positionServerX & " - Y: " & $positionServerY)
-		_MU_MouseClick_Delay($positionServerX, $positionServerY)
-	Else
-		writeLogFile($logFile, "Khong tim thay toa do server " & $serverNumber & " can vao, mac dinh chon server 1 !")
-		; Click vao chon sv 1
-		_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.choise_sv_1_x"), getProperty("button.swith_sv_in_game.choise_sv_1_y"))	
-	EndIf
+	switchSvInGame($oAccountInfo)
 
 	Return True
-EndFunc
-
-Func activeAutoHomePlus()
-	; 1. Click vao button train in game
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
-	; 2. Click vao button bat dau train
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_x"))
 EndFunc
 
 ; Xu ly khi lan tiep theo reset nhung khong du lvl de reset va reset online = false
