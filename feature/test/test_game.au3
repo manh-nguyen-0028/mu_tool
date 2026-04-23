@@ -3,30 +3,11 @@
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
 ;~ #include "../auto_devil/auto_devil.au3"
-
-
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-
-;~ $charName="CuuBiThuXa"
-;~ $charName="CtrDell"
-;~ $charName="Girlss"
-;~ $charName="Maisy"
-;~ $charName="TamGiaoChu"
 $charName="PhoGiaoSu"
-;~ $charName="JoyBoy"
-;~ $charName="DonMapNho"
-;~ $charName="SuTruTri"
-;~ $charName="GiaoSu"
-
-;~ $charName="DacVuAoDen"
-;~ $charName="Pucca"
-;~ $charName="NguHo"
-;~ $charName="NguHoBao"
-;~ $charName="CuuBiThuXa"
-;~ $charName="BiThuXa"
-;~ $charName="TronVo1"
+allAccount()
 
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
@@ -56,9 +37,8 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testClickCenterChar()
 ;~ testStopAutoPlus()
 ;~ testStartAutoPlus()
-testSwitchSvInGame()
-
-;~ minisizeMain($mainNo)
+;~ testSwitchSvInGame()
+testCheckMainActive("Zalo")
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -448,4 +428,31 @@ Func testSwitchSvInGame()
     $oAccountInfo.Item("serverNumber") = 8
     switchSvInGame($oAccountInfo)
     Return True
+EndFunc
+
+Func testCheckMainActive($mainName)
+    checkActiveWin($mainName)
+EndFunc
+
+Func allAccount()
+    Local $accountName[20]
+    $accountName[0] = "CuuBiThuXa"
+    $accountName[1] = "Maisy"
+    $accountName[2] = "TamGiaoChu"  
+    $accountName[3] = "PhoGiaoSu"
+    $accountName[4] = "JoyBoy"
+    $accountName[5] = "SuTruTri"
+    $accountName[6] = "NguHo"
+    $accountName[7] = "NguHoBao"
+    $accountName[8] = "CuuBiThuXa"
+    $accountName[9] = "BiThuXa"
+    ; xuat ra danh sach account tren 1 dong ngan cach nhau boi dau |
+    Local $accountList = ""
+    For $i = 0 To UBound($accountName) - 1
+        ; chi khi khong bi trong thi moi them vao danh sach
+        If $accountName[$i] <> "" Then
+            $accountList &= $accountName[$i] & " | "
+        EndIf
+    Next
+    writeLogFile($logFile, "Danh sach account: " & $accountList)
 EndFunc

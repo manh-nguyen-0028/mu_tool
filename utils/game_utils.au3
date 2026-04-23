@@ -826,6 +826,21 @@ Func WM_SIZING_Handler($hWndMsg, $iMsg, $wParam, $lParam)
 	Return True
 EndFunc   ;==>WM_SIZING_Handler
 
+Func checkActiveWin($mainName)
+	Local $expected = $mainName
+	Local $list = WinList()
+	Local $i, $result
+	For $i = 1 To $list[0][0]
+		; so sánh tuyệt đối
+		If $list[$i][0] = $expected Then
+			$result = True
+			ExitLoop
+		EndIf
+	Next
+	If $result Then writeLogFile($logFile, "Tìm thấy MU đúng title: " & $expected)
+	Return $result
+EndFunc
+
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)

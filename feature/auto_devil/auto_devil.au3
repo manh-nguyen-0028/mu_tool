@@ -8,7 +8,7 @@
 Global $sCharNotJoinDevil = "", $timeStartProcess = 0, $sFilePath
 
 start()
-;~ processGoEvent()
+;~ processGoEventDevil()
 
 ; Method: start
 ; Description: Initializes the logging process, retrieves active devil accounts, and starts the devil event process if there are active accounts.
@@ -82,7 +82,7 @@ Func checkThenGoDevilEvent()
 		; Sleep until next time
 		$diffTime = diffTime(getCurrentTime(), $nextTime)
 		Sleep($diffTime)
-		processGoEvent()
+		processGoEventDevil()
 		;Sleep 26 minute
 		sleep26Min()
 
@@ -185,23 +185,16 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	Return $result
 EndFunc   ;==>calculateNextDevilEventTime
 
-#cs
-	Xu ly vao event devil.
-	Can check xem da du 400 lvl hay chua. Neu chua du 400 lvl thi thoi khong can vao lam gi
-#ce
-; Method: goToDevilEvent
-; Description: Manages the process of joining the devil event for each active devil account.
-Func processGoEvent()
-	writeLogFile($logFile, "Start method: processGoEvent")
-	; Get account devil
-	$jsonAccountActiveDevil = getArrayActiveDevil()
-
+Func validateAmountDevil($jsonAccountActiveDevil)
 	; Truong hop khong co acc active devil thi ket thuc luon
 	If UBound($jsonAccountActiveDevil) == 0 Then
-		writeLogFile($logFile, "Khong co tai khoan active devil. Ket thuc xu ly")
-		Return
+		writeLogFile($logFile, "Khong co tai khoan active devil. Ket thuc xu ly validateAmountDevil")
+		Return False
 	EndIf
+	Return True
+EndFunc
 
+Func getListFastMove($jsonAccountActiveDevil)
 	Local $jsonAccountFastJoin[0]
 
 	; Get account devil fast move
@@ -212,6 +205,24 @@ Func processGoEvent()
 			$jsonAccountFastJoin[UBound($jsonAccountFastJoin) - 1] = $jsonAccountActiveDevil[$i]
 		EndIf
 	Next
+	Return $jsonAccountFastJoin
+EndFunc
+
+#cs
+	Xu ly vao event devil.
+	Can check xem da du 400 lvl hay chua. Neu chua du 400 lvl thi thoi khong can vao lam gi
+#ce
+; Method: goToDevilEvent
+; Description: Manages the process of joining the devil event for each active devil account.
+Func processGoEventDevil()
+	writeLogFile($logFile, "Start method: processGoEvent")
+	Local $jsonAccountActiveDevil, $jsonAccountFastJoin
+	; Get account devil
+	$jsonAccountActiveDevil = getArrayActiveDevil()
+
+	If Not validateAmountDevil($jsonAccountActiveDevil) Then Return
+
+	$jsonAccountFastJoin = getListFastMove($jsonAccountActiveDevil)
 
 	; Go devil
 	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
@@ -235,7 +246,7 @@ Func processGoEvent()
 			; Truong hop main hien tai khong duoc active, active main khac
 			If Not activeAndMoveWin($mainNo) Then switchOtherChar($charName)
 
-			If Not activeAndMoveWin($mainNo) Then
+			If Not checkActiveWin($mainNo) Then
 				writeLogFile($logFile, "Khong tim thay cua so win")
 				writeLogFile($logFile, "Ket thuc xu ly: " & $charName)
 				ContinueLoop ;
@@ -333,13 +344,15 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
 		; Move other map
 		moveOtherMap($charName)
 
-		_MU_followLeader(1)
+		;~ _MU_followLeader(1)
 
-		checkAutoZAfterFollowLead($needCheckAutoZ)
+		;~ checkAutoZAfterFollowLead($needCheckAutoZ)
+
+		startAutoPlus()
 
 		minisizeMain($mainNo)
 	Next
-EndFunc   ;==>processFastJoinAccounts
+EndFunc
 
 ; Method: handleAfterDevilEvent
 ; Description: Handles the actions to be taken after finishing the devil event for each active devil account.
