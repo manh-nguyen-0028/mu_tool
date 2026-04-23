@@ -35,12 +35,24 @@
   },
   "button": {
     "train_in_game": {
-      "x": 100,
-      "y": 200
+      "button_x": 100,
+      "button_y": 200,
+      "button_start_x": 100,
+      "button_start_y": 200
     },
-    "train_in_game_start": {
-      "x": 100,
-      "y": 200
+    "swith_sv_in_game": {
+      "button_x": 100,
+      "button_y": 200,
+      "choise_sv_1_x": 230,
+      "choise_sv_1_y": 234,
+      "choise_sv_5_x": 230,
+      "choise_sv_5_y": 234,
+      "choise_sv_6_x": 230,
+      "choise_sv_6_y": 234,
+      "choise_sv_8_x": 230,
+      "choise_sv_8_y": 234,
+      "choise_sv_10_x": 230,
+      "choise_sv_10_y": 234
     },
     "xac_nhan": {
       "x": 100,

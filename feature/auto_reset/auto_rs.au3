@@ -389,6 +389,9 @@ Func processReset($jAccountInfo)
 				; Check train_in_game xem co can thuc hien processResetNomal hay khong
 				If Not $oAccountInfo.Item("isTrainInGame") Then
 					processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
+				Else
+					writeLogFile($logFile, "Xu ly doi voi truong hop can train in game ! Thuc hien active train in game !")
+					activeTrainInGame($oAccountInfo)
 				EndIf
 
 				minisizeMain($mainNo)
@@ -816,19 +819,35 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	_MU_followLeader($positionLeader)
 
 	; Truong hop can train in game thi thực hiện active button train in game
-	If $trainInGame Then activeTrainInGame()
+	activeTrainInGame($oAccountInfo)
 
 	; 10. Wait in 1 min
 	minuteWait(1)
 	handleIsNotMainChar($oAccountInfo)
 	writeLogMethodEnd("processResetNomal", @ScriptLineNumber)
-EndFunc   ;==>processResetNomal
+EndFunc
 
-Func activeTrainInGame()
+Func activeTrainInGame($oAccountInfo)
 	; 1. Click vao button train in game
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.x"), getProperty("button.train_in_game.y"))
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
 	; 2. Click vao button bat dau train
-	_MU_MouseClick_Delay(getProperty("button.train_in_game_start.x"), getProperty("button.train_in_game_start.y"))
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_x"))
+	; 3. Thuc hien doi server trong game nhe
+	_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.button_x"), getProperty("button.swith_sv_in_game.button_y"))
+	; 4. click vao sv tuong ung voi server
+	; Lay thong tin server server_number, sau do thuc hien click vao server tuong ung _MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.choise_sv_1_x"), getProperty("button.swith_sv_in_game.choise_sv_1_u"))
+	$serverNumber = $oAccountInfo.Item("serverNumber")
+	$positionServerX = getProperty("button.swith_sv_in_game.choise_sv_" & $serverNumber & "_x")
+	$positionServerY = getProperty("button.swith_sv_in_game.choise_sv_" & $serverNumber & "_y")
+	If $positionServerX <> "" And $positionServerX <> Default And $positionServerY <> "" And $positionServerY <> Default Then
+		writeLogFile($logFile, "Tim thay toa do server " & $serverNumber & " can vao: X: " & $positionServerX & " - Y: " & $positionServerY)
+		_MU_MouseClick_Delay($positionServerX, $positionServerY)
+	Else
+		writeLogFile($logFile, "Khong tim thay toa do server " & $serverNumber & " can vao, mac dinh chon server 1 !")
+		; Click vao chon sv 1
+		_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.choise_sv_1_x"), getProperty("button.swith_sv_in_game.choise_sv_1_y"))	
+	EndIf
+
 	Return True
 EndFunc
 
