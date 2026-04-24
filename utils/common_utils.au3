@@ -20,7 +20,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
-Global $autoMoveConfigFileName, $autoAuctionConfigFileName
+Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName
 Global $aCharInAccount
 
 ; Khai báo biến toàn cục
@@ -73,6 +73,8 @@ Func init()
 				$autoMoveConfigFileName = $value
 			ElseIf "auto_auction" == $type Then
 				$autoAuctionConfigFileName = $value
+			ElseIf "reset_online" == $type Then
+				$resetOnlineConfigFileName = $value
 			EndIf
 		EndIf
 	Next

@@ -6,7 +6,7 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="PhoGiaoSu"
+$charName="BiThuXa"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
@@ -14,6 +14,7 @@ $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
 
+;~ testLogin()
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
@@ -38,7 +39,9 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testStopAutoPlus()
 ;~ testStartAutoPlus()
 ;~ testSwitchSvInGame()
-testCheckMainActive("Zalo")
+;~ testCheckMainActive("Zalo")
+;~ testSplitString()
+testChangeThenReturnChar($charName)
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -455,4 +458,29 @@ Func allAccount()
         EndIf
     Next
     writeLogFile($logFile, "Danh sach account: " & $accountList)
+EndFunc
+
+Func testLogin()
+    $sSession = SetupChrome()
+    $username = "vinci"
+    $password = "manhva02"
+    $baseMuUrl = "https://hn.gamethuvn.com/"
+    _Demo_NavigateCheckBanner($sSession, $baseMuUrl)
+	_WD_LoadWait($sSession, 1000)
+    login($sSession, $username, $password)
+    ;~ logFileCommon()
+    Return True
+EndFunc
+
+Func testChangeThenReturnChar($charName)
+    changeThenReturnChar($charName)
+    Return True
+EndFunc
+
+Func testSplitString()
+    $charNameOtherChar = "JoyBoy|2"
+    $charFound = StringSplit($charNameOtherChar, "|")[1]
+	$numberChar = StringSplit($charNameOtherChar, "|")[2]
+	writeLogFile($logFile, "switchOtherChar -> checkActiveOtherChar tra ve: charFound: " & $charFound & " - numberChar: " & $numberChar & " - $charNameOtherChar: " & $charNameOtherChar)
+    Return True
 EndFunc

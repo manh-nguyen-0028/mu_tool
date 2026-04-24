@@ -103,7 +103,6 @@ Func reset($jAccountInfo)
 	If Not $resetOnline Then
 		; Begin reset
 		$activeMain = activeAndMoveWin($mainNo)
-
 		; Truong hop main hien tai khong duoc active, active main khac
 		If Not $activeMain Then $activeMain = switchOtherChar($charName)
 		If $activeMain Then
@@ -133,6 +132,9 @@ Func withDrawRs($jAccountInfo)
 	$password = getPropertyJson($jAccountInfo, "password")
 	$charName = getPropertyJson($jAccountInfo, "char_name")
 	$hourPerRs = getPropertyJson($jAccountInfo, "hour_per_reset")
+	$resetOnline = getPropertyJson($jAccountInfo, "reset_online")
+	$isMainCharacter = getPropertyJson($jAccountInfo, "is_main_character")
+	$mainCharName = getPropertyJson($jAccountInfo, "main_char_name")
 
 	writeLogFile($logFile, "Begin handle withdraw reset with account: " & $charName)
 	$isLoginSuccess = login($sSession, $username, $password)
@@ -187,9 +189,21 @@ Func withDrawRs($jAccountInfo)
 				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']")
 				writeLogFile($logFile, "IP khong chinh chu khong the RS")
 			Else
-				findAndClick($sSession, "//button[@type='submit']")
+				; thuc hien nhap captcha va submit
+				solveImageCaptchaAz($sSession,"//img[@class='captcha_img']", 90, 5)
+				checkCaptchaThenSubmit($sSession)
 				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']")
 				writeLogFile($logFile, "Rut reset thanh cong !")
+				; Thực hiện thay đổi nhân vật nếu reset_online = false, nếu reset_online = true thì không cần thực hiện thay đổi nhân vật mà sẽ thực hiện reset online luôn
+				If Not $resetOnline Then
+					writeLogFile($logFile, "Thuc hien thay đổi nhân vật sau khi withdraw reset !")
+					changeThenReturnChar($charName)
+					; Thuc hien switch sang main neu is_main_character = false
+					If Not $isMainCharacter Then
+						writeLogFile($logFile, "Thuc hien switch sang main character sau khi withdraw reset !")
+						switchToMainCharItem($charName, $mainCharName)
+					EndIf
+				EndIf
 				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 				For $i = 0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
@@ -230,6 +244,7 @@ Func extractAccountInfo($jAccountInfo)
 	$oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
 	$oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
 	$oAccountInfo.Item("time_in_night") = getPropertyJson($jAccountInfo, "time_in_night")
+	$oAccountInfo.Item("time_rs") = getPropertyJson($jAccountInfo, "time_rs")
 	$oAccountInfo.Item("rs") = getPropertyJson($jAccountInfo, "rs")
 	$oAccountInfo.Item("max_rs") = getPropertyJson($jAccountInfo, "max_rs")
 	$oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
@@ -266,9 +281,6 @@ Func processReset($jAccountInfo)
 	$charName = $oAccountInfo.Item("charName")
 	$resetOnline = $oAccountInfo.Item("resetOnline")
 	; Neu co active move va co toa do thi thuc hien move
-	$activeMoveBeforRs = $oAccountInfo.Item("$activeMoveBeforRs")
-	$postionMoveX = $oAccountInfo.Item("$postionMoveX")
-	$postionMoveY = $oAccountInfo.Item("$postionMoveY")
 	$timeInNight = $oAccountInfo.Item("time_in_night")
 	$timeRs = $oAccountInfo.Item("time_rs")
 
@@ -294,11 +306,6 @@ Func processReset($jAccountInfo)
 		EndIf
 
 		; Vào nhân vật kiểm tra lvl
-		;~ _WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
-		;~ secondWait(5)
-		;~ ; find lvl
-		;~ $sElement = findElement($sSession, "//span[@class='t-level']")
-		;~ $nLvl = Number(getTextElement($sSession, $sElement))
 		; implement them viec check lvl rs theo rs
 		$lvlCanRs = calculateRequiredLevelForReset($rsCount)
 
@@ -319,38 +326,7 @@ Func processReset($jAccountInfo)
 				EndIf
 			Else
 				; Thuc hien check auto z tren web neu co active
-				; tôi có đoạn code html như sau: <div class="t-auto_helper"> <div> <div class="t-text t-text-timer"> <div>Thời gian đi săn <span>00:05:42</span></div> </div> <div class="t-text"> <div class="t-text-header"> ST thường: </div> <div class="t-text-value t-normal_dmg">110,398</div> </div> <div class="t-text"> <div class="t-text-header"> ST thuộc tính: </div> <div class="t-text-value t-element_dmg">926</div> </div> <div class="t-text"> <div class="t-text-header"> Lượng phục hồi: </div> <div class="t-text-value t-healing">0</div> </div> <div class="t-text"> <div class="t-text-header"> Giết quái: </div> <div class="t-text-value t-kill">0.055</div> </div> <div class="t-text"> <div class="t-text-header"> EXP nhận được: </div> <div class="t-text-value t-exp">3,243,182</div> </div> </div> </div>
-				; de xac dinh auto z dang hoat dong hay khong thi kiem tra thoi gian di san class="t-auto_helper". Neu co hien thi dang auto z va khong chua style="display: none;" thi coi nhu la pass
-				; Neu chua style="display: none;" thi ket thuc luon
 				writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
-				;~ $sElementAutoZ = findElement($sSession, "//div[@class='t-auto_helper']")
-				;~ $statusAutoZ = False
-				;~ If @error Then
-				;~ 	$statusAutoZ = False
-				;~ Else
-				;~ 	writeLogFile($logFile, "Tìm thấy thẻ t-auto_helper => Tiep tuc kiem tra auto z !")
-				;~ 	; 2️⃣ Lấy giá trị thuộc tính "style"
-				;~ 	Local $styleAutoZ = _WD_ElementAction($sSession, $sElement, "attribute", "style")
-
-				;~ 	writeLogFile($logFile, "styleAutoZ: " & $styleAutoZ)
-				;~ 	; 3️⃣ Kiểm tra xem có 'display: none' không
-				;~ 	If StringInStr($styleAutoZ, "display: none") Then
-				;~ 		$statusAutoZ = False
-				;~ 	Else
-				;~ 		writeLogFile($logFile, "✅ Thẻ t-auto_helper đang hiển thị => Auto Z dang hoat dong => Tiep tuc xu ly reset !")
-				;~ 		$statusAutoZ = True
-				;~ 	EndIf
-				;~ EndIf
-				;~ If Not $statusAutoZ Then
-				;~ 	writeLogFile($logFile, "Auto Z khong hoat dong => Thu move = web xem co dc ko !")
-				;~ 	If $activeMoveBeforRs And $postionMoveX <> "" And $postionMoveY <> "" Then
-				;~ 		$statusAutoZ = moveToPostionInWeb($sSession, $charName, $postionMoveX, $postionMoveY)
-				;~ 	EndIf
-				;~ 	If Not $statusAutoZ Then
-				;~ 		writeLogFile($logFile, "Khong the move den vi tri mong muon => Ket thuc xu ly reset !")
-				;~ 		Return
-				;~ 	EndIf
-				;~ EndIf
 			EndIf
 			; 2. Reset in web
 			resetInWeb($sSession, $oAccountInfo)
@@ -384,7 +360,8 @@ Func processReset($jAccountInfo)
 			; If reset online = true => withow handle in game
 			If Not $resetOnline Then
 				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
-				returnServer($oAccountInfo)
+				$serverNumber = $oAccountInfo.Item("serverNumber")
+				returnServer($serverNumber)
 				returnChar($mainNo)
 				; Check train_in_game xem co can thuc hien processResetNomal hay khong
 				If Not $oAccountInfo.Item("isTrainInGame") Then
@@ -444,87 +421,6 @@ Func isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlS
 		writeLogFile($logFile, "Lvl van tang theo dung quy trinh! Lvl hien tai: " & $lvlCheckInWeb)
 	EndIf
 EndFunc   ;==>isMovableUnderLevel20
-
-#cs
-Thay đổi nhân vật để reset.
-Trước khi thay đổi nhân vật cần check xem đã đủ lvl reset hay chưa ( 400 ).
-Nếu không đủ lvl rs thì thực hiện follow leader ( mục đích nếu bị bắn về thành ) và chờ 15p để check lại lvl
-Nếu đủ thì thực hiện thay đổi nhân vật
-#ce
-Func changeChar($mainNo)
-	writeLogFile($logFile, "Begin change char !")
-	sendKeyEsc()
-	; Bam chon nhat vat khac
-	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-	secondWait(3)
-	; Check title
-	$checkActive = activeAndMoveWin($mainNo)
-	If $checkActive Then
-		sendKeyDelay("{ESC}")
-		; Bam chon nhat vat khac
-		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-		secondWait(3)
-	EndIf
-EndFunc   ;==>changeChar
-
-#cs
-	Dang nhap lai vao nhan vat
-#ce
-Func returnChar($mainNo)
-	$checkActive = activeAndMoveWin($mainNo)
-	secondWait(1)
-	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
-	$timeCheck = 0
-	While Not $checkActive And $timeCheck <= 5
-		; Active title game main
-		If activeAndMoveWin($titleGameMain) Then
-			; Bam chon nhat vat khac
-			secondWait(1)
-			sendKeyEnter()
-			secondWait(2)
-			$checkActive = activeAndMoveWin($mainNo)
-			If $checkActive Then secondWait(3)
-		EndIf
-		$timeCheck += 1
-	WEnd
-
-	If $checkActive Then
-		writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
-	Else
-		writeLogFile($logFile, "Vao lai game that bai ! Sau " & $timeCheck & " lan thu ! ")
-	EndIf
-
-EndFunc   ;==>returnChar
-
-Func returnServer($oAccountInfo)
-	writeLogFile($logFile, "Begin return server !")
-	$serverNumber = Number($oAccountInfo.Item("serverNumber"))
-	writeLogFile($logFile, "Server number: " & $serverNumber)
-	; thuc hien active title game main
-	$checkActive = activeAndMoveWin($titleGameMain)
-	If $checkActive Then
-		writeLogFile($logFile, "Bat dau chon server vao lai game ! ")
-		secondWait(1)
-		; Click button chon server
-		_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_x"), getProperty("button.change_server.choise_sv_y"))
-		secondWait(2)
-		; Lay gia tri cac server, neu khong tim thay se chon sang sv_1
-		$sv_x = getProperty("button.change_server.choise_sv_" & $serverNumber & "_x")
-		$sv_y = getProperty("button.change_server.choise_sv_" & $serverNumber & "_y")
-		If $sv_x <> "" And $sv_x <> Default And $sv_y <> "" And $sv_y <> Default Then
-			writeLogFile($logFile, "Tim thay toa do server " & $serverNumber & "can vao: X: " & $sv_x & " - Y: " & $sv_y)
-			_MU_MouseClick_Delay($sv_x,$sv_y)
-		Else
-			writeLogFile($logFile, "Khong tim thay toa do server " & $serverNumber & " can vao, mac dinh chon server 1 !")
-			; Click vao chon sv 1
-			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
-			_MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_1_x"), getProperty("button.change_server.choise_sv_1_y"))
-		EndIf
-		secondWait(2)
-	Else
-		writeLogFile($logFile, "Khong the active title game main de vao server !")
-	EndIf
-EndFunc   ;==>returnServer
 
 #cs
 	Tim sport de luyen lvl len 20

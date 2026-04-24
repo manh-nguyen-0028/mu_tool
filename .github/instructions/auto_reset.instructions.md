@@ -1,0 +1,4 @@
+# Rules
+- các mục có cần sử dụng webdriver sẽ call sang file web_mu_utils.au3 để thực hiện, tránh việc gọi webdriver trực tiếp trong các file feature
+- các file feature chỉ nên chứa logic liên quan đến feature đó, tránh việc gọi các hàm tiện ích chung trực tiếp trong file feature, thay vào đó nên gọi qua file web_mu_utils.au3 để đảm bảo tính modular và dễ bảo trì
+- các hàm tiện ích chung nên được tổ chức trong file web_mu_utils.au3 theo từng nhóm chức năng (ví dụ: nhóm hàm liên quan đến webdriver, nhóm hàm liên quan đến xử lý JSON, nhóm hàm liên quan đến logging, v.v.) để dễ dàng tìm kiếm và sử dụng

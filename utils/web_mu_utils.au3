@@ -11,7 +11,7 @@
 #include "../lib/au3WebDriver-0.12.0/wd_core.au3"
 #include "../lib/au3WebDriver-0.12.0/webdriver_utils.au3"
 
-$sAppDataPath = @AppDataDir ; Lấy đường dẫn tới thư mục "AppData"
+Global $sAppDataPath = @AppDataDir ; Lấy đường dẫn tới thư mục "AppData"
 
 Global $sAppDataLocalPath = StringRegExpReplace($sAppDataPath, "Roaming", "Local") ; Lấy đường dẫn thư mục gốc
 
@@ -23,6 +23,8 @@ Global $sTitleLoginSuccess = "- Thông báo"
 Global $sTitleLoginSuccess_EN = "- Notifications"
 Global $sTitleLogoutSuccess = "/ Đăng nhập"
 Global $sTitleLogoutSuccess_EN = "/ Sign In"
+
+Local $sApiKey = "ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs" ; Key của azcaptcha
 
 Func checkThenCloseChrome()
 	checkThenCloseProcess("chrome.exe")
@@ -79,14 +81,14 @@ Func login($sSession, $username, $password)
 	; Truong hop $sTitle co chứa chuỗi trong $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
 	; Neu khong dung thi thuc hien logout va lay lai $sTitle
 	If StringInStr($sTitle, $sTitleLoginSuccess) Or StringInStr($sTitle, $sTitleLoginSuccess_EN) Then
-;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
-		; <div class="t-account-title">
+	;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
+			; <div class="t-account-title">
 
-;~                   <h4 id="t-account_name_title">maka</h4>
-;~       <h7>(Hà Nội 2003)</h7>
+	;~                   <h4 id="t-account_name_title">maka</h4>
+	;~       <h7>(Hà Nội 2003)</h7>
 
 
-;~   </div>
+	;~   </div>
 		$sElement = findElement($sSession, "//h4[@id='t-account_name_title']")
 		$sValue = getTextElement($sSession, $sElement)
 		writeLogFile($logFile, "$sValue account login: " & $sValue)
@@ -169,7 +171,6 @@ Func loginWebsite($sSession, $username, $password)
 	EndIf
 	_WD_ElementAction($sSession, $sElement, 'value', 'xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-;~ secondWait(1)
 	_WD_ElementAction($sSession, $sElement, 'value', $username)
 	writeLogFile($logFile, "$sValue: " & _WD_ElementAction($sSession, $sElement, 'value'))
 
@@ -177,99 +178,161 @@ Func loginWebsite($sSession, $username, $password)
 	$sElement = _WD_GetElementByName($sSession, "password")
 	_WD_ElementAction($sSession, $sElement, 'value', 'xxx')
 	_WD_ElementAction($sSession, $sElement, 'CLEAR')
-;~ secondWait(1)
 	_WD_ElementAction($sSession, $sElement, 'value', $password)
 
 	; Save captcha
-	$captchaImgPath = @ScriptDir & "\captcha_img.png" ;
-	; Find image captcha
-	$sElement = findElement($sSession, "//img[@class='captcha_img']")
-	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
-
-	If @error = $_WD_ERROR_Success Then
-		$idCaptchaFinal = ''
-		$timeCheck = 0
-
-		; Get captcha buoc 2 => call server captcha
-		While ($idCaptchaFinal == '' Or StringLen($idCaptchaFinal) > 4) And $timeCheck < 5
-			$timeCheck += 1
-			$sFilePath = "file:///" & $inputPathRoot & "/get_captcha.html"
-
-			; Get captcha buoc 1
-			createNewTab($sSession, optimizeUrl($sFilePath))
-			_WD_Window($sSession, "MINIMIZE")
-			; select captcha
-			_WD_SelectFiles($sSession, $_WD_LOCATOR_ByXPath, "//input[@name='file']", $captchaImgPath)
-			; Submit get id from azcaptcha
-			$sElement = findElement($sSession, "//input[@type='submit']")
-			clickElement($sSession, $sElement)
-			; get text
-			$sElement = findElement($sSession, "//body")
-			$idCaptcha = getTextElement($sSession, $sElement)
-			$idCaptcha = StringReplace($idCaptcha, "OK|", "")
-			; $idCaptcha phai la dang so, neu khong thi Chuyen lai tab ve $baseMuUrl va set $isSuccess = False sau do ket thuc method
-			If Not checkIsNumber($idCaptcha) Then
-				writeLogFile($logFile, "Captcha value is not number: " & $idCaptcha)
-				writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
-				_WD_Attach($sSession, $baseMuUrl, "URL")
-				_WD_Window($sSession, "MINIMIZE")
-				$isSuccess = False
-				ExitLoop
-			Else
-				; Get captcha buoc 2
-				$serverCaptcha = "http://azcaptcha.com/res.php?key=ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs&action=get&id=" & $idCaptcha
-				_Demo_NavigateCheckBanner($sSession, $serverCaptcha)
-				_WD_Window($sSession, "MINIMIZE")
-				; get text
-				$sElement = findElement($sSession, "//body")
-				$idCaptchaFinal = getTextElement($sSession, $sElement)
-				$idCaptchaFinal = StringReplace($idCaptchaFinal, "OK|", "")
-				writeLogFile($logFile, "Captcha value: " & $idCaptchaFinal)
-				secondWait(1)
-			EndIf
-		WEnd
-
-		If StringLen($idCaptchaFinal) == 4 Then $isSuccess = True
-
-		_WD_Window($sSession, "close")
-
-		; Chuyen lai tab ve gamethuvn.net
-		writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
-
-		; Gắn kết với tab chứa URL cụ thể
-		_WD_Attach($sSession, $baseMuUrl, "URL")
-
-;~ ; Chuyen lai tab ve gamethuvn.net
-;~ writeLogFile($logFile, "Chuyen lai tab ve " & $baseMuUrl)
-
-;~ ; Gắn kết với tab chứa URL cụ thể
-;~ Local $attachedTabHandle = _WD_Attach($sSession, $baseMuUrl, "URL")
-;~ If @error Then
-;~ 	writeLogFile($logFile, "Không thể gắn kết với tab chứa URL: " & $baseMuUrl)
-;~ Else
-;~ 	writeLogFile($logFile, "Đã gắn kết với tab: " & $attachedTabHandle)
-
-;~ 	; Đóng các tab khác
-;~ 	closeOtherTabs($sSession, $attachedTabHandle)
-;~ EndIf
-
-		_WD_Window($sSession, "MINIMIZE")
-
-		writeLogFile($logFile, "web_mu_utils.au3: (" & @ScriptLineNumber & ") : URL=" & _WD_Action($sSession, 'url') & @CRLF)
-
-		; set input captcha
-		$sElement = findElement($sSession, "//input[@name='captcha']")
-		_WD_ElementAction($sSession, $sElement, 'value', $idCaptchaFinal)
-		secondWait(1)
-
-		; Submit to login
-		$sElement = findElement($sSession, "//button[@type='submit']")
-		clickElement($sSession, $sElement)
-		secondWait(5)
-	EndIf
-
+	;~ $captchaImgPath = saveCaptchaFromWeb($sSession, "//img[@class='captcha_img']")
+	solveImageCaptchaAz($sSession,"//img[@class='captcha_img']", 90, 5)
+	checkCaptchaThenSubmit($sSession)
 	Return $isSuccess
 EndFunc   ;==>loginWebsite
+
+Func checkCaptchaThenSubmit($sSession)
+	$sElement = findElement($sSession, "//input[@name='captcha']")
+	$sValue = _WD_ElementAction($sSession, $sElement, 'value')
+	writeLogFile($logFile, "Giá trị captcha trước khi submit: " & $sValue)
+	If $sValue <> "" Then
+		writeLogFile($logFile, "Captcha đã được nhập: " & $sValue)
+		; Click submit
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(2)
+	EndIf
+	Return True
+EndFunc   ;==>checkCaptchaThenSubmit
+
+; Tao function giai ma captcha tu azcaptcha
+; Method: solveImageCaptchaAz
+; Description: Gửi captcha image lên AzCaptcha và lấy kết quả text
+Func solveImageCaptchaAz($sSession, $sImgXpath = "//img[@class='captcha_img']", $iTimeoutSec = 90, $iPollSec = 5)
+    writeLogMethodStart("solveImageCaptchaAz", @ScriptLineNumber)
+
+    If $sApiKey = "" Then
+        writeLogFile($logFile, "AzCaptcha API key rong!")
+        writeLogMethodEnd("solveImageCaptchaAz", @ScriptLineNumber)
+        Return SetError(1, 0, "")
+    EndIf
+
+    Local $sCaptchaImgPath = saveCaptchaFromWeb($sSession, $sImgXpath)
+    If Not FileExists($sCaptchaImgPath) Then
+        writeLogFile($logFile, "Khong tim thay file captcha: " & $sCaptchaImgPath)
+        writeLogMethodEnd("solveImageCaptchaAz", @ScriptLineNumber)
+        Return SetError(2, 0, "")
+    EndIf
+
+    Local $sCaptchaId = _azSubmitImageCaptcha($sApiKey, $sCaptchaImgPath)
+    If $sCaptchaId = "" Then
+        writeLogFile($logFile, "Submit captcha that bai.")
+        writeLogMethodEnd("solveImageCaptchaAz", @ScriptLineNumber)
+        Return SetError(3, 0, "")
+    EndIf
+
+    Local $hTimer = TimerInit()
+    While TimerDiff($hTimer) < ($iTimeoutSec * 1000)
+        secondWait($iPollSec)
+
+        Local $sAnswer = _azGetImageCaptchaResult($sApiKey, $sCaptchaId)
+        If @error = 0 And $sAnswer <> "" Then
+            writeLogFile($logFile, "Giai captcha thanh cong: " & $sAnswer)
+			; Thuc hien truyen du lieu vao input captcha tren web
+			; <input type="text" autocomplete="off" class="form-control" name="captcha" placeholder="Captcha">
+			$sElement = findElement($sSession, "//input[@name='captcha']")
+            _WD_ElementAction($sSession, $sElement, 'value', $sAnswer)
+            writeLogMethodEnd("solveImageCaptchaAz", @ScriptLineNumber)
+            Return $sAnswer
+        ElseIf @error = 10 Then
+            ; CAPCHA_NOT_READY -> tiep tuc cho
+            ContinueLoop
+        Else
+            ExitLoop
+        EndIf
+    WEnd
+
+    writeLogFile($logFile, "Het thoi gian cho ket qua captcha.")
+    writeLogMethodEnd("solveImageCaptchaAz", @ScriptLineNumber)
+    Return SetError(4, 0, "")
+EndFunc   ;==>solveImageCaptchaAz
+
+; Method: _azSubmitImageCaptcha
+; Description: Upload file captcha den AzCaptcha in.php (method=post)
+Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
+	writeLogFile($logFile, "_azSubmitImageCaptcha($sApiKey, $sImagePath): " & $sImagePath)
+    Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+    If @error Then Return SetError(1, 0, "")
+
+    Local $hFile = FileOpen($sImagePath, 16) ; binary
+    If $hFile = -1 Then Return SetError(2, 0, "")
+    Local $bFile = FileRead($hFile)
+    FileClose($hFile)
+    If BinaryLen($bFile) = 0 Then Return SetError(3, 0, "")
+
+    Local $sBoundary = "----AutoItAzCaptcha" & @MSEC & Int(Random(1000, 9999, 1))
+    Local $sCRLF = @CRLF
+    Local $sBodyHead = _
+            "--" & $sBoundary & $sCRLF & _
+            'Content-Disposition: form-data; name="key"' & $sCRLF & $sCRLF & $sApiKey & $sCRLF & _
+            "--" & $sBoundary & $sCRLF & _
+            'Content-Disposition: form-data; name="method"' & $sCRLF & $sCRLF & "post" & $sCRLF & _
+            "--" & $sBoundary & $sCRLF & _
+            'Content-Disposition: form-data; name="json"' & $sCRLF & $sCRLF & "0" & $sCRLF & _
+            "--" & $sBoundary & $sCRLF & _
+            'Content-Disposition: form-data; name="file"; filename="captcha.png"' & $sCRLF & _
+            "Content-Type: application/octet-stream" & $sCRLF & $sCRLF
+
+    Local $sBodyTail = $sCRLF & "--" & $sBoundary & "--" & $sCRLF
+    Local $bBody = StringToBinary($sBodyHead) & $bFile & StringToBinary($sBodyTail)
+
+    $oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
+    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+    $oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
+    $oHttp.Send($bBody)
+    If @error Then
+        writeLogFile($logFile, "AzCaptcha in.php request failed!")
+        Return SetError(4, 0, "")
+    EndIf
+
+    Local $sResp = $oHttp.ResponseText
+    If Not IsString($sResp) Or $sResp = "" Then
+        writeLogFile($logFile, "AzCaptcha in.php response empty or invalid!")
+        Return SetError(4, 0, "")
+    EndIf
+    $sResp = StringStripWS($sResp, 3)
+    writeLogFile($logFile, "AzCaptcha in.php resp: " & $sResp)
+
+    If StringLen($sResp) >= 3 And StringLeft($sResp, 3) = "OK|" Then
+        Return StringTrimLeft($sResp, 3)
+    EndIf
+
+    Return SetError(4, 0, "")
+EndFunc   ;==>_azSubmitImageCaptcha
+
+; Method: _azGetImageCaptchaResult
+; Description: Poll ket qua tu AzCaptcha res.php
+Func _azGetImageCaptchaResult($sApiKey, $sCaptchaId)
+    Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+    If @error Then Return SetError(1, 0, "")
+
+    Local $sUrl = "http://azcaptcha.com/res.php?key=" & $sApiKey & "&action=get&id=" & $sCaptchaId
+    $oHttp.Open("GET", $sUrl, False)
+    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+    $oHttp.Send()
+    If @error Then
+        writeLogFile($logFile, "AzCaptcha res.php request failed!")
+        Return SetError(1, 0, "")
+    EndIf
+
+    Local $sResp = $oHttp.ResponseText
+    If Not IsString($sResp) Or $sResp = "" Then
+        writeLogFile($logFile, "AzCaptcha res.php response empty or invalid!")
+        Return SetError(2, 0, "")
+    EndIf
+    $sResp = StringStripWS($sResp, 3)
+    writeLogFile($logFile, "AzCaptcha res.php resp: " & $sResp)
+
+    If $sResp = "CAPCHA_NOT_READY" Then Return SetError(10, 0, "")
+    If StringLen($sResp) >= 3 And StringLeft($sResp, 3) = "OK|" Then Return StringTrimLeft($sResp, 3)
+
+    Return SetError(2, 0, "")
+EndFunc   ;==>_azGetImageCaptchaResult
 
 Func closeOtherTabs($sSession, $attachedTabHandle)
 	; Lấy danh sách tất cả các tab
@@ -531,7 +594,9 @@ Func resetInWeb($sSession, $oAccountInfo)
 	EndIf
 	; Click radio rs vip
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")[" & $oAccountInfo.Item("typeRs") & "].click()")
-	secondWait(15)
+	; Thuc hien lay captcha va submit
+	solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
+	;~ secondWait(15)
 	; Kiem tra xem o captcha da dc nhap chua, neu chua thi thuc hien doi 1p roi check lai
 	;~ <input type="text" autocomplete="off" class="form-control" name="captcha" placeholder="Captcha">
 	$sElement = findElement($sSession, "//input[@name='captcha']")
@@ -582,3 +647,12 @@ Func goPageBuffChar($sSession)
 	; close diaglog confirm
 	closeDiaglogConfim($sSession)
 EndFunc   ;==>goPageBuffChar
+
+Func saveCaptchaFromWeb($sSession, $classCaptchaSelect)
+	; Save captcha
+	$captchaImgPath = @ScriptDir & "\captcha_img.png" ;
+	; Find image captcha
+	$sElement = findElement($sSession, $classCaptchaSelect)
+	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
+	Return $captchaImgPath
+EndFunc

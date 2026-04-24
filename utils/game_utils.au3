@@ -432,36 +432,52 @@ Func clickIconDevilByCondition($type, $isHaveQuest)
 	Return True
 EndFunc   ;==>clickIconDevilByCondition
 
-Func switchOtherChar($currentChar)
-	writeLogFile($logFile, "Bat dau tim kiem nhan vat khac cung tai khoan cua: " & $currentChar)
-
-	$resultSwitch = False
-
+; get array other char name in json config by current char name
+Func checkActiveOtherChar($currentChar)
+	$charName = ""
+	$numberChar = 0
 	$otherCharName = getOtherChar($currentChar)
 
-	If $otherCharName <> '' Then
+	If $otherCharName <> '' Then 
 		; chuoi $otherCharName = "char1|char2|char3"
-		; Tach chuoi dua tren dau | va kiem tra xem co nhan vat nao duoc active hay khong
-		$otherCharNameArray = StringSplit($otherCharName, "|")
-		$numberChar = $otherCharNameArray[0]
-		$charName = ""
-
-		For $i = 1 To UBound($otherCharNameArray) - 1
+		; Tach chuoi dua tren dau | va tra ve array
+		$result = StringSplit($otherCharName, "|")
+		$numberChar = $result[0]
+		For $i = 1 To UBound($result) - 1
 			; Neu trung voi currentChar thi bo qua
-			If $otherCharNameArray[$i] == $currentChar Then ContinueLoop
+			If $result[$i] == $currentChar Then ContinueLoop
 
-			$charName = $otherCharNameArray[$i]
+			$charName = $result[$i]
 			writeLogFile($logFile, "Check nhan vat: " & $charName)
-			If activeAndMoveWinByChar($charName) Then
+			If checkActiveWinByChar($charName) Then
 				writeLogFile($logFile, "Tim thay nhan vat: " & $charName & " cung tai khoan va duoc active")
 				ExitLoop
 			Else
 				$charName = ""
 			EndIf
 		Next
+	EndIf
+	writeLogFile($logFile, "checkActiveOtherChar tra ve: charName: " & $charName & " - numberChar: " & $numberChar)
+	Return $charName & "|" & $numberChar 
+EndFunc   ;==>checkActiveOtherChar
 
-		If $charName <> "" Then
+Func switchOtherChar($currentChar)
+	writeLogFile($logFile, "switchOtherChar -> Bat dau tim kiem nhan vat khac cung tai khoan cua: " & $currentChar)
+
+	$resultSwitch = False
+
+	$charNameOtherChar = checkActiveOtherChar($currentChar)
+	; $charNameOtherChar: JoyBoy|2 - > charFound: JoyBoy - numberChar: 2
+	$charFound = StringSplit($charNameOtherChar, "|")[1]
+	$numberChar = StringSplit($charNameOtherChar, "|")[2]
+
+	writeLogFile($logFile, "switchOtherChar -> checkActiveOtherChar tra ve: charFound: " & $charFound & " - numberChar: " & $numberChar & " - $charNameOtherChar: " & $charNameOtherChar)
+
+	If $charFound <> "" Then
 			writeLogFile($logFile, "Bat dau chuyen sang main cần thiết: " & $currentChar)
+			; active + move main tim thay
+			activeAndMoveWinByChar($charFound)
+			secondWait(2)
 			; Thuc hien click chuyen nhan vat cung tai khoan
 			clickOtherChar($currentChar)
 
@@ -483,11 +499,10 @@ Func switchOtherChar($currentChar)
 			Else
 				writeLogFile($logFile, "Switch account FAIL: " & $currentChar & " affter " & $timeCheck & " time")
 				; Minisize main
-				minisizeMainByChar($charName)
+				minisizeMainByChar($charFound)
 			EndIf
 
 		EndIf
-	EndIf
 	Return $resultSwitch
 EndFunc   ;==>switchOtherChar
 
@@ -522,13 +537,19 @@ Func clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 	EndIf
 	secondWait(2)
 
-	; Truong hop khong active duoc thi moi can click close popup
+	; Truong hop van khong duoc active thi thuc hien chon nhan vat dau tien trong bang chuyen nhan vat cung tai khoan
 	If activeAndMoveWinByChar($charName) Then
 		writeLogFile($logFile, "Switch account SUCCESS after click change button: " & $charName)
 	Else
 		writeLogFile($logFile, "Switch account FAIL after click change button: " & $charName & " - Need click close popup")
-		_MU_MouseClick_Delay($closePopupX, $closePopupY)
+		; thuc hien click vao nhan vat dau tien trong bang chuyen nhan vat cung tai khoan
+		$button_first_char_x = _JSONGet($jsonPositionConfig, "button.switch_char.button_first_char_x")
+		$button_first_char_y = _JSONGet($jsonPositionConfig, "button.switch_char.button_first_char_y")
+		_MU_MouseClick_Delay($button_first_char_x, $button_first_char_y)
+		; Doi 2s sau do check lai 1 lan nua, neu van khong active duoc thi thuc hien click vao vi tri close popup de tat popup chuyen nhan vat cung tai khoan
 		secondWait(2)
+		If Not activeAndMoveWinByChar($charName) Then _MU_MouseClick_Delay($closePopupX, $closePopupY)
+		Return False
 	EndIf
 
 	Return True
@@ -554,7 +575,6 @@ Func moveOtherMap($charName)
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
 		secondWait(1)
-;~ handelWhenFinshDevilEvent()
 		writeLogFile($logFile, "Bat dau chuyen map khac")
 		sendKeyM()
 		secondWait(2)
@@ -573,36 +593,44 @@ Func moveOtherMap($charName)
 EndFunc   ;==>moveOtherMap
 
 Func switchToMainChar($jsonAccountActiveDevil)
-	; Thuc hien check trong $jsonAccountActiveDevil xem acc nao can chuyen sang main chinh hay khong ?
-	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
-		$switch_other_main = _JSONGet($jsonAccountActiveDevil[$i], "switch_other_main")
-		$main_char_name = _JSONGet($jsonAccountActiveDevil[$i], "main_char_name")
-		$active = _JSONGet($jsonAccountActiveDevil[$i], "active")
-		If $active And $switch_other_main Then
-			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-			$mainNo = getMainNoByChar($charName)
-			; Truong hop main cha da duoc active thi khong can switch nua, neu chua thi thuc hien switch
-			If activeAndMoveWinByChar($main_char_name) Then
-				writeLogFile($logFile, "Main cha da duoc active roi. Khong can swith nua: " & $main_char_name)
-				minisizeMain(getMainNoByChar($main_char_name))
-				ContinueLoop
-			Else
-				writeLogFile($logFile, "Main cha chua duoc active. Thuc hien swith sang main cha: " & $main_char_name)
-				; Thuc hien check active main con. Neu duoc active thi thuc hien switch sang main cha, neu khong duoc active thi bo qua khong can switch
-				If activeAndMoveWin($mainNo) Then
-				; Thuc hien swith
-					$resultSwitch = switchOtherChar($main_char_name)
-					; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
-					If $resultSwitch Then
-						minisizeMain(getMainNoByChar($main_char_name))
-				Else
-					minisizeMain($mainNo)
-				EndIf
-			EndIf
-			EndIf
-		EndIf
-	Next
+    ; Thuc hien check trong $jsonAccountActiveDevil xem acc nao can chuyen sang main chinh hay khong ?
+    For $i = 0 To UBound($jsonAccountActiveDevil) - 1
+		Local $charInfo = $jsonAccountActiveDevil[$i]
+		Local $charName = _JSONGet($charInfo, "char_name")
+		Local $swithOtherMain = _JSONGet($charInfo, "switch_other_main")
+		Local $mainCharName = _JSONGet($charInfo, "main_char_name")
+		; Chi thuc hien khi $swithOtherMain = true va mainCharName khac rong
+		If $swithOtherMain And $mainCharName <> "" Then switchToMainCharItem($charName, $mainCharName)
+    Next
 EndFunc   ;==>switchToMainChar
+
+; Method: switchToMainCharItem
+; Description: Xu ly chuyen sang main chinh cho 1 nhan vat trong truong hop main chinh chua duoc active
+; - Neu main chinh da duoc active thi khong can switch nua, chi can minisize main con lai
+; - Neu main chinh chua duoc active thi thuc hien switch sang main chinh, neu switch thanh cong thi minisize main con lai, neu switch khong thanh cong thi minisize main hien tai
+Func switchToMainCharItem($charName, $mainCharName)
+    Local $mainNo = getMainNoByChar($charName)
+
+    ; Truong hop main cha da duoc active thi khong can switch nua
+    If activeAndMoveWinByChar($mainCharName) Then
+        writeLogFile($logFile, "Main cha da duoc active roi. Khong can swith nua: " & $mainCharName)
+        minisizeMain(getMainNoByChar($mainCharName))
+        Return
+    EndIf
+
+    writeLogFile($logFile, "Main cha chua duoc active. Thuc hien swith sang main cha: " & $mainCharName)
+
+    ; Thuc hien check active main con. Neu duoc active thi thuc hien switch sang main cha
+    If Not activeAndMoveWin($mainNo) Then Return
+
+    Local $resultSwitch = switchOtherChar($mainCharName)
+    ; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
+    If $resultSwitch Then
+        minisizeMain(getMainNoByChar($mainCharName))
+    Else
+        minisizeMain($mainNo)
+    EndIf
+EndFunc   ;==>switchToMainCharItem
 
 Func changeServer($mainNo)
 	writeLogFile($logFile, "Begin change server !")
@@ -826,6 +854,11 @@ Func WM_SIZING_Handler($hWndMsg, $iMsg, $wParam, $lParam)
 	Return True
 EndFunc   ;==>WM_SIZING_Handler
 
+Func checkActiveWinByChar($charName)
+	Local $mainName = getMainNoByChar($charName)
+	Return checkActiveWin($mainName)
+EndFunc
+
 Func checkActiveWin($mainName)
 	Local $expected = $mainName
 	Local $list = WinList()
@@ -844,6 +877,7 @@ EndFunc
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
+	writeLogFile($logFile, "Begin active and move win: " & $mainName)
 	Local $expected = $mainName
 	Local $list = WinList()
 	Local $i
@@ -851,6 +885,7 @@ Func activeAndMoveWin($mainName)
 	For $i = 1 To $list[0][0]
 		; so sánh tuyệt đối
 		If $list[$i][0] = $expected Then
+			WinSetState($list[$i][1], "", @SW_SHOW)
 			WinActivate($list[$i][1])
 			WinMove($list[$i][1], "", 0, 0)
 			resizeGame($list[$i][1])
@@ -864,6 +899,7 @@ Func activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWin
 
 Func activeAndMoveWinByChar($charName)
+	writeLogFile($logFile, "Begin active and move win by char: " & $charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWinByChar
@@ -883,7 +919,7 @@ Func sendKeyHome()
 	writeLogFile($logFile, "Send key home !")
 	sendKeyDelay("{Home}")
 	secondWait(1)
-EndFunc   ;==>sendKeyHome
+EndFunc   ;==>sendKeyHom
 
 Func sendKeyTab()
 	writeLogFile($logFile, "Send key tab !")
@@ -907,6 +943,26 @@ Func sendKeyS()
 	sendKeyDelay("s")
 	secondWait(1)
 EndFunc   ;==>sendKeyS
+
+Func sendKeyF8()
+	writeLogFile($logFile, "Send key F8 !")
+	sendKeyDelay("{F8}")
+	secondWait(1)
+EndFunc   ;==>sendKeyF8
+
+; send key Shift + F
+Func sendKeyShiftF()
+	writeLogFile($logFile, "Send key Shift + F !")
+	sendKeyDelay("+f")
+	secondWait(1) 
+EndFunc
+
+; Huy trang thai Shift + F bang cach click vao giua man hinh
+Func cancelShiftF()
+	writeLogFile($logFile, "Cancel Shift + F by click center screen !")
+	clickCenterChar()
+	secondWait(1)
+EndFunc
 
 
 Func goMapArena($rsCount)
@@ -990,6 +1046,32 @@ Func startAutoPlus()
 	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
 EndFunc
 
+; Method: startAutoPlusWithReset
+; Description: Mo Auto Plus, tick checkbox reset, click Start
+Func startAutoPlusWithReset()
+	; 1. Click vao button train in game (mo cua so Auto Plus)
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
+	secondWait(2)
+	; 2. Click vao checkbox reset de tick
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.checkbox_reset_x"), getProperty("button.train_in_game.checkbox_reset_y"))
+	secondWait(1)
+	; 3. Click vao button Start
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
+EndFunc   ;==>startAutoPlusWithReset
+
+; Method: startAutoPlusWithoutReset
+; Description: Mo Auto Plus, bo tick checkbox reset, click Start
+Func startAutoPlusWithoutReset()
+	; 1. Click vao button train in game (mo cua so Auto Plus)
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
+	secondWait(2)
+	; 2. Click vao checkbox reset de bo tick
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.checkbox_reset_x"), getProperty("button.train_in_game.checkbox_reset_y"))
+	secondWait(1)
+	; 3. Click vao button Start
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
+EndFunc   ;==>startAutoPlusWithoutReset
+
 Func switchSvInGame($oAccountInfo)
 	; 3. Thuc hien doi server trong game nhe
 	_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.button_x"), getProperty("button.swith_sv_in_game.button_y"))
@@ -1007,3 +1089,134 @@ Func switchSvInGame($oAccountInfo)
 		_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.choise_sv_1_x"), getProperty("button.swith_sv_in_game.choise_sv_1_y"))	
 	EndIf
 EndFunc
+
+; Thuc hien thay doi nhan vat, sau do thuc vao lai game ngay
+Func changeThenReturnChar($charName)
+	; Thuc hiện active cửa sổ game, kiểm tra xem nhân vật có được mở không, nếu không thì kiểm tra xem nhân vật cùng tài khoản có được mở không
+	If checkActiveWinByChar($charName) Then
+		writeLogFile($logFile, "Tim thay cua so game cho " & $charName)
+		activeAndMoveWinByChar($charName)
+	Else
+		writeLogFile($logFile, "Khong tim thay cua so game cho " & $charName)
+		switchOtherChar($charName)
+		secondWait(5)
+	EndIf
+	
+	; Thưc hiện thay đổi nhân vật nếu active được cửa sổ game, nếu không active được cửa sổ game nào thì thôi không cần thực hiện nữa
+	If activeAndMoveWinByChar($charName) Then
+		writeLogFile($logFile, "Da active duoc cua so game cho " & $charName & ", tiep tuc thuc hien reset online !")
+		; Thuc hien thay doi nhan vat
+		changeChar(getMainNoByChar($charName))
+		secondWait(5)
+		; Thuc hien return lại char
+		returnChar(getMainNoByChar($charName))
+	Else
+		writeLogFile($logFile, "Khong the active duoc cua so game cho " & $charName & ", khong the thay đổi nhân vật online !")
+	EndIf
+	Return True
+EndFunc
+
+#cs
+Thay đổi nhân vật để reset.
+Trước khi thay đổi nhân vật cần check xem đã đủ lvl reset hay chưa ( 400 ).
+Nếu không đủ lvl rs thì thực hiện follow leader ( mục đích nếu bị bắn về thành ) và chờ 15p để check lại lvl
+Nếu đủ thì thực hiện thay đổi nhân vật
+#ce
+Func changeChar($mainNo)
+	writeLogFile($logFile, "Begin change char !")
+	sendKeyEsc()
+	; Bam chon nhat vat khac
+	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
+	secondWait(3)
+	; Check title
+	$checkActive = activeAndMoveWin($mainNo)
+	If $checkActive Then
+		sendKeyDelay("{ESC}")
+		; Bam chon nhat vat khac
+		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
+		secondWait(3)
+	EndIf
+EndFunc   ;==>changeChar
+
+#cs
+	Dang nhap lai vao nhan vat
+#ce
+Func returnChar($mainNo)
+	$checkActive = activeAndMoveWin($mainNo)
+	secondWait(1)
+	writeLogFile($logFile, "Bat dau chon nhan vat vao lai game ! Main No: " & $mainNo)
+	$timeCheck = 0
+	While Not $checkActive And $timeCheck <= 5
+		; Active title game main
+		If activeAndMoveWin($titleGameMain) Then
+			; Bam chon nhat vat khac
+			secondWait(1)
+			sendKeyEnter()
+			secondWait(2)
+			$checkActive = activeAndMoveWin($mainNo)
+			If $checkActive Then secondWait(3)
+		EndIf
+		$timeCheck += 1
+	WEnd
+
+	If $checkActive Then
+		writeLogFile($logFile, "Vao lai game thanh cong ! Main No: " & $mainNo)
+	Else
+		writeLogFile($logFile, "Vao lai game that bai ! Sau " & $timeCheck & " lan thu ! ")
+	EndIf
+
+EndFunc   ;==>returnChar
+
+; Method: returnServer
+; Description: Chon lai server de vao game sau khi reset
+Func returnServer($serverNumber)
+    writeLogMethodStart("returnServer", @ScriptLineNumber)
+
+    If $serverNumber <= 0 Then $serverNumber = 1
+
+    writeLogFile($logFile, "Begin return server !")
+    writeLogFile($logFile, "Server number: " & $serverNumber)
+
+    If Not activeAndMoveWin($titleGameMain) Then
+        writeLogFile($logFile, "Khong the active title game main de vao server !")
+        writeLogMethodEnd("returnServer", @ScriptLineNumber)
+        Return False
+    EndIf
+
+    writeLogFile($logFile, "Bat dau chon server vao lai game !")
+    secondWait(1)
+
+    ; Click button mở danh sách server
+    _MU_MouseClick_Delay(getProperty("button.change_server.choise_sv_x"), getProperty("button.change_server.choise_sv_y"))
+    secondWait(2)
+
+    ; Ưu tiên server cấu hình, nếu không có thì fallback về server 1
+    If Not _clickServerChoice($serverNumber) Then
+        writeLogFile($logFile, "Mac dinh chon server 1 !")
+        If Not _clickServerChoice(1) Then
+            writeLogFile($logFile, "Khong tim thay toa do server 1 !")
+            writeLogMethodEnd("returnServer", @ScriptLineNumber)
+            Return False
+        EndIf
+    EndIf
+
+    secondWait(2)
+    writeLogMethodEnd("returnServer", @ScriptLineNumber)
+    Return True
+EndFunc   ;==>returnServer
+
+; Method: _clickServerChoice
+; Description: Click vào tọa độ server theo số server, trả về True nếu thành công
+Func _clickServerChoice($serverNumber)
+    Local $svX = getProperty("button.change_server.choise_sv_" & $serverNumber & "_x")
+    Local $svY = getProperty("button.change_server.choise_sv_" & $serverNumber & "_y")
+
+    If $svX = "" Or $svX = Default Or $svY = "" Or $svY = Default Then
+        writeLogFile($logFile, "Khong tim thay toa do server " & $serverNumber)
+        Return False
+    EndIf
+
+    writeLogFile($logFile, "Tim thay toa do server " & $serverNumber & " can vao: X=" & $svX & " - Y=" & $svY)
+    _MU_MouseClick_Delay(Number($svX), Number($svY))
+    Return True
+EndFunc   ;==>_clickServerChoice
