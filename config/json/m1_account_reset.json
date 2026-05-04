@@ -1,0 +1,12 @@
+[
+	{"active":true,"type":"reset","char_name":"Goode","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":3,"is_buff":true, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": true, "active_end_key": false},
+	{"active":true,"type":"reset","char_name":"GameNhuL","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":1,"is_buff":true, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":false,"type":"reset","char_name":"JoyBoy","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"server_number": 1,"train_in_game": false,"need_check_auto_z": true,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BiThuXa","type_rs":0,"lvl_move":400,"reset_online":false,"hour_per_reset":20,"is_buff":true,"server_number": 1,"train_in_game": false,"need_check_auto_z": true,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BaoTramAnh","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":1,"is_buff":true, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BuHotLe","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":true, "server_number": 1,"train_in_game": false,"position_leader":1, "active_move_rs": true, "active_end_key": false},
+	{"active":false,"type":"reset","char_name":"PhoTuong","type_rs":1,"lvl_move":400,"reset_online":false,"hour_per_reset":24,"is_buff":false, "server_number": 1,"train_in_game": false,"position_leader":1, "active_move_rs": true, "active_end_key": false},
+	{"active":false,"type":"reset","char_name":"Miyoko","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":true, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BLUU","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"withdraw","char_name":"PhapSuNhi","type_rs":0,"lvl_move":400,"reset_online":false,"hour_per_reset":8,"is_buff":false, "server_number": 8,"train_in_game": false,"position_leader":1, "active_move_rs": true, "active_end_key": false}
+]

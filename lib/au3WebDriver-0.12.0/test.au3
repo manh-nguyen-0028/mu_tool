@@ -34,7 +34,6 @@ Func createMockAccountInfo()
     $mockAccountInfo.Item("position_leader") = "1"
     $mockAccountInfo.Item("active_end_key") = True
     $mockAccountInfo.Item("need_check_auto_z") = False
-    $mockAccountInfo.Item("active_move_rs") = True
     $mockAccountInfo.Item("postion_move_x") = "100"
     $mockAccountInfo.Item("postion_move_y") = "200"
     
@@ -73,7 +72,6 @@ Func testScriptDiction()
     ConsoleWrite("Is Main Character: " & $oAccountInfo.Item("isMainCharacter") & @CRLF)
     ConsoleWrite("Main Char Name: " & $oAccountInfo.Item("mainCharName") & @CRLF)
     ConsoleWrite("Position Leader: " & $oAccountInfo.Item("positionLeader") & @CRLF)
-    ConsoleWrite("Active End Key: " & $oAccountInfo.Item("activeEndKey") & @CRLF)
     ConsoleWrite("Need Check Auto Z: " & $oAccountInfo.Item("needCheckAutoZ") & @CRLF)
     ConsoleWrite("Active Move Before RS: " & $oAccountInfo.Item("activeMoveBeforRs") & @CRLF)
     ConsoleWrite("Position Move X: " & $oAccountInfo.Item("postionMoveX") & @CRLF)
@@ -130,9 +128,7 @@ Func extractAccountInfo($jAccountInfo)
     $oAccountInfo.Item("isMainCharacter") = getPropertyJson($jAccountInfo, "is_main_character")
     $oAccountInfo.Item("mainCharName") = getPropertyJson($jAccountInfo, "main_char_name")
     $oAccountInfo.Item("positionLeader") = getPropertyJson($jAccountInfo, "position_leader")
-    $oAccountInfo.Item("activeEndKey") = getPropertyJson($jAccountInfo, "active_end_key")
     $oAccountInfo.Item("needCheckAutoZ") = getPropertyJson($jAccountInfo, "need_check_auto_z")
-    $oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
     $oAccountInfo.Item("postionMoveX") = getPropertyJson($jAccountInfo, "postion_move_x")
     $oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
     

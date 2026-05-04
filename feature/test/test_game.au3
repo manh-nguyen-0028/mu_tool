@@ -3,38 +3,18 @@
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
 ;~ #include "../auto_devil/auto_devil.au3"
-
-
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-
-;~ $charName="CuuBiThuXa"
-;~ $charName="CtrDell"
-;~ $charName="Girlss"
-;~ $charName="Maisy"
-;~ $charName="TamGiaoChu"
-$charName="Goode"
-;~ $charName="JoyBoy"
-;~ $charName="DonMapNho"
-;~ $charName="SuTruTri"
-;~ $charName="GiaoSu"
-
-;~ $charName="DacVuAoDen"
-;~ $charName="Pucca"
-;~ $charName="NguHo"
-;~ $charName="NguHoBao"
-;~ $charName="CuuBiThuXa"
-;~ $charName="BiThuXa"
-;~ $charName="TronVo1"
+$charName="BiThuXa"
+allAccount()
 
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
 
-;~ activeAndMoveWin($titleGameMain)
-
+;~ testLogin()
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
@@ -54,9 +34,14 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testWithCharButtonImage()
 ;~ testSwithChar()
 ;~ testCheckActiveAutoHome()
+;~ checkAutoHomePlus()
 ;~ testClickCenterChar()
-
-;~ minisizeMain($mainNo)
+;~ testStopAutoPlus()
+;~ testStartAutoPlus()
+;~ testSwitchSvInGame()
+;~ testCheckMainActive("Zalo")
+;~ testSplitString()
+testChangeThenReturnChar($charName)
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -128,7 +113,7 @@ EndFunc
 
 Func testCheckSwithCharButton()
     secondWait(1)
-    clickOtherChar()
+    clickOtherChar($charName)
     Return True
 EndFunc
 
@@ -147,7 +132,7 @@ Func testGoMapLvl()
 EndFunc
 
 Func activeAllMainActive()
-    ; Active toan bo main co title co tien to MU GamethuVN - Season 15 (Hà Nội
+    ; Active toan bo main co title co tien to MU GamethuVN - Season 21 (Hà Nội
     $arrMain = getAllMainActive()
     writeLogFile($logFile, "So main hoat dong: " & UBound($arrMain) - 1)
 
@@ -159,8 +144,8 @@ EndFunc
 
 Func getAllMainActive()
     Local $arrMain[0]
-    ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 15 (Hà Nội"
-    Local $aWindows = WinList("MU GamethuVN - Season 15 (Hà Nội")
+    ; Lấy danh sách tất cả các cửa sổ có tiêu đề chứa tiền tố là "MU GamethuVN - Season 21 (Hà Nội"
+    Local $aWindows = WinList("MU GamethuVN - Season 21 (Hà Nội")
     writeLogFile($logFile, "So cua so main dang hoat dong: " & $aWindows[0][0])
     ; In ra danh sach
     ;~ _ArrayDisplay($aWindows, "Danh sach cua so main dang hoat dong")
@@ -420,5 +405,82 @@ EndFunc
 
 Func testReturnChar()
     returnChar($mainNo)
+    Return True
+EndFunc
+
+Func checkAutoHomePlus()
+    checkActiveAutoHomePlus()
+    Return True
+EndFunc
+
+Func testStartAutoPlus()
+    startAutoPlus()
+EndFunc
+
+Func testStopAutoPlus()
+    stopAutoPlus()
+    Return True
+EndFunc
+
+Func testSwitchSvInGame()
+    ;~ $oAccountInfo = getAccountInfoByChar($charName)
+    Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
+    $oAccountInfo.Item("serverNumber") = 1
+    switchSvInGame($oAccountInfo)
+
+    $oAccountInfo.Item("serverNumber") = 8
+    switchSvInGame($oAccountInfo)
+    Return True
+EndFunc
+
+Func testCheckMainActive($mainName)
+    checkActiveWin($mainName)
+EndFunc
+
+Func allAccount()
+    Local $accountName[20]
+    $accountName[0] = "CuuBiThuXa"
+    $accountName[1] = "Maisy"
+    $accountName[2] = "TamGiaoChu"  
+    $accountName[3] = "PhoGiaoSu"
+    $accountName[4] = "JoyBoy"
+    $accountName[5] = "SuTruTri"
+    $accountName[6] = "NguHo"
+    $accountName[7] = "NguHoBao"
+    $accountName[8] = "CuuBiThuXa"
+    $accountName[9] = "BiThuXa"
+    ; xuat ra danh sach account tren 1 dong ngan cach nhau boi dau |
+    Local $accountList = ""
+    For $i = 0 To UBound($accountName) - 1
+        ; chi khi khong bi trong thi moi them vao danh sach
+        If $accountName[$i] <> "" Then
+            $accountList &= $accountName[$i] & " | "
+        EndIf
+    Next
+    writeLogFile($logFile, "Danh sach account: " & $accountList)
+EndFunc
+
+Func testLogin()
+    $sSession = SetupChrome()
+    $username = "vinci"
+    $password = "manhva02"
+    $baseMuUrl = "https://hn.gamethuvn.com/"
+    _Demo_NavigateCheckBanner($sSession, $baseMuUrl)
+	_WD_LoadWait($sSession, 1000)
+    login($sSession, $username, $password)
+    ;~ logFileCommon()
+    Return True
+EndFunc
+
+Func testChangeThenReturnChar($charName)
+    changeThenReturnChar($charName)
+    Return True
+EndFunc
+
+Func testSplitString()
+    $charNameOtherChar = "JoyBoy|2"
+    $charFound = StringSplit($charNameOtherChar, "|")[1]
+	$numberChar = StringSplit($charNameOtherChar, "|")[2]
+	writeLogFile($logFile, "switchOtherChar -> checkActiveOtherChar tra ve: charFound: " & $charFound & " - numberChar: " & $numberChar & " - $charNameOtherChar: " & $charNameOtherChar)
     Return True
 EndFunc

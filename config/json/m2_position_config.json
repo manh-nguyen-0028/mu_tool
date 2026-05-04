@@ -4,49 +4,16 @@
       "override": true
     },
     "auto": {
-      "time_loop_auto_rs": 60,
-      "time_wait_rs_vip": 5,
-      "time_wait_rs_zen_rs_50": 7,
-      "max_rs_vip": 10,
-      "max_rs_po": 10
+      "time_loop_auto_rs": 60
     },
     "web": {
       "mu_url": "https://hn.mugamethuvn.info/"
     },
-    "game": {
-      "exe_path": "D:\\MUGameThuVN_Full_MB\\MU.exe",
-      "launcher_title": "MU GamethuVN - Season 21"
-    },
-    "login": {
-      "button_start_x": 1212,
-      "button_start_y": 693,
-      "button_login_x": 1212,
-      "button_login_y": 693,
-      "button_change_account_x": 351,
-		  "button_change_account_y": 345,
-      "button_add_account_x": 0,
-      "button_add_account_y": 0,
-      "input_username_x": 0,
-      "input_username_y": 0,
-      "input_password_x": 0,
-      "input_password_y": 0,
-      "button_confirm_x": 0,
-      "button_confirm_y": 0,
-      "first_account_x": 0,
-      "first_account_y": 0,
-      "button_submit_x": 0,
-      "button_submit_y": 0,
-      "select_server_x": 0,
-      "select_server_y": 0,
-      "select_channel_x": 0,
-      "select_channel_y": 0,
-      "wait_load_user_sec": 5
-    },
     "full_screen": {
       "x": 0,
       "y": 0,
-      "x1": 1056,
-      "y1": 789
+      "x1": 800,
+      "y1": 600
     },
     "chrome": {
       "path": "chromedriver\\chromedriver-win64\\chromedriver.exe",
@@ -59,34 +26,13 @@
       "binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     },
     "image_search": {
-      "tolerance": 50,
-      "tolerance_auto_home_plus": 50
+      "tolerance": 50
     }
   },
   "button": {
-    "train_in_game": {
-      "button_x": 100,
-      "button_y": 200,
-      "button_start_x": 100,
-      "button_start_y": 200,
-      "button_stop_x": 306,
-      "button_stop_y": 78,
-      "checkbox_reset_x": 0,
-      "checkbox_reset_y": 0
-    },
-    "swith_sv_in_game": {
-      "button_x": 100,
-      "button_y": 200,
-      "choise_sv_1_x": 230,
-      "choise_sv_1_y": 234,
-      "choise_sv_5_x": 230,
-      "choise_sv_5_y": 234,
-      "choise_sv_6_x": 230,
-      "choise_sv_6_y": 234,
-      "choise_sv_8_x": 230,
-      "choise_sv_8_y": 234,
-      "choise_sv_10_x": 230,
-      "choise_sv_10_y": 234
+    "dong_y": {
+      "x": 100,
+      "y": 200
     },
     "xac_nhan": {
       "x": 100,
@@ -110,7 +56,7 @@
       "npc_search_x_1": 485,
       "npc_search_y_1": 402,
       "deviation_x": 0,
-      "deviation_y": 30
+      "deviation_y": 10
     },
     "icon_event_common": {
       "x": 100,
@@ -134,24 +80,24 @@
       "y_2": 165,
       "x_3": 130, 
       "y_3": 166,
-      "x_quest": 22,
+	  "x_quest": 22,
       "y_quest": 261,
       "chap_nhan_x": 476,
       "chap_nhan_y": 476,
       "huy_bo_x": 554,
       "huy_bo_y": 475,
-      "devil_2_x": 141,
-      "devil_2_y": 326,
-      "devil_3_x": 107,
-      "devil_3_y": 349,
-      "devil_4_x": 127,
-      "devil_4_y": 380,
-      "devil_5_x": 122,
-      "devil_5_y": 412,
-      "devil_6_x": 125,
-      "devil_6_y": 441,
-      "devil_7_x": 137,
-      "devil_7_y": 474
+      "devil_2_x": 84,
+      "devil_2_y": 261,
+      "devil_3_x": 92,
+      "devil_3_y": 291,
+      "devil_4_x": 84,
+      "devil_4_y": 322,
+      "devil_5_x": 84,
+      "devil_5_y": 355,
+      "devil_6_x": 84,
+      "devil_6_y": 385,
+      "devil_7_x": 84,
+      "devil_7_y": 415
     },
     "event_devil_icon_no_had_k": {
       "x": 37,
@@ -174,16 +120,16 @@
     "event_icon": {
       "x": 134,
       "y": 97,
-      "map_lvl_x": 370,
-      "map_lvl_y": 210,
+      "map_lvl_x": 196,
+      "map_lvl_y": 138,
       "map_lvl_center_x": 383,
       "map_lvl_center_y": 190,
-      "map_stadium_x": 348,
-      "map_stadium_y": 311
+      "map_stadium_x": 196,
+      "map_stadium_y": 275
     },
     "move": {
-      "other_map_x": 152,
-      "other_map_y": 237
+      "other_map_x": 153,
+      "other_map_y": 224
     },
     "change_char": {
       "x": 395,
@@ -196,12 +142,12 @@
       "choise_sv_y": 234,
       "choise_sv_1_x": 401,
       "choise_sv_1_y": 234,
-      "choise_sv_6_x": 401,
-      "choise_sv_6_y": 234,
-      "choise_sv_8_x": 401,
-      "choise_sv_8_y": 234,
-      "choise_sv_10_x": 401,
-      "choise_sv_10_y": 234
+      "choise_sv_6_x": 370, 
+      "choise_sv_6_y": 330,
+      "choise_sv_8_x": 391, 
+      "choise_sv_8_y": 354,
+      "choise_sv_10_x": 396,
+      "choise_sv_10_y": 377
     },
     "switch_char": {
       "icon_x": 646, 
@@ -210,12 +156,10 @@
       "icon_y_2": 386,
       "button_change_x_active_autoz": 265,
       "button_change_y_active_autoz": 285,
-      "button_change_x_not_active_autoz": 269,
-      "button_change_y_not_active_autoz": 259,
-      "close_popup_x": 407,
-      "close_popup_y": 66, 
-      "button_first_char_x": 230,
-      "button_first_char_y": 234
+      "button_change_x_not_active_autoz": 267,
+      "button_change_y_not_active_autoz": 273,
+		  "close_popup_x": 407,
+      "close_popup_y": 66
     },
     "screen_mouse_move": {
       "center_x": 389,
@@ -224,8 +168,8 @@
       "center_char_y": 299
     },
     "close_shop_chao": {
-      "x": 287,
-      "y": 323
+      "x": 307,
+      "y": 315
     },
     "close_shop": {
       "x": 238,
@@ -236,8 +180,8 @@
       "y": 496
     },
     "loren_sport1": {
-      "x": 474,
-      "y": 387
+      "x": 359,
+      "y": 338
     },
     "check_lvl_400": {
       "x": 134,
@@ -264,11 +208,7 @@
       "x": 298,
       "y": 453,
       "x1": 525,
-      "y1": 564,
-      "plus_x": 298,
-      "plus_y": 453,
-      "plus_x1": 525,
-      "plus_y1": 564
+      "y1": 564
     },
     "sport_arena_1": {
       "x": 304,
@@ -279,8 +219,8 @@
       "y": 380
     },
     "sport_arena_3": {
-      "x": 152,
-      "y": 493
+      "x": 301, 
+      "y": 447
     }
   },
   "web": {

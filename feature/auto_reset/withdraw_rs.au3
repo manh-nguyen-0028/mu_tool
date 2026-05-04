@@ -113,7 +113,6 @@ Func withdrawRs($username, $password, $charName,$hourPerRs)
 
 			If $errorIp == $_WD_ERROR_Timeout Then
 				; Thuc hien set lai vao file de khong thuc hien rs nua
-				;~ setRsLogByAccountProperty($accountInfo,"is_have_ip", False)
 				$sElement = findElement($sSession, "//button[@type='submit']") 
 				clickElement($sSession, $sElement)
 				secondWait(5)
