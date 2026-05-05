@@ -169,9 +169,29 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay(150, 228)
 EndFunc   ;==>handelWhenFinshDevilEvent
 
+Func handleBeforeReset()
+	For $i = 0 To 2 Step +1
+		sendKeyEnter()
+	Next
+	; Click ra ngaoi 1 lan nua cho chac
+	_MU_MouseClick_Delay(150, 228)
+EndFunc
+
+Func sendEnterThenClickCenter()
+	sendKeyEnter()
+	clickCenterChar()
+	Return True
+EndFunc
+
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
+	; Close popup event devil 239, 126
+	$closePopupX = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_x")
+	$closePopupY = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_y")
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($closePopupX, $closePopupY)
+	Next
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
@@ -373,8 +393,7 @@ EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
-	activeAndMoveWin(getMainNoByChar($charName))
-	secondWait(2)
+	activeAndMoveWinByChar($charName)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
 	$haveAddPoint = True
@@ -392,12 +411,9 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	EndIf
 	clickIconDevilByCondition($typeCheck, $isHaveQuest)
 
-	secondWait(1)
-
 	; Nhap enter de vao devil
 	sendKeyEnter()
-;~ ; Sleep 4s
-	secondWait(4)
+	secondWait(1)
 EndFunc   ;==>clickIconDevil
 
 Func clickIconDevilByCondition($type, $isHaveQuest)
@@ -577,7 +593,7 @@ Func moveOtherMap($charName)
 		secondWait(1)
 		writeLogFile($logFile, "Bat dau chuyen map khac")
 		sendKeyM()
-		secondWait(2)
+		secondWait(1)
 		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
 		$moveOtherMapY = _JSONGet($jsonPositionConfig, "button.move.other_map_y")
 		; Click lien tuc 3 lan
@@ -708,17 +724,11 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
 	$npcSearchY = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y")
 	$npcSearchX1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x_1")
 	$npcSearchY1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y_1")
-;~ $npcSearchColor = 0x8B8171
 	$npcSearchColor = 0xB9AA95
 
 	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
-;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
-
-;~ _ArrayDisplay($npcSearch)
-
 	$totalSearch = 0 ;
-;~ 671 1050
 	While $npcSearch = 0 And $totalSearch < 5
 		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
@@ -752,12 +762,8 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
 		$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
 
-;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
-
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
-;~ $npcX = $npcSearch[0] - 131
-;~ $npcY = $npcSearch[1]
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
@@ -765,12 +771,11 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$devil_open_y = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_y")
 		$devil_open_color = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_color")
 
-;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		$checkOpenDevil = checkOpenPopupDevil()
 		If $checkOpenDevil Then
 			writeLogFile($logFile, "Thuc hien click vao devil")
 			clickPositionByDevilNo($devilNo)
-			secondWait(6)
+			secondWait(4)
 			_MU_Start_AutoZ()
 		Else
 			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
@@ -877,7 +882,7 @@ EndFunc
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
-	writeLogFile($logFile, "Begin active and move win: " & $mainName)
+	;~ writeLogFile($logFile, "Begin active and move win: " & $mainName)
 	Local $expected = $mainName
 	Local $list = WinList()
 	Local $i
@@ -899,7 +904,7 @@ Func activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWin
 
 Func activeAndMoveWinByChar($charName)
-	writeLogFile($logFile, "Begin active and move win by char: " & $charName)
+	;~ writeLogFile($logFile, "Begin active and move win by char: " & $charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWinByChar
@@ -936,6 +941,11 @@ Func sendKeyM()
 	sendKeyDelay("m")
 	secondWait(1)
 EndFunc   ;==>sendKeyM
+
+Func sendKeyC()
+	sendKeyDelay("c")
+	secondWait(1)
+EndFunc   ;==>sendKeyC
 
 Func sendKeyS()
 	clickCenterChar()
@@ -1028,13 +1038,10 @@ Func checkActiveParentMain($charName)
 EndFunc   ;==>checkActiveParentMain
 
 Func stopAutoPlus()
-	; 558 220
 	$stopAutoPlusX = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_x")
 	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
 	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
-	; Click ra 1 vi tri khac de an popup
-	;~ secondWait(3)
-	;~ _MU_MouseClick_Delay(558, 220)
+
 	Return True
 EndFunc
 
@@ -1127,14 +1134,14 @@ Func changeChar($mainNo)
 	sendKeyEsc()
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-	secondWait(3)
+	secondWait(2)
 	; Check title
 	$checkActive = activeAndMoveWin($mainNo)
 	If $checkActive Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-		secondWait(3)
+		secondWait(2)
 	EndIf
 EndFunc   ;==>changeChar
 
@@ -1220,3 +1227,25 @@ Func _clickServerChoice($serverNumber)
     _MU_MouseClick_Delay(Number($svX), Number($svY))
     Return True
 EndFunc   ;==>_clickServerChoice
+
+Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+	; follow leader
+	_MU_followLeader(1)
+	; start auto plus
+	If $onAutoPlus Then startAutoPlus()
+EndFunc
+
+Func handleIsNotMainChar($oAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$mainNoMinisize = getMainNoByChar($charName)
+	If Not $oAccountInfo.Item("isMainCharacter") Then
+		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+		$otherChar = $oAccountInfo.Item("mainCharName")
+		If $otherChar <> "" Then
+			$resultWwithChar = switchOtherChar($otherChar)
+			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
+		EndIf
+		minisizeMain($mainNoMinisize)
+		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+	EndIf
+EndFunc

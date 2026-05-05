@@ -656,7 +656,7 @@ Func merge2Array($firstJson, $secondJson)
 	Next
 
 	$textConvert = "[" & $mergeInfo & "]"
-	writeLogFile($logFile, "Text convert merge info account rs: " & $textConvert)
+	;~ writeLogFile($logFile, "Text convert merge info account rs: " & $textConvert)
 	$result = _JSONDecode($textConvert)
 	
 	Return $result
@@ -816,4 +816,15 @@ Func checkTimeInNight($timeRs, $timeInNight)
 	If (Number($timeRs) < Number($timeInNight)) Then $result = True	
 	writeLogMethodEnd("checkTimeInNight result = " & $result,@ScriptLineNumber)
 	Return $result
+EndFunc
+
+Func updateLastTimeRs($charName, $lastTimeRs)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i = 0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
+		If $charNameTmp == $charName Then
+			_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+		EndIf
+	Next
 EndFunc

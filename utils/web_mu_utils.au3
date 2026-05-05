@@ -72,8 +72,8 @@ EndFunc   ;==>checkIp
 
 Func login($sSession, $username, $password)
 	; vao website
-	_WD_Navigate($sSession, $baseMuUrl)
-	secondWait(5)
+	navigateUrl($sSession, $baseMuUrl)
+	;~ secondWait(5)
 	; get title
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
@@ -159,7 +159,7 @@ Func loginWebsite($sSession, $username, $password)
 
 	_WD_Window($sSession, "MINIMIZE")
 
-	_Demo_NavigateCheckBanner($sSession, $baseMuUrl)
+	navigateUrl($sSession, $baseMuUrl)
 	_WD_LoadWait($sSession, 1000)
 
 	; Fill user name
@@ -267,7 +267,9 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 
     Local $sBoundary = "----AutoItAzCaptcha" & @MSEC & Int(Random(1000, 9999, 1))
     Local $sCRLF = @CRLF
-    Local $sBodyHead = _
+    
+    ; Build body parts as binary to avoid encoding issues
+    Local $sBodyHeadStr = _
             "--" & $sBoundary & $sCRLF & _
             'Content-Disposition: form-data; name="key"' & $sCRLF & $sCRLF & $sApiKey & $sCRLF & _
             "--" & $sBoundary & $sCRLF & _
@@ -278,17 +280,58 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
             'Content-Disposition: form-data; name="file"; filename="captcha.png"' & $sCRLF & _
             "Content-Type: application/octet-stream" & $sCRLF & $sCRLF
 
-    Local $sBodyTail = $sCRLF & "--" & $sBoundary & "--" & $sCRLF
-    Local $bBody = StringToBinary($sBodyHead) & $bFile & StringToBinary($sBodyTail)
+	writeLogFile($logFile, "Body head length: " & StringLen($sBodyHeadStr) & " bytes, File binary length: " & BinaryLen($bFile) & " bytes")
+    
+    Local $sBodyTailStr = $sCRLF & "--" & $sBoundary & "--" & $sCRLF
+    
+    ; Convert strings to binary using proper encoding
+    Local $bBodyHead = StringToBinary($sBodyHeadStr, 1) ; 1 = ANSI/ASCII encoding
+    Local $bBodyTail = StringToBinary($sBodyTailStr, 1)
+    
+	; Concatenate binary parts
+	Local $bBody = $bBodyHead & $bFile & $bBodyTail
+	If Not IsBinary($bBody) Or BinaryLen($bBody) = 0 Then
+		writeLogFile($logFile, "Invalid body: not binary or empty")
+		Return SetError(3, 0, "")
+	EndIf
+	writeLogFile($logFile, "Total body binary length: " & BinaryLen($bBody) & " bytes")
 
-    $oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
-    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
-    $oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
-    $oHttp.Send($bBody)
-    If @error Then
-        writeLogFile($logFile, "AzCaptcha in.php request failed!")
-        Return SetError(4, 0, "")
-    EndIf
+	; Retry upload because WinHttp COM object may fail intermittently at Send()
+	Local $iErrorCode = 0, $iExtErrorCode = 0, $iTry
+	For $iTry = 1 To 3
+		$oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+		If @error Then
+			writeLogFile($logFile, "AzCaptcha in.php ObjCreate failed! try=" & $iTry)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
+		$iErrorCode = @error
+		If $iErrorCode <> 0 Then
+			writeLogFile($logFile, "AzCaptcha in.php Open failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & @extended)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+		$oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
+		$oHttp.SetRequestHeader("Content-Length", BinaryLen($bBody))
+		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
+
+		$oHttp.Send($bBody)
+		$iErrorCode = @error
+		If $iErrorCode = 0 Then ExitLoop
+
+		$iExtErrorCode = @extended
+		writeLogFile($logFile, "AzCaptcha in.php Send failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & $iExtErrorCode)
+		If $iTry < 3 Then secondWait(1)
+	Next
+
+	If $iErrorCode <> 0 Then
+		writeLogFile($logFile, "AzCaptcha in.php request failed after retries!")
+		Return SetError(4, 0, "")
+	EndIf
 
     Local $sResp = $oHttp.ResponseText
     If Not IsString($sResp) Or $sResp = "" Then
@@ -308,19 +351,40 @@ EndFunc   ;==>_azSubmitImageCaptcha
 ; Method: _azGetImageCaptchaResult
 ; Description: Poll ket qua tu AzCaptcha res.php
 Func _azGetImageCaptchaResult($sApiKey, $sCaptchaId)
-    Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
-    If @error Then Return SetError(1, 0, "")
+	Local $sUrl = "http://azcaptcha.com/res.php?key=" & $sApiKey & "&action=get&id=" & $sCaptchaId
+	Local $oHttp, $iTry, $iErr
+	For $iTry = 1 To 3
+		$oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+		If @error Then
+			writeLogFile($logFile, "AzCaptcha res.php ObjCreate failed! try=" & $iTry)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
 
-    Local $sUrl = "http://azcaptcha.com/res.php?key=" & $sApiKey & "&action=get&id=" & $sCaptchaId
-    $oHttp.Open("GET", $sUrl, False)
-    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
-    $oHttp.Send()
-    If @error Then
-        writeLogFile($logFile, "AzCaptcha res.php request failed!")
-        Return SetError(1, 0, "")
-    EndIf
+		$oHttp.Open("GET", $sUrl, False)
+		$iErr = @error
+		If $iErr <> 0 Then
+			writeLogFile($logFile, "AzCaptcha res.php Open failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
 
-    Local $sResp = $oHttp.ResponseText
+		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
+		$oHttp.Send()
+		$iErr = @error
+		If $iErr = 0 Then ExitLoop
+
+		writeLogFile($logFile, "AzCaptcha res.php Send failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended)
+		If $iTry < 3 Then secondWait(1)
+	Next
+
+	If $iErr <> 0 Then
+		writeLogFile($logFile, "AzCaptcha res.php request failed after retries!")
+		Return SetError(1, 0, "")
+	EndIf
+
+	Local $sResp = $oHttp.ResponseText
     If Not IsString($sResp) Or $sResp = "" Then
         writeLogFile($logFile, "AzCaptcha res.php response empty or invalid!")
         Return SetError(2, 0, "")
@@ -387,18 +451,18 @@ Func getLogResetCommon($sSession, $charName)
 	;~ 			</div>
 	; Click vao button nhan vat can check
 	
-	$checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
-	If @error Then
-		writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
-		Return False
-	Else
-		writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
-	EndIf
+	;~ $checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
+	;~ If @error Then
+	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
+	;~ 	Return False
+	;~ Else
+	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
+	;~ EndIf
 
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
-	_WD_LoadWait($sSession, 1000)
-	secondWait(6)
+	;~ _WD_LoadWait($sSession, 1000)
+	secondWait(2)
 
 	; Thong tin lvl, so lan trong ngay/ thang
 	$sElement = findElement($sSession, "//div[@role='alert']")
@@ -437,7 +501,7 @@ Func getLogResetCommon($sSession, $charName)
 	EndIf
 
 	; Xem Nhat ky reset
-	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.logreset.shtml"))
+	navigateUrl($sSession, combineUrl("web/char/char_info.logreset.shtml"))
 	; Get element
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
 	$timeRsText = getTextElement($sSession, $sElement)
@@ -585,7 +649,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 	$resetOnline = $oAccountInfo.Item("resetOnline")
 	writeLogFile($logFile, "resetInWeb: Bắt đầu thực hiện reset cho nhân vật " & $charName & " - resetOnline: " & $resetOnline)
 	; 2. Reset in web
-	_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
+	; Dien $sXpath theo html duoi
+	;~ <h3 class="card-title"><i class="c-icon c-icon-xl cil-education"></i> Reset nhân vật</h3>
+	$sXpath = '//h3[contains(.,"Reset nhân vật")]'
+	navigateUrl($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName, $sXpath)
 	secondWait(5)
 	If $resetOnline Then
 		; Click radio online
@@ -622,14 +689,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 	If Not $resetOnline Then
 		; Click submit
 		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-		secondWait(2)
+		secondWait(1)
 		; Vao trang add point thuc hien lai 1 lan nua cho chac
-;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-		_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-		secondWait(5)
-		; Click submit add point
-		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-		secondWait(2)
+		; <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3>
+		;~ addPointReset($sSession)
 	EndIf
 
 	; close diaglog confirm
@@ -654,5 +717,37 @@ Func saveCaptchaFromWeb($sSession, $classCaptchaSelect)
 	; Find image captcha
 	$sElement = findElement($sSession, $classCaptchaSelect)
 	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
+	secondWait(3)
 	Return $captchaImgPath
+EndFunc
+
+Func navigateUrl($sSession, $sURL, $sXpath = "")
+	_WD_Navigate($sSession, $sURL)
+	Local $iResult = _WD_LoadWait($sSession)
+
+	If $iResult = 1 And @error = 0 Then
+		ConsoleWrite("Fully loaded URL: " & $sURL & @CRLF)
+		Return True
+	Else
+		ConsoleWrite("Load failed URL: " & $sURL & @CRLF)
+		Return False
+	EndIf
+EndFunc
+
+Func addPointReset($sSession)
+	$sXpath = '//h3[contains(.,"Cộng điểm nhanh")]'
+	$urlAddPoint = $baseMuUrl & "web/char/char/addpoint.shtml"
+	$result = navigateUrl($sSession, $urlAddPoint, $sXpath)
+	If Not $result Then
+		writeLogFile($logFile, "Không thể vào trang cộng điểm nhanh sau khi reset!")
+		Return False
+	Else
+		; Click submit add point
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(1)
+		; close diaglog confirm
+		closeDiaglogConfim($sSession)
+		 writeLogFile($logFile, "Cộng điểm nhanh thành công sau khi reset!")
+		Return True
+	EndIf
 EndFunc

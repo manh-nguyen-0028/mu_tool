@@ -6,7 +6,7 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="BiThuXa"
+$charName="BoDeToSu"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
@@ -25,6 +25,7 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
 ;~ testcheckLvl400($charName)
+testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
@@ -41,7 +42,7 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testSwitchSvInGame()
 ;~ testCheckMainActive("Zalo")
 ;~ testSplitString()
-testChangeThenReturnChar($charName)
+;~ testChangeThenReturnChar($charName)
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -169,6 +170,11 @@ EndFunc
 
 Func testChoiseServer()
     choise_sv()
+    Return True
+EndFunc
+
+Func testAddPointInGame()
+    addPointInGame()
     Return True
 EndFunc
 

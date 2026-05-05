@@ -142,7 +142,7 @@ EndFunc
 Func auction($idUrl, $maxPrice, $adminIDs)
 	$maxPriceTmp = Number($maxPrice) * 105 / 100
 	writeLogFile($logFile, "Bắt đầu đấu giá cho id : " & $idUrl &  ". Giá tối đa: " & $maxPrice)
-	_WD_Navigate($sSession, getUrlAuction($idUrl))
+	navigateUrl($sSession, getUrlAuction($idUrl))
 	secondWait(5)
 	; Check title xem dung chua, neu dung thi moi tiep tuc
 	$sTitle = getTitleWebsite($sSession)

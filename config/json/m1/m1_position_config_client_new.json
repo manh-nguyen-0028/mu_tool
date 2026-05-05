@@ -7,26 +7,26 @@
       "time_loop_auto_rs": 60
     },
     "web": {
-      "mu_url": "https://hn.mugamethuvn.info/"
-    },
-    "full_screen": {
+		"mu_url": "https://hn.gamethuvn.com/"
+	  },
+	  "full_screen": {
       "x": 0,
       "y": 0,
-      "x1": 800,
-      "y1": 600
-    },
-    "chrome": {
-      "path": "chromedriver\\chromedriver-win64\\chromedriver.exe",
-      "profile": "Profile 1",
-      "binary": "D:\\Project\\autoit\\mu_tool\\driver\\chromedriver\\126.0.6478.116\\Installer\\Chrome-bin\\chrome.exe"
-    },
+      "x1": 1056,
+      "y1": 789
+	  },
+	  "chrome": {
+      "path": "chrome\\chromedriver-win64\\chromedriver.exe",
+      "profile": "Default",
+      "binary": "C:\\Users\\MSI\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"
+	  },
     "edge": {
       "path": "msedgedriver\\edgedriver_win64_134\\msedgedriver.exe",
       "profile": "Profile 1",
       "binary": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     },
     "image_search": {
-      "tolerance": 50
+      "tolerance": 20
     }
   },
   "button": {
@@ -51,53 +51,43 @@
       "y": 200
     },
     "npc_search": {
-      "npc_search_x": 236, 
-      "npc_search_y": 70,
-      "npc_search_x_1": 485,
-      "npc_search_y_1": 402,
+      "npc_search_x": 298,
+      "npc_search_y": 181,
+      "npc_search_x_1": 484,
+      "npc_search_y_1": 484,
       "deviation_x": 0,
       "deviation_y": 10
-    },
-    "icon_event_common": {
-      "x": 100,
-      "y": 200
-    },
-    "event_arena_button": {
-      "x": 100,
-      "y": 200
     },
     "event_devil": {
       "move_check_npc_x": 479,
       "move_check_npc_y": 372,
-      "check_devil_open_x": 778,
-      "check_devil_open_y": 663,
-      "check_devil_open_color": "0x1B1B1B"
+      "check_devil_open_x": 101,
+      "check_devil_open_y": 128,
+      "check_devil_open_color": "0x3B4C01"
     },
     "event_devil_icon": {
-      "x": 29,
-      "y": 199,
+      "x": 23,
+      "y": 202,
       "x_2": 109, 
       "y_2": 165,
       "x_3": 130, 
       "y_3": 166,
-	  "x_quest": 22,
-      "y_quest": 261,
       "chap_nhan_x": 476,
       "chap_nhan_y": 476,
       "huy_bo_x": 554,
       "huy_bo_y": 475,
-      "devil_2_x": 84,
-      "devil_2_y": 261,
-      "devil_3_x": 92,
-      "devil_3_y": 291,
-      "devil_4_x": 84,
-      "devil_4_y": 322,
-      "devil_5_x": 84,
-      "devil_5_y": 355,
-      "devil_6_x": 84,
-      "devil_6_y": 385,
-      "devil_7_x": 84,
-      "devil_7_y": 415
+      "devil_2_x": 125,
+      "devil_2_y": 315,
+      "devil_3_x": 125,
+      "devil_3_y": 350,
+      "devil_4_x": 125,
+      "devil_4_y": 385,
+      "devil_5_x": 125,
+      "devil_5_y": 420,
+      "devil_6_x": 125,
+      "devil_6_y": 455,
+      "devil_7_x": 125,
+      "devil_7_y": 490
     },
     "event_devil_icon_no_had_k": {
       "x": 37,
@@ -110,56 +100,48 @@
       "devil_3_y": 409
     },
     "follow_leader": {
-      "position_1_x": 602,
-      "position_1_y": 70,
-      "position_2_x": 596,
-      "position_2_y": 115,
+      "position_1_x": 731,
+      "position_1_y": 73,
+      "position_2_x": 840,
+      "position_2_y": 118,
       "button_x":612,
       "button_y":159
     },
     "event_icon": {
-      "x": 134,
-      "y": 97,
-      "map_lvl_x": 196,
-      "map_lvl_y": 138,
-      "map_lvl_center_x": 383,
-      "map_lvl_center_y": 190,
-      "map_stadium_x": 196,
-      "map_stadium_y": 275
+      "x": 852,
+      "y": 77,
+      "map_lvl_x": 408,
+      "map_lvl_y": 185,
+      "map_lvl_center_x": 368,
+      "map_lvl_center_y": 205,
+      "map_stadium_x": 407,
+      "map_stadium_y": 323
     },
     "move": {
-      "other_map_x": 153,
-      "other_map_y": 224
+      "other_map_x": 152,
+      "other_map_y": 307
     },
     "change_char": {
-      "x": 395,
-      "y": 356
+      "x": 403,
+      "y": 358
     },
     "change_server": {
-      "button_x": 391,
-      "button_y": 326,
+      "button_x": 396,
+      "button_y": 327,
       "choise_sv_x": 230,
-      "choise_sv_y": 234,
-      "choise_sv_1_x": 401,
-      "choise_sv_1_y": 234,
-      "choise_sv_6_x": 370, 
-      "choise_sv_6_y": 330,
-      "choise_sv_8_x": 391, 
-      "choise_sv_8_y": 354,
-      "choise_sv_10_x": 396,
-      "choise_sv_10_y": 377
+      "choise_sv_y": 235,
+      "choise_sv_1_x": 388,
+      "choise_sv_1_y": 235
     },
     "switch_char": {
-      "icon_x": 646, 
-      "icon_y": 538,
+      "icon_x": 645,
+      "icon_y": 545,
       "icon_x_2": 443,
       "icon_y_2": 386,
       "button_change_x_active_autoz": 265,
       "button_change_y_active_autoz": 285,
-      "button_change_x_not_active_autoz": 267,
-      "button_change_y_not_active_autoz": 273,
-		  "close_popup_x": 407,
-      "close_popup_y": 66
+      "button_change_x_not_active_autoz": 269,
+      "button_change_y_not_active_autoz": 259
     },
     "screen_mouse_move": {
       "center_x": 389,
@@ -168,23 +150,23 @@
       "center_char_y": 299
     },
     "close_shop_chao": {
-      "x": 307,
-      "y": 315
+      "x": 287,
+      "y": 323
     },
     "close_shop": {
-      "x": 238,
-      "y": 125
+      "x": 200,
+      "y": 87
     },
     "close_chao": {
-      "x": 512, 
-      "y": 496
+      "x": 393,
+      "y": 443
     },
     "loren_sport1": {
       "x": 359,
       "y": 338
     },
     "check_lvl_400": {
-      "x": 134,
+      "x": 135,
       "y": 587,
       "color_master_3": "0x7E2FA2",
       "color_master_4": "0x9C1BBE"
@@ -205,22 +187,22 @@
       "color": "0x8B2323"
     },
     "check_active_auto_home": {
-      "x": 298,
-      "y": 453,
-      "x1": 525,
-      "y1": 564
+      "x": 281,
+      "y": 233,
+      "x1": 521,
+      "y1": 567
     },
     "sport_arena_1": {
-      "x": 304,
-      "y": 327
+      "x": 257,
+      "y": 329
     },
     "sport_arena_2": {
-      "x": 344,
-      "y": 380
+      "x": 253,
+      "y": 399
     },
     "sport_arena_3": {
-      "x": 301, 
-      "y": 447
+      "x": 204,
+      "y": 448
     }
   },
   "web": {
@@ -257,12 +239,12 @@
       "y": 200
     },
     "event_lvl_button": {
-      "x": 100,
-      "y": 200
+      "x": 480,
+      "y": 214
     },
     "event_arena_button": {
-      "x": 100,
-      "y": 200
+      "x": 488,
+      "y": 377
     }
   },
   "follow": {
