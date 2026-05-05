@@ -373,8 +373,8 @@ EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
-	activeAndMoveWin(getMainNoByChar($charName))
-	secondWait(2)
+	activeAndMoveWinByChar($charName)
+	secondWait(1)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
 	$haveAddPoint = True
@@ -392,11 +392,8 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	EndIf
 	clickIconDevilByCondition($typeCheck, $isHaveQuest)
 
-	secondWait(1)
-
 	; Nhap enter de vao devil
 	sendKeyEnter()
-;~ ; Sleep 4s
 	secondWait(4)
 EndFunc   ;==>clickIconDevil
 
@@ -708,17 +705,11 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
 	$npcSearchY = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y")
 	$npcSearchX1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x_1")
 	$npcSearchY1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y_1")
-;~ $npcSearchColor = 0x8B8171
 	$npcSearchColor = 0xB9AA95
 
 	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
-;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
-
-;~ _ArrayDisplay($npcSearch)
-
 	$totalSearch = 0 ;
-;~ 671 1050
 	While $npcSearch = 0 And $totalSearch < 5
 		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
 
@@ -752,12 +743,8 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
 		$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
 
-;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
-
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
-;~ $npcX = $npcSearch[0] - 131
-;~ $npcY = $npcSearch[1]
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
@@ -765,12 +752,11 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$devil_open_y = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_y")
 		$devil_open_color = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_color")
 
-;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		$checkOpenDevil = checkOpenPopupDevil()
 		If $checkOpenDevil Then
 			writeLogFile($logFile, "Thuc hien click vao devil")
 			clickPositionByDevilNo($devilNo)
-			secondWait(6)
+			secondWait(4)
 			_MU_Start_AutoZ()
 		Else
 			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
@@ -1028,13 +1014,10 @@ Func checkActiveParentMain($charName)
 EndFunc   ;==>checkActiveParentMain
 
 Func stopAutoPlus()
-	; 558 220
 	$stopAutoPlusX = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_x")
 	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
 	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
-	; Click ra 1 vi tri khac de an popup
-	;~ secondWait(3)
-	;~ _MU_MouseClick_Delay(558, 220)
+
 	Return True
 EndFunc
 

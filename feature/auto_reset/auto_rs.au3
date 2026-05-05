@@ -148,14 +148,7 @@ Func withDrawRs($jAccountInfo)
 			$timeNow = getTimeNow()
 			$hourPerRs = 24
 			$lastTimeRs = _DateAdd('h', $hourPerRs, $timeNow)
-			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-			For $i = 0 To UBound($jsonRsGame) - 1
-				$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
-				If $charNameTmp == $charName Then
-					_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-				EndIf
-			Next
+			updateLastTimeRs($charName, $lastTimeRs)
 			Return False
 		Else
 			writeLogFile($logFile, "Co IP hop le, tiep tuc xu ly !")
@@ -167,14 +160,7 @@ Func withDrawRs($jAccountInfo)
 				writeLogFile($logFile, "Chua den thoi gian reset. getTimeNow() < $nextTimeRs = " & $timeNow < $nextTimeRs)
 				writeLogFile($logFile, "Thoi gian hien tai: " & $timeNow)
 				writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-				For $i = 0 To UBound($jsonRsGame) - 1
-					$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
-					If $charNameTmp == $charName Then
-						_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-					EndIf
-				Next
+				updateLastTimeRs($charName, $lastTimeRs)
 				Return
 			EndIf
 
@@ -256,14 +242,7 @@ EndFunc   ;==>extractAccountInfo
 Func updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
 	writeLogFile($logFile, "Chua den thoi gian reset.")
 	writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-	For $i = 0 To UBound($jsonRsGame) - 1
-		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
-		If $charNameTmp == $charName Then
-			_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
-			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-		EndIf
-	Next
+	updateLastTimeRs($charName, $lastTimeRs)
 EndFunc   ;==>updateResetTimeIfNotReached
 
 Func calculateRequiredLevelForReset($rsCount)
@@ -344,8 +323,8 @@ Func processReset($jAccountInfo)
 					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset, 0)
-					; Truong hop $sTimeReset = 0 thi set thanh ngay gio hien tai
-					If $sTimeReset = 0 Or $currentLvl <> 1 Then
+					; Truong hop $sTimeReset = 0, hoac $currentRs = $resetCount thi set thanh ngay gio hien tai
+					If $sTimeReset = 0 Or $currentLvl <> 1 Or $currentRs == $rsCount Then
 						$sTimeReset = getTimeNow()
 						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
 					EndIf
@@ -436,8 +415,7 @@ EndFunc   ;==>goToSportLvl1
 Func checkLvlInWeb($rsCount, $charName, $lvlStopCheck, $timeDelay)
 	writeLogFile($logFile, "Bat dau check lvl tren web !" & " - Lvl stop check: " & $lvlStopCheck)
 	; Vào nhân vật kiểm tra lvl
-	_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
-	secondWait(5)
+	navigateUrl($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 	$mainNo = getMainNoByChar($charName)
 
 	; find lvl
@@ -488,8 +466,7 @@ Func checkLvlInWeb($rsCount, $charName, $lvlStopCheck, $timeDelay)
 			minuteWait($timeDelay)
 		EndIf
 
-		_WD_Navigate($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
-		secondWait(5)
+		navigateUrl($sSession, $baseMuUrl & "web/char/control.shtml?char=" & $charName)
 		; find lvl
 		$sElement = findElement($sSession, "//span[@class='t-level']")
 		$tLvl = getTextElement($sSession, $sElement)
@@ -590,7 +567,9 @@ Func validAccountRs($aAccountActiveRs)
 		$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
 		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
 		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then
-			MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
+			;~ MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
+			writeLogFile($logFile, "Lỗi Thời gian reset không hợp lệ !")
+			updateLastTimeRs($charName, getTimeNow())
 			ContinueLoop
 		EndIf
 		; Neu so reset = 2000 thi khong duoc reset nua

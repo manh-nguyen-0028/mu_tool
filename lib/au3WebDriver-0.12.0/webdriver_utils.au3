@@ -67,6 +67,8 @@ Func _Demo_NavigateCheckBanner($sSession, $sURL, $sXpath = '//body/div[1][@aria-
 		writeLog("ERROR: " & @error)
 		Return $_WD_ERROR_Timeout
 	Else
+		; ghi log da tim thay element, co the tiep tuc cac hanh dong khac
+		ConsoleWrite('wd_demo.au3: (' & @ScriptLineNumber & ') : "' & $sURL & '" page view is visible, continue with next steps' & ' => $sXpath = ' & $sXpath & @CRLF)
 		_WD_LoadWait($sSession,1000)
 	EndIf
 EndFunc   ;==>_Demo_NavigateCheckBanner

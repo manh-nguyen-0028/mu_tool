@@ -72,8 +72,8 @@ EndFunc   ;==>checkIp
 
 Func login($sSession, $username, $password)
 	; vao website
-	_WD_Navigate($sSession, $baseMuUrl)
-	secondWait(5)
+	navigateUrl($sSession, $baseMuUrl)
+	;~ secondWait(5)
 	; get title
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
@@ -585,7 +585,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 	$resetOnline = $oAccountInfo.Item("resetOnline")
 	writeLogFile($logFile, "resetInWeb: Bắt đầu thực hiện reset cho nhân vật " & $charName & " - resetOnline: " & $resetOnline)
 	; 2. Reset in web
-	_WD_Navigate($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName)
+	; Dien $sXpath theo html duoi
+	;~ <h3 class="card-title"><i class="c-icon c-icon-xl cil-education"></i> Reset nhân vật</h3>
+	$sXpath = '//h3[contains(.,"Reset nhân vật")]'
+	navigateUrl($sSession, $baseMuUrl & "web/char/reset.shtml?char=" & $charName, $sXpath)
 	secondWait(5)
 	If $resetOnline Then
 		; Click radio online
@@ -624,12 +627,8 @@ Func resetInWeb($sSession, $oAccountInfo)
 		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 		secondWait(2)
 		; Vao trang add point thuc hien lai 1 lan nua cho chac
-;~ https://hn.mugamethuvn.info/web/char/addpoint.shtml
-		_WD_Navigate($sSession, $baseMuUrl & "web/char/char/addpoint.shtml")
-		secondWait(5)
-		; Click submit add point
-		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-		secondWait(2)
+		; <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3>
+		addPointReset($sSession)
 	EndIf
 
 	; close diaglog confirm
@@ -655,4 +654,35 @@ Func saveCaptchaFromWeb($sSession, $classCaptchaSelect)
 	$sElement = findElement($sSession, $classCaptchaSelect)
 	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
 	Return $captchaImgPath
+EndFunc
+
+Func navigateUrl($sSession, $sURL, $sXpath = "")
+	_WD_Navigate($sSession, $sURL)
+	Local $iResult = _WD_LoadWait($sSession)
+
+	If $iResult = 1 And @error = 0 Then
+		ConsoleWrite("Fully loaded URL: " & $sURL & @CRLF)
+		Return True
+	Else
+		ConsoleWrite("Load failed URL: " & $sURL & @CRLF)
+		Return False
+	EndIf
+EndFunc
+
+Func addPointReset($sSession)
+	$sXpath = '//h3[contains(.,"Cộng điểm nhanh")]'
+	$urlAddPoint = $baseMuUrl & "web/char/char/addpoint.shtml"
+	$result = navigateUrl($sSession, $urlAddPoint, $sXpath)
+	If Not $result Then
+		writeLogFile($logFile, "Không thể vào trang cộng điểm nhanh sau khi reset!")
+		Return False
+	Else
+		; Click submit add point
+		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+		secondWait(2)
+		; close diaglog confirm
+		closeDiaglogConfim($sSession)
+		 writeLogFile($logFile, "Cộng điểm nhanh thành công sau khi reset!")
+		Return True
+	EndIf
 EndFunc

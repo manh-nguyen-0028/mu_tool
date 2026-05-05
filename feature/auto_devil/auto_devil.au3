@@ -127,11 +127,9 @@ Func sleep26Min()
 				$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
 				$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
 				; Truong hop khong can follow leader thi khong can xu ly
-				;~ If Not $isNeedFollowLeader Then ContinueLoop
-				$mainNo = getMainNoByChar($charName)
-				If activeAndMoveWin($mainNo) Then
+				If activeAndMoveWinByChar($charName) Then
 					handelWhenFinshDevilEvent()
-					minisizeMain($mainNo)
+					minisizeMainByChar($charName)
 				EndIf
 			EndIf
 		Next
@@ -179,7 +177,6 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	$result[1] = $nextMin
 
 	writeLogFile($logFile, "Next hour: " & $nextHour & " - Next min: " & $nextMin)
-
 	; Trả về mảng chứa nextHour và nextMin
 
 	Return $result
@@ -285,18 +282,16 @@ Func processGoEventDevil()
 			; Click into NPC devil
 			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
 
-			minisizeMain($mainNo)
+			minisizeMainByChar($charName)
 		EndIf
 	Next
-
-	secondWait(5)
 
 	; Check accounts in devil
 	checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
 
 	; Process fast join accounts
 	processFastJoinAccounts($jsonAccountFastJoin)
-	secondWait(30)
+	secondWait(10)
 
 	; process swith main char
 	switchToMainChar($jsonAccountActiveDevil)
@@ -335,18 +330,11 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
 		Local $needCheckAutoZ = _JSONGet($jsonAccountFastJoin[$i], "need_check_auto_z")
 		Local $mainNo = getMainNoByChar($charName)
 
-		Local $checkActiveWin = activeAndMoveWin($mainNo)
-		secondWait(2)
-
 		; Truong hop main hien tai khong duoc active, active main khac
-		If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
+		If Not activeAndMoveWin($mainNo) Then $checkActiveWin = switchOtherChar($charName)
 
 		; Move other map
 		moveOtherMap($charName)
-
-		;~ _MU_followLeader(1)
-
-		;~ checkAutoZAfterFollowLead($needCheckAutoZ)
 
 		startAutoPlus()
 
