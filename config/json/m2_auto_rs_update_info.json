@@ -1,9 +1,0 @@
-[
-{"user_name":"philong1","char_name":"BuHotLe","rs":1033,"max_rs":2000,"time_rs":7,"limit":10,"time_in_night":0,"last_time_reset":"2026/05/05 13:46:00","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"BuHotLe","password":"manhva02"},
-{"user_name":"philong1","char_name":"PhoTuong","rs":1385,"max_rs":2000,"time_rs":5,"limit":10,"time_in_night":0,"last_time_reset":"2026/04/01 04:40:00","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"BuHotLe","password":"manhva02"},
-{"user_name":"roger","char_name":"Roger","rs":1125,"max_rs":2000,"time_rs":6,"limit":10,"time_in_night":0,"last_time_reset":"2026/05/05 13:47:00","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"Roger","password":"1121"},
-{"user_name":"roger","char_name":"TienSi","rs":576,"max_rs":2000,"time_rs":1,"limit":10,"time_in_night":0,"last_time_reset":"2026/04/18 07:43:00","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"Roger","password":"1121"},
-{"user_name":"dungyeu","char_name":"JAVUsUK","rs":756,"max_rs":2000,"time_rs":0,"limit":10,"time_in_night":0,"last_time_reset":"2026/05/05 13:43:53","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"BelousSkye","password":"manhva02"},
-{"user_name":"dungyeu","char_name":"TheFileX","rs":645,"max_rs":2000,"time_rs":0,"limit":10,"time_in_night":0,"last_time_reset":"2026/04/17 15:45:00","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"BelousSkye","password":"manhva02"},
-{"user_name":"dungyeu","char_name":"BelousSkye","rs":1695,"max_rs":2000,"time_rs":0,"limit":10,"time_in_night":0,"last_time_reset":"2026/05/05 13:44:38","postion_move_x":23,"postion_move_y":98,"is_main_character":true,"main_char_name":"BelousSkye","password":"manhva02"}
-]
