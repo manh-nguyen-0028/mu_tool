@@ -1,0 +1,14 @@
+[
+{"user_name":"philong1","char_name":"BuHotLe","is_main_character":true,"main_char_name":"BuHotLe"},
+{"user_name":"philong1","char_name":"PhoTuong","is_main_character":false,"main_char_name":"BuHotLe"},
+{"user_name":"philong1","char_name":"AlienUsa","is_main_character":false,"main_char_name":"BuHotLe"},
+{"user_name":"scent3","char_name":"JoyBoy","is_main_character":true,"main_char_name":"JoyBoy"},
+{"user_name":"scent3","char_name":"BiThuXa","is_main_character":true,"main_char_name":"JoyBoy"},
+{"user_name":"tiphu","char_name":"Goode","is_main_character":true,"main_char_name":"Goode"},
+{"user_name":"tiphu","char_name":"PhapSuNhi","is_main_character":true,"main_char_name":"Goode"},
+{"user_name":"roger","char_name":"Roger","is_main_character":true,"main_char_name":"Roger"},
+{"user_name":"roger","char_name":"TienSi","is_main_character":true,"main_char_name":"Roger"},
+{"user_name":"dungyeu","char_name":"JAVUsUK","is_main_character":false,"main_char_name":"BelousSkye"},
+{"user_name":"dungyeu","char_name":"TheFileX","is_main_character":false,"main_char_name":"BelousSkye"},
+{"user_name":"dungyeu","char_name":"BelousSkye","is_main_character":true,"main_char_name":"BelousSkye"}
+]
