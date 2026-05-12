@@ -288,29 +288,50 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
     Local $bBodyHead = StringToBinary($sBodyHeadStr, 1) ; 1 = ANSI/ASCII encoding
     Local $bBodyTail = StringToBinary($sBodyTailStr, 1)
     
-    ; Concatenate binary parts
-    Local $bBody = $bBodyHead & $bFile & $bBodyTail
-    writeLogFile($logFile, "Total body binary length: " & BinaryLen($bBody) & " bytes")
+	; Concatenate binary parts
+	Local $bBody = $bBodyHead & $bFile & $bBodyTail
+	If Not IsBinary($bBody) Or BinaryLen($bBody) = 0 Then
+		writeLogFile($logFile, "Invalid body: not binary or empty")
+		Return SetError(3, 0, "")
+	EndIf
+	writeLogFile($logFile, "Total body binary length: " & BinaryLen($bBody) & " bytes")
 
-    $oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
-    If @error Then
-        writeLogFile($logFile, "Failed to open HTTP connection!")
-        Return SetError(4, 0, "")
-    EndIf
-    
-    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
-    $oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
-    
-    ; Send request with proper error checking
-    Local $iErrorCode = 0
-    Local $iExtErrorCode = 0
-    $oHttp.Send($bBody)
-    $iErrorCode = @error
-    If $iErrorCode <> 0 Then
-        $iExtErrorCode = @extended
-        writeLogFile($logFile, "AzCaptcha in.php request failed! Error: " & $iErrorCode & " Extended: " & $iExtErrorCode)
-        Return SetError(4, 0, "")
-    EndIf
+	; Retry upload because WinHttp COM object may fail intermittently at Send()
+	Local $iErrorCode = 0, $iExtErrorCode = 0, $iTry
+	For $iTry = 1 To 3
+		$oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+		If @error Then
+			writeLogFile($logFile, "AzCaptcha in.php ObjCreate failed! try=" & $iTry)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
+		$iErrorCode = @error
+		If $iErrorCode <> 0 Then
+			writeLogFile($logFile, "AzCaptcha in.php Open failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & @extended)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+		$oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
+		$oHttp.SetRequestHeader("Content-Length", BinaryLen($bBody))
+		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
+
+		$oHttp.Send(Binary($bBody))
+		$iErrorCode = @error
+		If $iErrorCode = 0 Then ExitLoop
+
+		$iExtErrorCode = @extended
+		writeLogFile($logFile, "AzCaptcha in.php Send failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & $iExtErrorCode)
+		If $iTry < 3 Then secondWait(1)
+	Next
+
+	If $iErrorCode <> 0 Then
+		writeLogFile($logFile, "AzCaptcha in.php request failed after retries!")
+		Return SetError(4, 0, "")
+	EndIf
 
     Local $sResp = $oHttp.ResponseText
     If Not IsString($sResp) Or $sResp = "" Then
