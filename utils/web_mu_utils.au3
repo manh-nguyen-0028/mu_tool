@@ -267,7 +267,9 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 
     Local $sBoundary = "----AutoItAzCaptcha" & @MSEC & Int(Random(1000, 9999, 1))
     Local $sCRLF = @CRLF
-    Local $sBodyHead = _
+    
+    ; Build body parts as binary to avoid encoding issues
+    Local $sBodyHeadStr = _
             "--" & $sBoundary & $sCRLF & _
             'Content-Disposition: form-data; name="key"' & $sCRLF & $sCRLF & $sApiKey & $sCRLF & _
             "--" & $sBoundary & $sCRLF & _
@@ -278,15 +280,35 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
             'Content-Disposition: form-data; name="file"; filename="captcha.png"' & $sCRLF & _
             "Content-Type: application/octet-stream" & $sCRLF & $sCRLF
 
-    Local $sBodyTail = $sCRLF & "--" & $sBoundary & "--" & $sCRLF
-    Local $bBody = StringToBinary($sBodyHead) & $bFile & StringToBinary($sBodyTail)
+	writeLogFile($logFile, "Body head length: " & StringLen($sBodyHeadStr) & " bytes, File binary length: " & BinaryLen($bFile) & " bytes")
+    
+    Local $sBodyTailStr = $sCRLF & "--" & $sBoundary & "--" & $sCRLF
+    
+    ; Convert strings to binary using proper encoding
+    Local $bBodyHead = StringToBinary($sBodyHeadStr, 1) ; 1 = ANSI/ASCII encoding
+    Local $bBodyTail = StringToBinary($sBodyTailStr, 1)
+    
+    ; Concatenate binary parts
+    Local $bBody = $bBodyHead & $bFile & $bBodyTail
+    writeLogFile($logFile, "Total body binary length: " & BinaryLen($bBody) & " bytes")
 
     $oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
+    If @error Then
+        writeLogFile($logFile, "Failed to open HTTP connection!")
+        Return SetError(4, 0, "")
+    EndIf
+    
     $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
     $oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
+    
+    ; Send request with proper error checking
+    Local $iErrorCode = 0
+    Local $iExtErrorCode = 0
     $oHttp.Send($bBody)
-    If @error Then
-        writeLogFile($logFile, "AzCaptcha in.php request failed!")
+    $iErrorCode = @error
+    If $iErrorCode <> 0 Then
+        $iExtErrorCode = @extended
+        writeLogFile($logFile, "AzCaptcha in.php request failed! Error: " & $iErrorCode & " Extended: " & $iExtErrorCode)
         Return SetError(4, 0, "")
     EndIf
 
