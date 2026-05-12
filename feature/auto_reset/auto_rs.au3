@@ -361,6 +361,10 @@ Func processReset($jAccountInfo)
 					actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlCanRs)
 				EndIf
 			EndIf
+			; Thuc hien ghi lai log reset khong thanh cong do chua du lvl de reset
+			writeLogFile($logFile, "Chua du lvl de reset => Ket thuc xu ly reset !")
+			; Cap nhat time rs de khong thuc hien lai nua ( time = time + 1h)
+			updateLastTimeRs($charName, getTimeNow())
 		EndIf
 
 		If Not $resetOnline Then minisizeMain($mainNo)

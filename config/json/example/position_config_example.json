@@ -125,7 +125,9 @@
       "move_check_npc_y": 372,
       "check_devil_open_x": 778,
       "check_devil_open_y": 663,
-      "check_devil_open_color": "0x1B1B1B"
+      "check_devil_open_color": "0x1B1B1B",
+      "close_popup_event_devil_x": 239,
+      "close_popup_event_devil_y": 126
     },
     "event_devil_icon": {
       "x": 29,

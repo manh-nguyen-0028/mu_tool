@@ -172,6 +172,12 @@ EndFunc   ;==>handelWhenFinshDevilEvent
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
+	; Close popup event devil 239, 126
+	$closePopupX = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_x")
+	$closePopupY = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_y")
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($closePopupX, $closePopupY)
+	Next
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)

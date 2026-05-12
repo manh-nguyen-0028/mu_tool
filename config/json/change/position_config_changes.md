@@ -17,3 +17,11 @@ Ghi lại các thay đổi tọa độ trong `position_config.json` / `m1_positi
 - **Value:** `1212, 693, 0, 0, 5` trong example config — placeholder hoặc default chờ load user
 - **Used by:** `processLogin()` trong `feature/auto_login/auto_login.au3`
 - **Feature:** `feature/auto_login/auto_login.au3`
+
+### 2026/05/12 — Auto Devil — Đóng popup khi không thể vào sự kiện
+- **Compare:** update/v1.20 → update/v1.21
+- **Section:** `button.event_devil`
+- Thêm: `button.event_devil.close_popup_event_devil_x` = 239 — Tọa độ X để đóng popup khi không thể tham gia sự kiện Devil
+- Thêm: `button.event_devil.close_popup_event_devil_y` = 126 — Tọa độ Y để đóng popup khi không thể tham gia sự kiện Devil
+- **Used by:** `actionWhenCantJoinDevil()` trong `utils/game_utils.au3`
+- **Feature:** `feature/auto_devil/auto_devil.au3`
