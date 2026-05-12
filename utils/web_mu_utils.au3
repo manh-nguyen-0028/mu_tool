@@ -330,19 +330,40 @@ EndFunc   ;==>_azSubmitImageCaptcha
 ; Method: _azGetImageCaptchaResult
 ; Description: Poll ket qua tu AzCaptcha res.php
 Func _azGetImageCaptchaResult($sApiKey, $sCaptchaId)
-    Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
-    If @error Then Return SetError(1, 0, "")
+	Local $sUrl = "http://azcaptcha.com/res.php?key=" & $sApiKey & "&action=get&id=" & $sCaptchaId
+	Local $oHttp, $iTry, $iErr
+	For $iTry = 1 To 3
+		$oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+		If @error Then
+			writeLogFile($logFile, "AzCaptcha res.php ObjCreate failed! try=" & $iTry)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
 
-    Local $sUrl = "http://azcaptcha.com/res.php?key=" & $sApiKey & "&action=get&id=" & $sCaptchaId
-    $oHttp.Open("GET", $sUrl, False)
-    $oHttp.SetTimeouts(30000, 30000, 30000, 60000)
-    $oHttp.Send()
-    If @error Then
-        writeLogFile($logFile, "AzCaptcha res.php request failed!")
-        Return SetError(1, 0, "")
-    EndIf
+		$oHttp.Open("GET", $sUrl, False)
+		$iErr = @error
+		If $iErr <> 0 Then
+			writeLogFile($logFile, "AzCaptcha res.php Open failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
 
-    Local $sResp = $oHttp.ResponseText
+		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
+		$oHttp.Send()
+		$iErr = @error
+		If $iErr = 0 Then ExitLoop
+
+		writeLogFile($logFile, "AzCaptcha res.php Send failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended)
+		If $iTry < 3 Then secondWait(1)
+	Next
+
+	If $iErr <> 0 Then
+		writeLogFile($logFile, "AzCaptcha res.php request failed after retries!")
+		Return SetError(1, 0, "")
+	EndIf
+
+	Local $sResp = $oHttp.ResponseText
     If Not IsString($sResp) Or $sResp = "" Then
         writeLogFile($logFile, "AzCaptcha res.php response empty or invalid!")
         Return SetError(2, 0, "")
