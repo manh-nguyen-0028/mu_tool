@@ -319,7 +319,7 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 		$oHttp.SetRequestHeader("Content-Length", BinaryLen($bBody))
 		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
 
-		$oHttp.Send(Binary($bBody))
+		$oHttp.Send($bBody)
 		$iErrorCode = @error
 		If $iErrorCode = 0 Then ExitLoop
 
@@ -717,6 +717,7 @@ Func saveCaptchaFromWeb($sSession, $classCaptchaSelect)
 	; Find image captcha
 	$sElement = findElement($sSession, $classCaptchaSelect)
 	_WD_DownloadImgFromElement($sSession, $sElement, $captchaImgPath)
+	secondWait(3)
 	Return $captchaImgPath
 EndFunc
 
