@@ -451,18 +451,18 @@ Func getLogResetCommon($sSession, $charName)
 	;~ 			</div>
 	; Click vao button nhan vat can check
 	
-	$checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
-	If @error Then
-		writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
-		Return False
-	Else
-		writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
-	EndIf
+	;~ $checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
+	;~ If @error Then
+	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
+	;~ 	Return False
+	;~ Else
+	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
+	;~ EndIf
 
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
-	_WD_LoadWait($sSession, 1000)
-	secondWait(6)
+	;~ _WD_LoadWait($sSession, 1000)
+	secondWait(2)
 
 	; Thong tin lvl, so lan trong ngay/ thang
 	$sElement = findElement($sSession, "//div[@role='alert']")
@@ -501,7 +501,8 @@ Func getLogResetCommon($sSession, $charName)
 	EndIf
 
 	; Xem Nhat ky reset
-	_Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.logreset.shtml"))
+	navigateUrl($sSession, combineUrl("web/char/char_info.logreset.shtml"))
+	;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.logreset.shtml"))
 	; Get element
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
 	$timeRsText = getTextElement($sSession, $sElement)
@@ -744,7 +745,7 @@ Func addPointReset($sSession)
 	Else
 		; Click submit add point
 		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-		secondWait(2)
+		secondWait(1)
 		; close diaglog confirm
 		closeDiaglogConfim($sSession)
 		 writeLogFile($logFile, "Cộng điểm nhanh thành công sau khi reset!")
