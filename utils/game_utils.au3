@@ -400,7 +400,7 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 
 	; Nhap enter de vao devil
 	sendKeyEnter()
-	secondWait(4)
+	secondWait(2)
 EndFunc   ;==>clickIconDevil
 
 Func clickIconDevilByCondition($type, $isHaveQuest)
