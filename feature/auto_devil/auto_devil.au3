@@ -437,7 +437,7 @@ EndFunc   ;==>handleAfterDevilEvent
 
 Func checkAccountsInDevil($jsonAccountActiveDevil)
 	writeLogFile($logFile, "Start method: checkAccountsInDevil with accounts")
-	Local $sCharNotJoinDevil = ""
+	Local $sCharNotJoinDevil = "", $charJoinSuccess = ""
 	; Tao array de luu danh sach char da join devil thanh cong
 	Local $aCharJoinDevil[0]
 
@@ -456,6 +456,7 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 				; Luu lai danh sach char da join devil thanh cong de sau nay xu ly
 				ReDim $aCharJoinDevil[UBound($aCharJoinDevil) + 1]
 				$aCharJoinDevil[UBound($aCharJoinDevil) - 1] = $charName
+				$charJoinSuccess = $charJoinSuccess & $charName & @CRLF
 			Else
 				writeLogFile($logFile, "Char: " & $charName & " khong vao dc devil")
 				$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
@@ -468,10 +469,13 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 			; Chi thuc hien khi $swithOtherMain = true va mainCharName khac rong
 			If $swithOtherMain And $mainCharName <> "" Then switchToMainCharItem($charName, $mainCharName)
 		EndIf
+		; Thuc hien an mainNo
+		writeLogFile($logFile, "Char: " & $charName & " - Thuc hien an main")
 		minisizeMain($mainNo)
 	Next
 
 	writeLogFile($logFile, "Char not join devil: " & $sCharNotJoinDevil)
+	writeLogFile($logFile, "Char join devil success: " & $charJoinSuccess)
 	;~ switchToMainChar($jsonAccountActiveDevil)
 	Return $aCharJoinDevil
 EndFunc   ;==>checkAccountsInDevil
