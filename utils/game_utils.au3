@@ -169,6 +169,14 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay(150, 228)
 EndFunc   ;==>handelWhenFinshDevilEvent
 
+Func handleBeforeReset()
+	For $i = 0 To 2 Step +1
+		sendKeyEnter()
+	Next
+	; Click ra ngaoi 1 lan nua cho chac
+	_MU_MouseClick_Delay(150, 228)
+EndFunc
+
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()

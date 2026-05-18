@@ -1,4 +1,4 @@
 [
-	{"active":true,"type":"reset","char_name":"xxx11","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":1,"is_buff":true, "server_number": 8,"train_in_game": true,"position_leader":1,"on_auto_plus": false},
-	{"active":false,"type":"reset","char_name":"EmGaiMua","type_rs":2,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false, "server_number": 8,"train_in_game": false,"position_leader":1,"on_auto_plus": false}
+	{"active":true,"type":"reset","char_name":"xxx11","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":1,"is_buff":true, "server_number": 8,"train_in_game": true,"position_leader":1,"on_auto_plus": false, "swith_server": false},
+	{"active":false,"type":"reset","char_name":"EmGaiMua","type_rs":2,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false, "server_number": 8,"train_in_game": false,"position_leader":1,"on_auto_plus": false, "swith_server": false}
 ]

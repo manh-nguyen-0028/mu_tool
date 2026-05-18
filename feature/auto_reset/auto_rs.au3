@@ -229,6 +229,7 @@ Func extractAccountInfo($jAccountInfo)
 	$oAccountInfo.Item("serverNumber") = getPropertyJson($jAccountInfo, "server_number")
 	$oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
 	$oAccountInfo.Item("onAutoPlus") = getPropertyJson($jAccountInfo, "on_auto_plus")
+	$oAccountInfo.Item("switchServer") = getPropertyJson($jAccountInfo, "swith_server")
 	$oAccountInfo.Item("time_in_night") = getPropertyJson($jAccountInfo, "time_in_night")
 	$oAccountInfo.Item("time_rs") = getPropertyJson($jAccountInfo, "time_rs")
 	$oAccountInfo.Item("rs") = getPropertyJson($jAccountInfo, "rs")
@@ -298,8 +299,7 @@ Func processReset($jAccountInfo)
 				If Not $activeWin Then $activeWin = switchOtherChar($charName)
 				; Click bỏ hết các bảng thông báo
 				If $activeWin Then
-					handelWhenFinshDevilEvent()
-					secondWait(3)
+					handleBeforeReset()
 					; Thuc hien change server
 					changeServer($mainNo)
 				EndIf
@@ -508,11 +508,10 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 					writeLogFile($logFile, "Auto Home not active !")
 					goMapArena($rsCount)
 				EndIf
+				minisizeMain($mainNo)
+				minuteWait($timeDelay)
 			EndIf
 		EndIf
-
-		minisizeMain($mainNo)
-		minuteWait($timeDelay)
 	WEnd
 
 	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
@@ -681,7 +680,11 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	_MU_followLeader($positionLeader)
 
 	; Truong hop can train in game thi thực hiện active button train in game
-	If $oAccountInfo.Item("onAutoPlus") then activeTrainInGame($oAccountInfo)
+	If $oAccountInfo.Item("onAutoPlus") Then 
+		startAutoPlus()
+		secondWait(1)
+		If $oAccountInfo.Item("switchServer") Then switchSvInGame($oAccountInfo)
+	EndIf
 
 	; 10. Truong hop khong phai la main_char moi can phai doi 1 phut de di chuyen
 	If Not $oAccountInfo.Item("isMainCharacter") Then 
