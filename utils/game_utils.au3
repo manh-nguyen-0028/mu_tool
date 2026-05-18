@@ -380,7 +380,6 @@ EndFunc   ;==>getArrayActiveDevil
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
 	activeAndMoveWinByChar($charName)
-	secondWait(1)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
 	$haveAddPoint = True
@@ -400,7 +399,7 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 
 	; Nhap enter de vao devil
 	sendKeyEnter()
-	secondWait(2)
+	secondWait(1)
 EndFunc   ;==>clickIconDevil
 
 Func clickIconDevilByCondition($type, $isHaveQuest)
@@ -580,7 +579,7 @@ Func moveOtherMap($charName)
 		secondWait(1)
 		writeLogFile($logFile, "Bat dau chuyen map khac")
 		sendKeyM()
-		secondWait(2)
+		secondWait(1)
 		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
 		$moveOtherMapY = _JSONGet($jsonPositionConfig, "button.move.other_map_y")
 		; Click lien tuc 3 lan
@@ -869,7 +868,7 @@ EndFunc
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
-	writeLogFile($logFile, "Begin active and move win: " & $mainName)
+	;~ writeLogFile($logFile, "Begin active and move win: " & $mainName)
 	Local $expected = $mainName
 	Local $list = WinList()
 	Local $i
@@ -891,7 +890,7 @@ Func activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWin
 
 Func activeAndMoveWinByChar($charName)
-	writeLogFile($logFile, "Begin active and move win by char: " & $charName)
+	;~ writeLogFile($logFile, "Begin active and move win by char: " & $charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWinByChar
@@ -1209,3 +1208,25 @@ Func _clickServerChoice($serverNumber)
     _MU_MouseClick_Delay(Number($svX), Number($svY))
     Return True
 EndFunc   ;==>_clickServerChoice
+
+Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+	; follow leader
+	_MU_followLeader(1)
+	; start auto plus
+	If $onAutoPlus Then startAutoPlus()
+EndFunc
+
+Func handleIsNotMainChar($oAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$mainNoMinisize = getMainNoByChar($charName)
+	If Not $oAccountInfo.Item("isMainCharacter") Then
+		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+		$otherChar = $oAccountInfo.Item("mainCharName")
+		If $otherChar <> "" Then
+			$resultWwithChar = switchOtherChar($otherChar)
+			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
+		EndIf
+		minisizeMain($mainNoMinisize)
+		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+	EndIf
+EndFunc

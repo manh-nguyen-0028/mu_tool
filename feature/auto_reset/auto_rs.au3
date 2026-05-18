@@ -228,7 +228,7 @@ Func extractAccountInfo($jAccountInfo)
 	$oAccountInfo.Item("positionLeader") = getPropertyJson($jAccountInfo, "position_leader")
 	$oAccountInfo.Item("serverNumber") = getPropertyJson($jAccountInfo, "server_number")
 	$oAccountInfo.Item("isTrainInGame") = getPropertyJson($jAccountInfo, "train_in_game")
-	$oAccountInfo.Item("activeMoveBeforRs") = getPropertyJson($jAccountInfo, "active_move_rs")
+	$oAccountInfo.Item("onAutoPlus") = getPropertyJson($jAccountInfo, "on_auto_plus")
 	$oAccountInfo.Item("time_in_night") = getPropertyJson($jAccountInfo, "time_in_night")
 	$oAccountInfo.Item("time_rs") = getPropertyJson($jAccountInfo, "time_rs")
 	$oAccountInfo.Item("rs") = getPropertyJson($jAccountInfo, "rs")
@@ -372,21 +372,6 @@ Func processReset($jAccountInfo)
 	writeLogMethodEnd("processReset", @ScriptLineNumber, $jAccountInfo)
 EndFunc   ;==>processReset
 
-Func handleIsNotMainChar($oAccountInfo)
-	$charName = $oAccountInfo.Item("charName")
-	$mainNoMinisize = getMainNoByChar($charName)
-	If Not $oAccountInfo.Item("isMainCharacter") Then
-		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
-		$otherChar = $oAccountInfo.Item("mainCharName")
-		If $otherChar <> "" Then
-			$resultWwithChar = switchOtherChar($otherChar)
-			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
-		EndIf
-		minisizeMain($mainNoMinisize)
-		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
-	EndIf
-EndFunc
-
 Func isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlStopCheck)
 	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
 	If $lvlCheckInWeb < 20 Then
@@ -501,7 +486,7 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 	$nLvl = 25
 	$tmpLvl = 0
 	$timeCheck = 0
-	$timeCheckMax = 68
+	$timeCheckMax = 30
 	;~ If $lvlStopCheck == 20 Then $timeCheckMax = 8
 
 	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
@@ -689,8 +674,6 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	; Thuc hien chuyen map neu khong tim thay lvl 400
 	moveOtherMap($charName)
 
-	secondWait(6)
-
 	; 9. Follow leader
 	$positionLeader = $oAccountInfo.Item("positionLeader")
 	If Not IsNumber($positionLeader) Then $positionLeader = 1
@@ -698,11 +681,14 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	_MU_followLeader($positionLeader)
 
 	; Truong hop can train in game thi thực hiện active button train in game
-	activeTrainInGame($oAccountInfo)
+	If $oAccountInfo.Item("onAutoPlus") then activeTrainInGame($oAccountInfo)
 
-	; 10. Wait in 1 min
-	minuteWait(1)
-	handleIsNotMainChar($oAccountInfo)
+	; 10. Truong hop khong phai la main_char moi can phai doi 1 phut de di chuyen
+	If Not $oAccountInfo.Item("isMainCharacter") Then 
+		minuteWait(1)
+		handleIsNotMainChar($oAccountInfo)
+	EndIf
+
 	writeLogMethodEnd("processResetNomal", @ScriptLineNumber)
 EndFunc
 
@@ -754,7 +740,6 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		If $lvlCheckInWeb < $lvlStopCheck Then
 			writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
 			moveOtherMap($charName)
-			secondWait(6)
 		Else
 			writeLogFile($logFile, "Du lvl de reset ! Follow leader !")
 		EndIf
