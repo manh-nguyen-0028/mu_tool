@@ -196,11 +196,13 @@ Func withDrawRs($jAccountInfo)
 					If $charNameTmp == $charName Then
 						$sLogReset = getLogReset($sSession, $charName)
 						$resetInDay = getRsInDay($sLogReset)
-						_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
-						; last time rs
-						$sTimeReset = getTimeReset($sLogReset, 0)
-						_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
-						setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+					Local $jItem = $jsonRsGame[$i]
+					_JSONSet($resetInDay, $jItem, "time_rs")
+					; last time rs
+					$sTimeReset = getTimeReset($sLogReset, 0)
+					_JSONSet($sTimeReset, $jItem, "last_time_reset")
+					$jsonRsGame[$i] = $jItem
+					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
 				Next
 			EndIf
@@ -319,8 +321,9 @@ Func processReset($jAccountInfo)
 					$resetInDay = getRsInDay($sLogReset)
 					$currentRs = getCurrentReset($sLogReset)
 					$currentLvl = getCurrentlvl($sLogReset)
-					_JSONSet($currentRs, $jsonRsGame[$i], "rs")
-					_JSONSet($resetInDay, $jsonRsGame[$i], "time_rs")
+					Local $jItem = $jsonRsGame[$i]
+					_JSONSet($currentRs, $jItem, "rs")
+					_JSONSet($resetInDay, $jItem, "time_rs")
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset, 0)
 					; Truong hop $sTimeReset = 0, hoac $currentRs = $resetCount thi set thanh ngay gio hien tai
@@ -329,11 +332,10 @@ Func processReset($jAccountInfo)
 						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
 					EndIf
 
-					_JSONSet($sTimeReset, $jsonRsGame[$i], "last_time_reset")
+					_JSONSet($sTimeReset, $jItem, "last_time_reset")
+					$jsonRsGame[$i] = $jItem
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-					If $resetInDay == 1 And $oAccountInfo.Item("isBuff") Then
-						goPageBuffChar($sSession)
-					EndIf
+					If $resetInDay == 1 And $oAccountInfo.Item("isBuff") Then goPageBuffChar($sSession)
 				EndIf
 			Next
 			; If reset online = true => withow handle in game
