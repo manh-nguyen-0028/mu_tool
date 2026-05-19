@@ -159,7 +159,7 @@ Func loginWebsite($sSession, $username, $password)
 
 	_WD_Window($sSession, "MINIMIZE")
 
-	_Demo_NavigateCheckBanner($sSession, $baseMuUrl)
+	navigateUrl($sSession, $baseMuUrl)
 	_WD_LoadWait($sSession, 1000)
 
 	; Fill user name
@@ -502,7 +502,6 @@ Func getLogResetCommon($sSession, $charName)
 
 	; Xem Nhat ky reset
 	navigateUrl($sSession, combineUrl("web/char/char_info.logreset.shtml"))
-	;~ _Demo_NavigateCheckBanner($sSession, combineUrl("web/char/char_info.logreset.shtml"))
 	; Get element
 	$sElement = findElement($sSession, "//table[@class='table table-striped table-sm table-hover w-100']/tbody/tr/td[6]")
 	$timeRsText = getTextElement($sSession, $sElement)
@@ -690,10 +689,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 	If Not $resetOnline Then
 		; Click submit
 		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
-		secondWait(2)
+		secondWait(1)
 		; Vao trang add point thuc hien lai 1 lan nua cho chac
 		; <h3 class="card-title"><i class="c-icon c-icon-xl cil-playlist-add"></i> Cộng điểm nhanh</h3>
-		addPointReset($sSession)
+		;~ addPointReset($sSession)
 	EndIf
 
 	; close diaglog confirm

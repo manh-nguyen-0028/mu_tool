@@ -942,6 +942,11 @@ Func sendKeyM()
 	secondWait(1)
 EndFunc   ;==>sendKeyM
 
+Func sendKeyC()
+	sendKeyDelay("c")
+	secondWait(1)
+EndFunc   ;==>sendKeyC
+
 Func sendKeyS()
 	clickCenterChar()
 	writeLogFile($logFile, "Send key +S !")
@@ -1129,14 +1134,14 @@ Func changeChar($mainNo)
 	sendKeyEsc()
 	; Bam chon nhat vat khac
 	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-	secondWait(3)
+	secondWait(2)
 	; Check title
 	$checkActive = activeAndMoveWin($mainNo)
 	If $checkActive Then
 		sendKeyDelay("{ESC}")
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-		secondWait(3)
+		secondWait(2)
 	EndIf
 EndFunc   ;==>changeChar
 

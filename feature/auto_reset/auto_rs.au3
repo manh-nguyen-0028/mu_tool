@@ -66,6 +66,10 @@ Func startAutoRs()
 
 		If "withdraw" == $type Then
 			withDrawRs($aAccValidate[$i])
+		ElseIf "web_auto_plus" == $type Then
+			writeLogFile($logFile, "Thuc hien reset voi web sau do chay lvl voi auto plus !")
+		ElseIf "auto_plus" == $type Then
+			writeLogFile($logFile, "Thuc hien reset hoan toan voi auto plus !")
 		Else
 			reset($aAccValidate[$i])
 		EndIf
@@ -165,7 +169,7 @@ Func withDrawRs($jAccountInfo)
 			EndIf
 
 			; withraw reset
-			$errorIp = _Demo_NavigateCheckBanner($sSession, combineUrl("web/bank/reset_in_out.withdraw_confirm.shtml?val=1&char=" & $charName))
+			$errorIp = navigateUrl($sSession, combineUrl("web/bank/reset_in_out.withdraw_confirm.shtml?val=1&char=" & $charName))
 			secondWait(5)
 			writeLogFile($logFile, "$errorIp: " & $errorIp)
 
@@ -265,7 +269,8 @@ Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 		If Not $activeWin Then $activeWin = switchOtherChar($charName)
 		If $activeWin Then
 			handleBeforeReset()
-			changeServer($mainNo)
+			; chi can doi nhan vat thoi
+			changeChar($charName)
 		EndIf
 	Else
 		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
@@ -305,8 +310,9 @@ EndFunc   ;==>_ProcessRs_UpdateAccountInfo
 ; Description: Quay lai game sau khi reset va xu ly cac buoc tiep theo (chon server, chon nhan vat, train)
 Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount, $resetInDay)
 	$serverNumber = $oAccountInfo.Item("serverNumber")
-	returnServer($serverNumber)
+	;~ returnServer($serverNumber)
 	returnChar($mainNo)
+	addPointInGame()
 	If Not $oAccountInfo.Item("isTrainInGame") Then
 		processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	Else
@@ -315,6 +321,23 @@ Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount
 	EndIf
 	minisizeMain($mainNo)
 EndFunc   ;==>_ProcessRs_ReturnGameAfterReset
+
+Func addPointInGame()
+	writeLogFile($logFile, "Thuc hien cong diem trong game !")
+	; send key C truoc
+	sendKeyC()
+	secondWait(1)
+	;~ addPointInGame()
+	; Click vao button cong diem
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_x"), getProperty("button.bang_c.add_point_y"))
+	; Click vao button xac nhan cong diem
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_x"), getProperty("button.bang_c.add_point_confirm_y"))
+
+	secondWait(1)
+
+	; send key c de tat bang c 
+	sendKeyC()
+EndFunc   ;==>addPointInGame
 
 ; Method: _ProcessRs_HandleNotEnoughLevel
 ; Description: Xu ly truong hop chua du level de reset
