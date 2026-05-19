@@ -24,7 +24,8 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testFollowLead($charName)
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
-testcheckLvl400($charName)
+;~ testcheckLvl400($charName)
+testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
@@ -169,6 +170,11 @@ EndFunc
 
 Func testChoiseServer()
     choise_sv()
+    Return True
+EndFunc
+
+Func testAddPointInGame()
+    addPointInGame()
     Return True
 EndFunc
 

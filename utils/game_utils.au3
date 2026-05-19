@@ -179,7 +179,7 @@ EndFunc
 
 Func sendEnterThenClickCenter()
 	sendKeyEnter()
-	_MU_MouseClick_Delay(150, 228)
+	clickCenterChar()
 	Return True
 EndFunc
 

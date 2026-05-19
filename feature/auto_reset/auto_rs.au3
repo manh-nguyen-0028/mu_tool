@@ -205,6 +205,17 @@ Func withDrawRs($jAccountInfo)
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset, 0)
 					_JSONSet($sTimeReset, $jItem, "last_time_reset")
+					; lay ngay cua $lastTimeRs. neu ngay khac ngay hien tai thi thuc hien buff char
+					$lastTimeRsDay = StringLeft($lastTimeRs, 10)
+					$timeNowDay = StringLeft($timeNow, 10)
+					If $lastTimeRsDay <> $timeNowDay Then
+						writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char !")
+						; check xem co can buff khong, neu can buff thi thuc hien buff, neu khong can buff thi bo qua
+						$needBuff = getPropertyJson($jItem, "is_buff")
+						If $needBuff Then 
+							goPageBuffChar($sSession)
+						EndIf
+					EndIf
 					$jsonRsGame[$i] = $jItem
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 					EndIf
@@ -744,6 +755,9 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	
 	; Thuc hien chuyen map neu khong tim thay lvl 400
 	moveOtherMap($charName)
+
+	; Thuc hien add 1 lan point nua cho het
+	addPointInGame()
 
 	; 9. Follow leader
 	$positionLeader = $oAccountInfo.Item("positionLeader")
