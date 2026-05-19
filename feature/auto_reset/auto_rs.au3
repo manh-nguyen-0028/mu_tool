@@ -257,12 +257,100 @@ Func calculateRequiredLevelForReset($rsCount)
 	Return $lvlCanRs
 EndFunc   ;==>calculateRequiredLevelForReset
 
+; Method: _ProcessRs_PrepareGameBeforeReset
+; Description: Chuan bi game truoc khi reset (active cua so, xu ly thong bao, doi server)
+Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
+	If Not $resetOnline Then
+		$activeWin = activeAndMoveWin($mainNo)
+		If Not $activeWin Then $activeWin = switchOtherChar($charName)
+		If $activeWin Then
+			handleBeforeReset()
+			changeServer($mainNo)
+		EndIf
+	Else
+		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
+	EndIf
+EndFunc   ;==>_ProcessRs_PrepareGameBeforeReset
+
+; Method: _ProcessRs_UpdateAccountInfo
+; Description: Cap nhat thong tin reset vao file JSON config sau khi reset. Tra ve so lan reset trong ngay
+Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	Local $resetInDay = 0
+	For $i = 0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
+		If $charNameTmp == $charName Then
+			$sLogReset = getLogReset($sSession, $charName)
+			$resetInDay = getRsInDay($sLogReset)
+			$currentRs = getCurrentReset($sLogReset)
+			$currentLvl = getCurrentlvl($sLogReset)
+			Local $jItem = $jsonRsGame[$i]
+			_JSONSet($currentRs, $jItem, "rs")
+			_JSONSet($resetInDay, $jItem, "time_rs")
+			$sTimeReset = getTimeReset($sLogReset, 0)
+			If $sTimeReset = 0 Or $currentLvl <> 1 Or $currentRs == $rsCount Then
+				$sTimeReset = getTimeNow()
+				writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
+			EndIf
+			_JSONSet($sTimeReset, $jItem, "last_time_reset")
+			$jsonRsGame[$i] = $jItem
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+			If $resetInDay == 1 And $isBuff Then goPageBuffChar($sSession)
+		EndIf
+	Next
+	Return $resetInDay
+EndFunc   ;==>_ProcessRs_UpdateAccountInfo
+
+; Method: _ProcessRs_ReturnGameAfterReset
+; Description: Quay lai game sau khi reset va xu ly cac buoc tiep theo (chon server, chon nhan vat, train)
+Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount, $resetInDay)
+	$serverNumber = $oAccountInfo.Item("serverNumber")
+	returnServer($serverNumber)
+	returnChar($mainNo)
+	If Not $oAccountInfo.Item("isTrainInGame") Then
+		processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
+	Else
+		writeLogFile($logFile, "Xu ly doi voi truong hop can train in game ! Thuc hien active train in game !")
+		activeTrainInGame($oAccountInfo)
+	EndIf
+	minisizeMain($mainNo)
+EndFunc   ;==>_ProcessRs_ReturnGameAfterReset
+
+; Method: _ProcessRs_HandleNotEnoughLevel
+; Description: Xu ly truong hop chua du level de reset
+Func _ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, $charName, $resetOnline)
+	writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
+	If Not $resetOnline Then
+		If $oAccountInfo.Item("isTrainInGame") Then
+			writeLogFile($logFile, "Van dang thuc hien train in game ! Ket thuc xu ly reset !")
+		Else
+			actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlCanRs)
+		EndIf
+	EndIf
+	writeLogFile($logFile, "Chua du lvl de reset => Ket thuc xu ly reset !")
+	updateLastTimeRs($charName, getTimeNow())
+EndFunc   ;==>_ProcessRs_HandleNotEnoughLevel
+
+; Method: _ProcessRs_CheckTimeToReset
+; Description: Kiem tra thoi gian co the reset sau khi login. Tra ve True neu co the reset, False neu chua den thoi gian
+Func _ProcessRs_CheckTimeToReset($jAccountInfo, $checkTimeInNight, $timeNow, $lastTimeRs, $nextTimeRs, $charName)
+	If $checkTimeInNight Then
+		writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
+		Return True
+	EndIf
+	writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & $timeNow & " - Thoi gian co the reset: " & $nextTimeRs)
+	If ($timeNow < $nextTimeRs) Then
+		updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
+		Return False
+	EndIf
+	Return True
+EndFunc   ;==>_ProcessRs_CheckTimeToReset
+
 Func processReset($jAccountInfo)
 	writeLogMethodStart("processReset", @ScriptLineNumber, $jAccountInfo)
 	Local $oAccountInfo = extractAccountInfo($jAccountInfo)
 	$charName = $oAccountInfo.Item("charName")
 	$resetOnline = $oAccountInfo.Item("resetOnline")
-	; Neu co active move va co toa do thi thuc hien move
 	$timeInNight = $oAccountInfo.Item("time_in_night")
 	$timeRs = $oAccountInfo.Item("time_rs")
 
@@ -276,97 +364,20 @@ Func processReset($jAccountInfo)
 		$rsCount = getRsCount($sLogReset)
 		$nLvl = getCurrentlvl($sLogReset)
 		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
-		; Kiem tra xem $checkTimeInNight = true hay khong ? neu = true thi khong can check $timeNow < $nextTimeRs nữa
-		If $checkTimeInNight Then
-			writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
-		Else
-			writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & $timeNow & " - Thoi gian co the reset: " & $nextTimeRs)
-			If ($timeNow < $nextTimeRs) Then
-				updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
-				Return
-			EndIf
-		EndIf
 
-		; Vào nhân vật kiểm tra lvl
-		; implement them viec check lvl rs theo rs
+		If Not _ProcessRs_CheckTimeToReset($jAccountInfo, $checkTimeInNight, $timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return
+
 		$lvlCanRs = calculateRequiredLevelForReset($rsCount)
-
 		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
 		$mainNo = getMainNoByChar($charName)
+
 		If $nLvl >= $lvlCanRs Then
-			; tìm thấy lvl la coi nhu da online roi, khong can check lai $activeWin vi da thuc hien o buoc truoc
-			If Not $resetOnline Then
-				; Active main no
-				$activeWin = activeAndMoveWin($mainNo)
-				If Not $activeWin Then $activeWin = switchOtherChar($charName)
-				; Click bỏ hết các bảng thông báo
-				If $activeWin Then
-					handleBeforeReset()
-					; Thuc hien change server
-					changeServer($mainNo)
-				EndIf
-			Else
-				; Thuc hien check auto z tren web neu co active
-				writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
-			EndIf
-			; 2. Reset in web
+			_ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 			resetInWeb($sSession, $oAccountInfo)
-
-			; Update info account json config
-			$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
-			For $i = 0 To UBound($jsonRsGame) - 1
-				$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
-				If $charNameTmp == $charName Then
-					$sLogReset = getLogReset($sSession, $charName)
-					$resetInDay = getRsInDay($sLogReset)
-					$currentRs = getCurrentReset($sLogReset)
-					$currentLvl = getCurrentlvl($sLogReset)
-					Local $jItem = $jsonRsGame[$i]
-					_JSONSet($currentRs, $jItem, "rs")
-					_JSONSet($resetInDay, $jItem, "time_rs")
-					; last time rs
-					$sTimeReset = getTimeReset($sLogReset, 0)
-					; Truong hop $sTimeReset = 0, hoac $currentRs = $resetCount thi set thanh ngay gio hien tai
-					If $sTimeReset = 0 Or $currentLvl <> 1 Or $currentRs == $rsCount Then
-						$sTimeReset = getTimeNow()
-						writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
-					EndIf
-
-					_JSONSet($sTimeReset, $jItem, "last_time_reset")
-					$jsonRsGame[$i] = $jItem
-					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-					If $resetInDay == 1 And $oAccountInfo.Item("isBuff") Then goPageBuffChar($sSession)
-				EndIf
-			Next
-			; If reset online = true => withow handle in game
-			If Not $resetOnline Then
-				; 3. Return game. Bay gio phai thuc hien 2 buoc. 1 chon lai sv, 2 -> chon lai nhan vat
-				$serverNumber = $oAccountInfo.Item("serverNumber")
-				returnServer($serverNumber)
-				returnChar($mainNo)
-				; Check train_in_game xem co can thuc hien processResetNomal hay khong
-				If Not $oAccountInfo.Item("isTrainInGame") Then
-					processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
-				Else
-					writeLogFile($logFile, "Xu ly doi voi truong hop can train in game ! Thuc hien active train in game !")
-					activeTrainInGame($oAccountInfo)
-				EndIf
-
-				minisizeMain($mainNo)
-			EndIf
+			$resetInDay = _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"))
+			If Not $resetOnline Then _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount, $resetInDay)
 		Else
-			writeLogFile($logFile, "Lvl hien tai: " & $nLvl & " - Lvl can de reset: " & $lvlCanRs)
-			If Not $resetOnline Then
-				If $oAccountInfo.Item("isTrainInGame") Then
-					writeLogFile($logFile, "Van dang thuc hien train in game ! Ket thuc xu ly reset !")
-				Else
-					actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlCanRs)
-				EndIf
-			EndIf
-			; Thuc hien ghi lai log reset khong thanh cong do chua du lvl de reset
-			writeLogFile($logFile, "Chua du lvl de reset => Ket thuc xu ly reset !")
-			; Cap nhat time rs de khong thuc hien lai nua ( time = time + 1h)
-			updateLastTimeRs($charName, getTimeNow())
+			_ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, $charName, $resetOnline)
 		EndIf
 
 		If Not $resetOnline Then minisizeMain($mainNo)
@@ -508,6 +519,9 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 				writeLogFile($logFile, "Khong tim thay lvl 400 => Tiep tuc check lvl !")
 				If Not checkActiveAutoHome() Then
 					writeLogFile($logFile, "Auto Home not active !")
+					; Send key enter de vao map arena
+					sendEnterThenClickCenter()
+					; Go map arena
 					goMapArena($rsCount)
 				EndIf
 				minisizeMain($mainNo)
@@ -520,6 +534,122 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 
 	Return $nLvl
 EndFunc   ;==>checkLvlInWeb
+
+; Method: _ValidRs_IsInvalidLastTime
+; Description: Kiem tra thoi gian reset co hop le khong. Tra ve True neu khong hop le (can bo qua)
+Func _ValidRs_IsInvalidLastTime($jAccount)
+	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
+	Local $charName = getPropertyJson($jAccount, "char_name")
+	If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then
+		writeLogFile($logFile, "Loi Thoi gian reset khong hop le !")
+		updateLastTimeRs($charName, getTimeNow())
+		Return True
+	EndIf
+	Return False
+EndFunc   ;==>_ValidRs_IsInvalidLastTime
+
+; Method: _ValidRs_IsNotTimeToReset
+; Description: Kiem tra da den gio reset chua. Tra ve True neu chua den gio (can bo qua)
+Func _ValidRs_IsNotTimeToReset($jAccount)
+	Local $timeRs = getPropertyJson($jAccount, "time_rs")
+	Local $timeInNight = getPropertyJson($jAccount, "time_in_night")
+	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
+	Local $hourPerRs = getPropertyJson($jAccount, "hour_per_reset")
+	Local $checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
+	Local $currentTime = getTimeNow()
+	Local $nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
+
+	If $checkTimeInNight Then
+		writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
+		Return False
+	EndIf
+	writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & $currentTime & " - Thoi gian co the reset: " & $nextTimeRs)
+	If $currentTime < $nextTimeRs Then
+		writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
+		Return True
+	EndIf
+	Return False
+EndFunc   ;==>_ValidRs_IsNotTimeToReset
+
+; Method: _ValidRs_IsMaxResetReached
+; Description: Kiem tra da dat so reset toi da chua (>= 2000 hoac >= max_rs). Tra ve True neu da dat (can bo qua)
+Func _ValidRs_IsMaxResetReached($jAccount)
+	Local $rs = getPropertyJson($jAccount, "rs")
+	Local $max_rs = getPropertyJson($jAccount, "max_rs")
+	If $rs >= 2000 Then
+		writeLogFile($logFile, "Da dat so lan reset toi da: " & $rs & " => Khong duoc reset nua!")
+		Return True
+	EndIf
+	If $rs >= $max_rs Then
+		writeLogFile($logFile, "So lan rs da vuot qua: " & $max_rs & " => Khong duoc reset nua!")
+		Return True
+	EndIf
+	Return False
+EndFunc   ;==>_ValidRs_IsMaxResetReached
+
+; Method: _ValidRs_IsTypeRsTimeNotReached
+; Description: Kiem tra dieu kien thoi gian theo type RS (Zen=0 / VIP=1 / PO=2). Tra ve True neu chua du thoi gian (can bo qua)
+Func _ValidRs_IsTypeRsTimeNotReached($jAccount, $timeWaitRsVip, $timeWaitRsZenRs50)
+	Local $typeRs = getPropertyJson($jAccount, "type_rs")
+	Local $rs = getPropertyJson($jAccount, "rs")
+	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
+	Local $currentTime = getTimeNow()
+	Local $lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
+	Local $lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
+	Local $lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
+	Local $lastTimeRsAddRsZenRs50 = _DateAdd('n', $timeWaitRsZenRs50, $lastTimeRs)
+
+	If $typeRs == 0 Then
+		If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then
+			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
+			Return True
+		ElseIf ($currentTime < $lastTimeRsAddRsZenRs50) And ($rs < 50) Then
+			writeLogFile($logFile, "Rs < 50 - Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAddRsZenRs50)
+			Return True
+		Else
+			writeLogFile($logFile, "Tiep tuc kiem tra reset voi type Zen: " & $typeRs)
+		EndIf
+	EndIf
+	If $typeRs == 1 And $currentTime < $lastTimeRsAddRsVip Then
+		writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type VIP: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAddRsVip)
+		Return True
+	EndIf
+	If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then
+		writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
+		Return True
+	EndIf
+	Return False
+EndFunc   ;==>_ValidRs_IsTypeRsTimeNotReached
+
+; Method: _ValidRs_IsDailyLimitExceeded
+; Description: Kiem tra da vuot qua so lan reset duoc phep trong ngay chua. Tra ve True neu da vuot (can bo qua)
+Func _ValidRs_IsDailyLimitExceeded($jAccount)
+	Local $timeRs = getPropertyJson($jAccount, "time_rs")
+	Local $limit = getPropertyJson($jAccount, "limit")
+	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
+	Local $sDateCheck = @YEAR & "/" & @MON & "/" & @MDAY
+	If $timeRs >= $limit And StringLeft($lastTimeRs, 10) == $sDateCheck Then
+		writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
+		Return True
+	EndIf
+	writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
+	Return False
+EndFunc   ;==>_ValidRs_IsDailyLimitExceeded
+
+; Method: _ValidRs_AdjustTypeRsIfOverDailyLimit
+; Description: Neu vuot qua gioi han RS VIP/PO trong ngay va hourPerRs = 0 thi chuyen type_rs ve 0 (Zen)
+Func _ValidRs_AdjustTypeRsIfOverDailyLimit(ByRef $jAccount, $maxRsVip, $maxRsPo)
+	Local $typeRs = getPropertyJson($jAccount, "type_rs")
+	Local $timeRs = getPropertyJson($jAccount, "time_rs")
+	Local $hourPerRs = getPropertyJson($jAccount, "hour_per_reset")
+	Local $rs = getPropertyJson($jAccount, "rs")
+	If (($typeRs == 1 And $timeRs > $maxRsVip) Or ($typeRs == 2 And $timeRs > $maxRsPo)) And ($hourPerRs == 0) Then
+		writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay voi type rs: " & $typeRs & " va so lan rs: " & $rs & " => Thay doi type rs ve 0 (RS zen) va reset time rs ve 0")
+		$typeRs = 0
+		_JSONSet($typeRs, $jAccount, "type_rs")
+		writeLogFile($logFile, "Thong tin tai khoan sau khi thay doi type rs: " & convertJsonToString($jAccount))
+	EndIf
+EndFunc   ;==>_ValidRs_AdjustTypeRsIfOverDailyLimit
 
 Func validAccountRs($aAccountActiveRs)
 	writeLogMethodStart("validAccountRs", @ScriptLineNumber, $aAccountActiveRs)
@@ -538,98 +668,15 @@ Func validAccountRs($aAccountActiveRs)
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		$username = getPropertyJson($aAccountActiveRs[$i], "user_name")
 		$charName = getPropertyJson($aAccountActiveRs[$i], "char_name")
-		$lastTimeRs = getPropertyJson($aAccountActiveRs[$i], "last_time_reset")
-		$limit = getPropertyJson($aAccountActiveRs[$i], "limit")
-		$timeRs = getPropertyJson($aAccountActiveRs[$i], "time_rs")
-		$hourPerRs = getPropertyJson($aAccountActiveRs[$i], "hour_per_reset")
-		$typeRs = getPropertyJson($aAccountActiveRs[$i], "type_rs")
-		$timeInNight = getPropertyJson($aAccountActiveRs[$i], "time_in_night")
-		$rs = getPropertyJson($aAccountActiveRs[$i], "rs")
-		$max_rs = getPropertyJson($aAccountActiveRs[$i], "max_rs")
-		$nextTimeRs = addTimePerRs($lastTimeRs, Number($hourPerRs))
-		$currentTime = getTimeNow()
-		$lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
-		$lastTimeRsAddRsZenRs50 = _DateAdd('n', $timeWaitRsZenRs50, $lastTimeRs)
-		$lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
-		$lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
-
 		writeLogFile($logFile, "validAccountRs => " & $username & " - " & $charName)
-		$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
-		; Truong hop $lastTimeRs = 0 hoac la co length = 1 thi thuc hien messageBox
-		If $lastTimeRs == 0 Or StringLen($lastTimeRs) == 1 Then
-			;~ MsgBox(16, "Lỗi", "Thời gian reset không hợp lệ !")
-			writeLogFile($logFile, "Lỗi Thời gian reset không hợp lệ !")
-			updateLastTimeRs($charName, getTimeNow())
-			ContinueLoop
-		EndIf
-		; Neu so reset = 2000 thi khong duoc reset nua
 
-		If $checkTimeInNight Then
-			writeLogFile($logFile, "Dang o trong khoang thoi gian dem => Bo qua viec kiem tra thoi gian reset !")
-		Else
-			writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & getTimeNow() & " - Thoi gian co the reset: " & $nextTimeRs)
-			If (getTimeNow() < $nextTimeRs) Then
-				writeLogFile($logFile, "Chua den thoi gian reset. " & @CRLF & "Thoi gian gan nhat co the reset: " & $nextTimeRs)
-				ContinueLoop
-			EndIf
-		EndIf
+		If _ValidRs_IsInvalidLastTime($aAccountActiveRs[$i]) Then ContinueLoop
+		If _ValidRs_IsNotTimeToReset($aAccountActiveRs[$i]) Then ContinueLoop
+		If _ValidRs_IsMaxResetReached($aAccountActiveRs[$i]) Then ContinueLoop
+		If _ValidRs_IsTypeRsTimeNotReached($aAccountActiveRs[$i], $timeWaitRsVip, $timeWaitRsZenRs50) Then ContinueLoop
+		If _ValidRs_IsDailyLimitExceeded($aAccountActiveRs[$i]) Then ContinueLoop
+		_ValidRs_AdjustTypeRsIfOverDailyLimit($aAccountActiveRs[$i], $maxRsVip, $maxRsPo)
 
-		; Truong hop rs >= 2000 thi khong duoc reset nua
-		If $rs >= 2000 Then
-			writeLogFile($logFile, "Da dat so lan reset toi da: " & $rs & " => Khong duoc reset nua!")
-			ContinueLoop
-		EndIf
-
-		If $rs >= $max_rs Then
-			writeLogFile($logFile, "So lan rs da vuot qua: " & $max_rs & " => Khong duoc reset nua!")
-			ContinueLoop
-		EndIf
-
-		; Truong hop type rs = 0 (Rs zen) thi thoi gian rs phai > 30. Truong hop so lan rs < 50 thi bo qua check thoi gian reset
-		If $typeRs == 0 Then
-			If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then
-				writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAdd30)
-				ContinueLoop
-			ElseIf ($currentTime < $lastTimeRsAddRsZenRs50) And ($rs < 50) Then
-				writeLogFile($logFile, "Rs < 50 - Chua toi thoi gian duoc rs voi type Zen: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type zen: " & $lastTimeRsAddRsZenRs50)
-				ContinueLoop
-			Else
-				writeLogFile($logFile, "Tiep tuc kiem tra reset voi type Zen: " & $typeRs)
-			EndIf
-		EndIf
-
-		; Truong hop type rs = 1 (RS VIP) thi thoi gian rs phai > lastTimeRsAddRsVip
-		If $typeRs == 1 And $currentTime < $lastTimeRsAddRsVip Then
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type VIP: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAddRsVip)
-			ContinueLoop
-		EndIf
-
-		; Truong hop type rs = 2 (RS PO) thi thoi gian rs phai > 60
-		If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then
-			writeLogFile($logFile, "Chua toi thoi gian duoc rs voi type PO: " & $typeRs & @CRLF & " - Thoi gian gan nhat co the reset voi type PO: " & $lastTimeRsAdd60)
-			ContinueLoop
-		EndIf
-
-		; Neu vuot qua so lan rs duoc phep trong ngay $lastTimeRs khac voi ngay hien tai thi khong duoc coi la loi. dang cua $lastTimeRs la "2024/08/06 06:40:00"
-		$sDateCheck = @YEAR & "/" & @MON & "/" & @MDAY
-		If $timeRs >= $limit And StringLeft($lastTimeRs, 10) == $sDateCheck Then
-			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay: " & $timeRs & @CRLF & " - So lan duoc phep: " & $limit)
-			ContinueLoop
-		Else
-			writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
-		EndIf
-
-		; Thay doi thong tin neu vuot qua so lan rs duoc phep trong ngay ($maxRsVip hoac $maxRsPo) va type rs = 1 (RS VIP) hoac type rs = 2 (RS PO) 
-		; Va $hourPerRs = 0
-		If (($typeRs == 1 And $timeRs > $maxRsVip) Or ($typeRs == 2 And $timeRs > $maxRsPo)) And ($hourPerRs == 0) Then
-			; Thay type rs thanh 0 (RS zen) va reset time rs ve 0
-			writeLogFile($logFile, "Vuot qua so lan rs duoc phep trong ngay voi type rs: " & $typeRs & " va so lan rs: " & $rs & " => Thay doi type rs ve 0 (RS zen) va reset time rs ve 0")
-			$typeRs = 0
-			; Set nguoc lai vao $aAccountActiveRs[$i]
-			_JSONSet($typeRs, $aAccountActiveRs[$i], "type_rs")
-			; in ra thong tin $aAccountActiveRs[$i]
-			writeLogFile($logFile, "Thong tin tai khoan sau khi thay doi type rs: " & convertJsonToString($aAccountActiveRs[$i]))
-		EndIf
 		ReDim $aAccValidate[UBound($aAccValidate) + 1]
 		$aAccValidate[UBound($aAccValidate) - 1] = $aAccountActiveRs[$i]
 	Next

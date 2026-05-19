@@ -177,6 +177,12 @@ Func handleBeforeReset()
 	_MU_MouseClick_Delay(150, 228)
 EndFunc
 
+Func sendEnterThenClickCenter()
+	sendKeyEnter()
+	_MU_MouseClick_Delay(150, 228)
+	Return True
+EndFunc
+
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
