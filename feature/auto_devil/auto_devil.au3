@@ -251,7 +251,8 @@ Func processGoEventDevil()
 		If $jsonAccountActiveDevil[$i] <> '' Then
 			writeLogFile($logFile, "char item start at: " & @MIN & " phut - " & @SEC & " giay")
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
+			;~ $checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
+			$checkRuongK = True
 			$devilNo = _JSONGet($jsonAccountActiveDevil[$i], "devil_no")
 			$isCheck400Lvl = _JSONGet($jsonAccountActiveDevil[$i], "is_check_400lv")
 			$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
@@ -267,6 +268,7 @@ Func processGoEventDevil()
 				writeLogFile($logFile, "Khong tim thay cua so win")
 				writeLogFile($logFile, "Ket thuc xu ly: " & $charName)
 				ContinueLoop ;
+				
 			EndIf
 
 			$checkLvl400 = True
@@ -284,20 +286,21 @@ Func processGoEventDevil()
 			EndIf
 
 			; Neu check ruong K = 0 thi thuc hien mo ruong K ra xem co khong, sau do moi click devil
-			If Not $checkRuongK Then
-				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
-				If $checkRuongK Then
-					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
-				EndIf
-			EndIf
+			;~ If Not $checkRuongK Then
+			;~ 	$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
+			;~ 	If $checkRuongK Then
+			;~ 		$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
+			;~ 		_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
+			;~ 		setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
+			;~ 	EndIf
+			;~ EndIf
 
 			; Bat dau click icon devil
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 
 			; Check and click into NPC devil
 			$npmSearchResult = searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
+			secondWait(2)
 
 			; Click into NPC devil
 			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)

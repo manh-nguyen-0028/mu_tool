@@ -48,6 +48,12 @@
       "x1": 1056,
       "y1": 789
     },
+	  "screen_800_600": {
+		"x": 0,
+		"y": 0,
+		"x1": 800,
+		"y1": 600
+	  },
     "chrome": {
       "path": "chromedriver\\chromedriver-win64\\chromedriver.exe",
       "profile": "Profile 1",

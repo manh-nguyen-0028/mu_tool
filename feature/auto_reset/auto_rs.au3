@@ -270,7 +270,8 @@ Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 		If $activeWin Then
 			handleBeforeReset()
 			; chi can doi nhan vat thoi
-			changeChar($charName)
+			;~ secondWait(1)
+			changeChar($mainNo)
 		EndIf
 	Else
 		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
@@ -522,7 +523,7 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 	$nLvl = 25
 	$tmpLvl = 0
 	$timeCheck = 0
-	$timeCheckMax = 30
+	$timeCheckMax = 15
 	;~ If $lvlStopCheck == 20 Then $timeCheckMax = 8
 
 	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
