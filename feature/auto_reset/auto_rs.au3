@@ -326,7 +326,11 @@ Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount
 	$serverNumber = $oAccountInfo.Item("serverNumber")
 	;~ returnServer($serverNumber)
 	returnChar($mainNo)
-	addPointInGame()
+	; Thuc hien lap lai viec add point 2 lan de tranh truong hop do lag ma chua kip add point thi het gio
+	For $i = 0 To 1
+		addPointInGame()
+		secondWait(1)
+	Next
 	If Not $oAccountInfo.Item("isTrainInGame") Then
 		processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	Else
@@ -572,6 +576,45 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 	Return $nLvl
 EndFunc   ;==>checkLvlInWeb
 
+; Viet function check lvl tren web. Can phai thuc hien thay doi nhan vat tam thoi de cap nhat lvl
+Func checkLvlInWebByChangeChar($sSession, $rsCount, $charName, $lvlStopCheck, $timeDelay)
+	writeLogFile($logFile, "Bat dau check lvl tren web by change char!" & " - Lvl stop check: " & $lvlStopCheck)
+	; Vào nhân vật kiểm tra lvl
+	$sLogReset = getLogReset($sSession, $charName)
+	$currentLvl = getCurrentlvl($sLogReset)
+	$mainNo = getMainNoByChar($charName)
+
+	; find lvl
+	;~ $sElement = findElement($sSession, "//span[@class='t-level']")
+	$nLvl = Number($currentLvl)
+	$tmpLvl = 0
+	$timeCheck = 0
+	$timeCheckMax = 30
+	If $lvlStopCheck == 20 Then $timeCheckMax = 8
+
+	While ($nLvl < $lvlStopCheck) And ($timeCheck <= $timeCheckMax)
+		; Neu > 200 thi moi thuc hien ghi log
+		If ($nLvl > 200 Or $timeCheck > 10) Then writeLogFile($logFile, "Lvl hien tai: " & $nLvl & "- So lan da check: " & $timeCheck)
+
+		$timeCheck += 1
+		If $nLvl <> $tmpLvl Or $nLvl < 20 Then
+			$tmpLvl = $nLvl
+			writeLogFile($logFile, "Lvl thay doi! Lvl hien tai: " & $nLvl)
+		Else
+			writeLogFile($logFile, "Lvl khong thay doi! Lvl hien tai: " & $nLvl & " - Thuc hien thay doi nhan vat de check lvl !")
+			changeThenReturnChar($charName)
+			minisizeMain($mainNo)
+			minuteWait($timeDelay)
+		EndIf
+
+		$sLogReset = getLogReset($sSession, $charName)
+		$nLvl = getCurrentlvl($sLogReset)
+	WEnd
+
+	writeLogFile($logFile, "Ket thuc check lvl tren web by change char! Lvl hien tai: " & $nLvl)
+	Return $nLvl
+EndFunc   ;==>checkLvlInWebByChangeChar
+
 ; Method: _ValidRs_IsInvalidLastTime
 ; Description: Kiem tra thoi gian reset co hop le khong. Tra ve True neu khong hop le (can bo qua)
 Func _ValidRs_IsInvalidLastTime($jAccount)
@@ -754,7 +797,8 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	EndIf
 
 	; 8. Check lvl 400 trong game
-	checkLvl400WhenRs($rsCount, $charName, 2)
+	;~ checkLvl400WhenRs($rsCount, $charName, 2)
+	checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
 	
 	; Thuc hien chuyen map neu khong tim thay lvl 400
 	moveOtherMap($charName)
