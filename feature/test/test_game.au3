@@ -6,7 +6,7 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="BoDeToSu"
+$charName="QueHaTay"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
@@ -18,14 +18,16 @@ $isHaveQuest = False
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
+testGoMapLvl()
 ;~ testChoiseServer()
+;~ testSendKeyEsc()
+;~ testResetNomal()
 ;~ testReturnChar()
 ;~ testMoveOtherMap()
 ;~ testFollowLead($charName)
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
-;~ testcheckLvl400($charName)
-testAddPointInGame()
+;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
@@ -43,6 +45,12 @@ testAddPointInGame()
 ;~ testCheckMainActive("Zalo")
 ;~ testSplitString()
 ;~ testChangeThenReturnChar($charName)
+;~ testcheckLvl400($charName)
+
+Func testAddPointInGame()
+    addPointInGame()
+    Return True
+EndFunc
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -65,7 +73,7 @@ EndFunc
 
 Func testcheckLvl400($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
-    checkLvl400($mainNo)
+    check400LvlImage()
     Return True
 EndFunc
 
@@ -170,11 +178,6 @@ EndFunc
 
 Func testChoiseServer()
     choise_sv()
-    Return True
-EndFunc
-
-Func testAddPointInGame()
-    addPointInGame()
     Return True
 EndFunc
 
@@ -409,6 +412,15 @@ EndFunc
 ;~ 	Return True
 ;~ EndFunc
 
+Func testResetNomal()
+    ; Chuan bi reset
+    _ProcessRs_PrepareGameBeforeReset(False, $mainNo, $charName)
+    secondWait(2)
+    ; Tien trinh reset gia lap
+    ; resetweb()
+    returnChar($mainNo)
+EndFunc
+
 Func testReturnChar()
     returnChar($mainNo)
     Return True
@@ -490,3 +502,8 @@ Func testSplitString()
 	writeLogFile($logFile, "switchOtherChar -> checkActiveOtherChar tra ve: charFound: " & $charFound & " - numberChar: " & $numberChar & " - $charNameOtherChar: " & $charNameOtherChar)
     Return True
 EndFunc
+
+Func testSendKeyEsc()
+	sendKeyEsc()
+	secondWait(1)
+EndFunc   ;==>sendKeyEsc

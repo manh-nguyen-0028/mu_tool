@@ -170,14 +170,11 @@ Func handelWhenFinshDevilEvent()
 EndFunc   ;==>handelWhenFinshDevilEvent
 
 Func handleBeforeReset()
-	For $i = 0 To 2 Step +1
-		sendKeyEnter()
-	Next
-	; Click ra ngaoi 1 lan nua cho chac
-	_MU_MouseClick_Delay(150, 228)
+	sendEnterThenClickCenter()
 EndFunc
 
 Func sendEnterThenClickCenter()
+	sendKeyEnter()
 	sendKeyEnter()
 	clickCenterChar()
 	Return True
@@ -330,16 +327,18 @@ Func checkAutoOffBuff()
 EndFunc   ;==>checkAutoOffBuff
 
 Func check400LvlImage()
+	secondWait(1)
 	$pathImage = $imagePathRoot & "common" & "\400lv.bmp"
 	Return searchImageFullScreenMu($pathImage)
 EndFunc   ;==>check400LvlImage
 
 Func searchImageFullScreenMu($pathImage)
 	$result = False
-	$fullScreenX = _JSONGet($jsonPositionConfig, "common.full_screen.x")
-	$fullScreenY = _JSONGet($jsonPositionConfig, "common.full_screen.y")
-	$fullScreenX1 = _JSONGet($jsonPositionConfig, "common.full_screen.x1")
-	$fullScreenY1 = _JSONGet($jsonPositionConfig, "common.full_screen.y1")
+	$fullScreenX = _JSONGet($jsonPositionConfig, "common.screen_800_600.x")
+	$fullScreenY = _JSONGet($jsonPositionConfig, "common.screen_800_600.y")
+	$fullScreenX1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.x1")
+	$fullScreenY1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.y1")
+	writeLogFile($logFile, "Search image full screen with param: x:" & $fullScreenX & " y:" & $fullScreenY & " x1:" & $fullScreenX1 & " y1:" & $fullScreenY1 & " and path image: " & $pathImage)
 	$imageSearchResult = _ImageSearch_Area($pathImage, $fullScreenX, $fullScreenY, $fullScreenX1, $fullScreenY1, 100, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	Return $result
@@ -493,7 +492,8 @@ Func switchOtherChar($currentChar)
 			writeLogFile($logFile, "Bat dau chuyen sang main cần thiết: " & $currentChar)
 			; active + move main tim thay
 			activeAndMoveWinByChar($charFound)
-			secondWait(2)
+			;~ secondWait(2)
+			sendEnterThenClickCenter()
 			; Thuc hien click chuyen nhan vat cung tai khoan
 			clickOtherChar($currentChar)
 
@@ -502,8 +502,8 @@ Func switchOtherChar($currentChar)
 			While Not activeAndMoveWinByChar($currentChar) And $timeCheck < 5
 				If $timeCheck >= 2 And Number($numberChar) > 1 Then
 					clickOtherChar2($currentChar)
-				Else
-					secondWait(1)
+				;~ Else
+				;~ 	secondWait(1)
 				EndIf
 				secondWait(1)
 				$timeCheck += 1
@@ -933,6 +933,7 @@ Func sendKeyTab()
 EndFunc   ;==>sendKeyTab
 
 Func sendKeyEsc()
+	writeLogFile($logFile, "Send key ESC !")
 	sendKeyDelay("{ESC}")
 	secondWait(1)
 EndFunc   ;==>sendKeyEsc
@@ -1136,9 +1137,9 @@ Func changeChar($mainNo)
 	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
 	secondWait(2)
 	; Check title
-	$checkActive = activeAndMoveWin($mainNo)
-	If $checkActive Then
-		sendKeyDelay("{ESC}")
+	;~ $checkActive = 
+	If activeAndMoveWin($mainNo) Then
+		sendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
 		secondWait(2)
