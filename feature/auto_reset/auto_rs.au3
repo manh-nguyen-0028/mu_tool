@@ -192,6 +192,8 @@ Func withDrawRs($jAccountInfo)
 					If Not $isMainCharacter Then
 						writeLogFile($logFile, "Thuc hien switch sang main character sau khi withdraw reset !")
 						switchToMainCharItem($charName, $mainCharName)
+					Else
+						minisizeMainByChar($charName)
 					EndIf
 				EndIf
 				$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)

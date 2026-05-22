@@ -25,3 +25,23 @@ Ghi lại các thay đổi tọa độ trong `position_config.json` / `m1_positi
 - Thêm: `button.event_devil.close_popup_event_devil_y` = 126 — Tọa độ Y để đóng popup khi không thể tham gia sự kiện Devil
 - **Used by:** `actionWhenCantJoinDevil()` trong `utils/game_utils.au3`
 - **Feature:** `feature/auto_devil/auto_devil.au3`
+
+### 2026/05/22 — Search Image Full Screen MU
+- **Compare:** main → update/v1.21
+- **Section:** `common.screen_800_600`
+- Thêm: `common.screen_800_600.x` = 0 — Tọa độ X góc trên trái vùng tìm kiếm ảnh toàn màn hình MU
+- Thêm: `common.screen_800_600.y` = 0 — Tọa độ Y góc trên trái vùng tìm kiếm ảnh toàn màn hình MU
+- Thêm: `common.screen_800_600.x1` = 800 — Tọa độ X góc dưới phải vùng tìm kiếm ảnh toàn màn hình MU
+- Thêm: `common.screen_800_600.y1` = 600 — Tọa độ Y góc dưới phải vùng tìm kiếm ảnh toàn màn hình MU
+- **Used by:** `searchImageFullScreenMu()` trong `utils/game_utils.au3`
+- **Feature:** `feature/auto_devil/auto_devil.au3`, `feature/auto_reset/auto_rs.au3`
+
+### 2026/05/22 — Auto Reset — Cộng điểm trong game
+- **Compare:** main → update/v1.21
+- **Section:** `button.bang_c`
+- Thêm: `button.bang_c.add_point_x` = 429 — Tọa độ X nút cộng điểm trong bảng C
+- Thêm: `button.bang_c.add_point_y` = 178 — Tọa độ Y nút cộng điểm trong bảng C
+- Thêm: `button.bang_c.add_point_confirm_x` = 356 — Tọa độ X nút xác nhận cộng điểm
+- Thêm: `button.bang_c.add_point_confirm_y` = 445 — Tọa độ Y nút xác nhận cộng điểm
+- **Used by:** `addPointInGame()` trong `feature/auto_reset/auto_rs.au3`
+- **Feature:** `feature/auto_reset/auto_rs.au3`
