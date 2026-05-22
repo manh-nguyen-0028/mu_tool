@@ -326,11 +326,10 @@ Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount
 	$serverNumber = $oAccountInfo.Item("serverNumber")
 	;~ returnServer($serverNumber)
 	returnChar($mainNo)
+	secondWait(1)
 	; Thuc hien lap lai viec add point 2 lan de tranh truong hop do lag ma chua kip add point thi het gio
-	For $i = 0 To 1
-		addPointInGame()
-		secondWait(1)
-	Next
+	addPointInGame()
+	secondWait(1)
 	If Not $oAccountInfo.Item("isTrainInGame") Then
 		processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	Else
@@ -347,15 +346,21 @@ Func addPointInGame()
 	secondWait(1)
 	;~ addPointInGame()
 	; Click vao button cong diem
+	clickButtonAddPoint()
+
+	; send key c de tat bang c 
+	sendKeyC()
+EndFunc   ;==>addPointInGame
+
+Func clickButtonAddPoint() 
+	writeLogFile($logFile, "Thuc hien click vao button cong diem !")
+	; Click vao button cong diem
 	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_x"), getProperty("button.bang_c.add_point_y"))
 	; Click vao button xac nhan cong diem
 	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_x"), getProperty("button.bang_c.add_point_confirm_y"))
 
 	secondWait(1)
-
-	; send key c de tat bang c 
-	sendKeyC()
-EndFunc   ;==>addPointInGame
+EndFunc   ;==>clickButtonAddPoint
 
 ; Method: _ProcessRs_HandleNotEnoughLevel
 ; Description: Xu ly truong hop chua du level de reset
@@ -587,7 +592,7 @@ Func checkLvlInWebByChangeChar($sSession, $rsCount, $charName, $lvlStopCheck, $t
 	; find lvl
 	;~ $sElement = findElement($sSession, "//span[@class='t-level']")
 	$nLvl = Number($currentLvl)
-	$tmpLvl = 0
+	$tmpLvl = Number($currentLvl)
 	$timeCheck = 0
 	$timeCheckMax = 30
 	If $lvlStopCheck == 20 Then $timeCheckMax = 8
@@ -796,6 +801,8 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 		goMapArena($rsCount)
 	EndIf
 
+	; doi 1 phut de di chuyen da nhe
+	minuteWait(1)
 	; 8. Check lvl 400 trong game
 	;~ checkLvl400WhenRs($rsCount, $charName, 2)
 	checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
@@ -865,13 +872,14 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		sendKeyEnter()
 		goMapArena($rsCount)
 		minuteWait(1)
-		$lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
-		While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
-			writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
-			$lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
-			$timeCheck += 1
-			minuteWait(1)
-		WEnd
+		$lvlCheckInWeb = checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
+		;~ $lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
+		;~ While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
+		;~ 	writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
+		;~ 	$lvlCheckInWeb = checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
+		;~ 	$timeCheck += 1
+		;~ 	minuteWait(1)
+		;~ WEnd
 
 		If $lvlCheckInWeb < $lvlStopCheck Then
 			writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
