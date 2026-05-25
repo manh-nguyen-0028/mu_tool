@@ -270,27 +270,17 @@ Func checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
 Func checkOpenPopupDevil()
-	; TODO: Tam thoi khong check popup devil
-	Return True
-	; can phai doi 5s de check auto home
-;~ secondWait(5)
-;~ ; Thuc hien check auto home
-;~ $pathImage = $imagePathRoot & "devil" & "\popup_devil_open.bmp"
-;~ $result = False
-;~ $x = 0
-;~ $y = 0
-;~ $x1 = 800
-;~ $y1 = 600
-;~ $imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
-;~ If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
-
-;~ $imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-;~ If $imageSearchResult[0] == 1 Then
-;~ 	$result = True
-;~ 	;~ MouseMove(607,541)
-;~ EndIf
-;~ If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
-;~ Return $result
+	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
+	If $npcSearch = 0 Then
+		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+		Return False
+	Else
+		; Truong hop thay roi thi thoat khoi vong lap
+		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+		$npcX = $npcSearch[0]
+		$npcY = $npcSearch[1]
+		Return True
+	EndIf 
 EndFunc   ;==>checkOpenPopupDevil
 
 Func searchNvpNotActiveAutoZ()
@@ -736,21 +726,38 @@ Func moveAndSearchNpcPixel($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1,
 		$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
 		_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
 		secondWait(2)
-		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 4)
 		$countSearchPixel = $countSearchPixel + 1
 	WEnd
 
 	Return $npcSearch
 EndFunc   ;==>moveAndSearchNpcPixel
 
+Func checkColorPopUpDevil()
+	;~ 0x9A3C00
+	;~ 250, 460
+	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
+	If $npcSearch = 0 Then
+		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+		Return False
+	Else
+		; Truong hop thay roi thi thoat khoi vong lap
+		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+		;~ $npcX = $npcSearch[0]
+		;~ $npcY = $npcSearch[1]
+		Return True
+	EndIf 
+
+EndFunc
+
 ; Method: searchNpcDevil
 ; Description: Tìm kiếm NPC Devil, thử di chuyển và click icon devil nếu không thấy
-Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
+Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX, ByRef $npcY)
 	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+	$result = False
 
 	Local $npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, $npcSearch = 0, $totalSearch = 0
 
-	Local $totalSearch = 0
 	While $npcSearch = 0 And $totalSearch < 5
 		$npcSearch = npcSearchColorResult($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
 
@@ -761,10 +768,17 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
 		If $npcSearch = 0 Then
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 			$totalSearch = $totalSearch + 1
+		Else
+			; Truong hop thay roi thi thoat khoi vong lap
+			writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+			$npcX = $npcSearch[0]
+			$npcY = $npcSearch[1]
+			$result = True
+			ExitLoop
 		EndIf
 	WEnd
 
-	Return $npcSearch
+	Return $result
 EndFunc   ;==>searchNpcDevil
 
 Func npcSearchColorResult(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearchX1, ByRef $npcSearchY1, ByRef $npcSearchColor)
@@ -775,6 +789,14 @@ Func npcSearchColorResult(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearch
 	Return $npcSearch
 EndFunc   ;==>npcSearchColor
 
+Func clickToNpcDevil($npcSearchX, $npcSearchY)
+	$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
+	$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
+	$npcX = $npcSearchX + Number($npcSearchDeviationX)
+	$npcY = $npcSearchY + Number($npcSearchDeviationY)
+	mouseClickDelayAlt($npcX, $npcY)
+	secondWait(3)
+EndFunc
 ; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
 Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)

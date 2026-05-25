@@ -30,7 +30,9 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
-testSearchNPC()
+;~ testSearchNPC()
+testSearchNPCThenClick()
+;~ testCheckColorPopUpDevil()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
 ;~ testSwithChar()
@@ -114,9 +116,27 @@ Func testGoToSportArena($charName)
 EndFunc
 
 Func testSearchNPC()
-    secondWait(3)
-    $npcSearch = searchNpcDevil($charName,$checkRuongK, 3, $isHaveQuest)
-    clickNpcDevil($npcSearch, 3, True)
+    Local $npcX = 0, $npcY = 0
+    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+        MouseMove($npcX, $npcY)
+        secondWait(1)
+    EndIf
+EndFunc
+Func testSearchNPCThenClick()
+    secondWait(1)
+    Local $npcX = 0, $npcY = 0
+    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+        MouseMove($npcX, $npcY)
+        secondWait(1)
+        ; Click into NPC devil
+        clickToNpcDevil($npcX, $npcY)
+        ; check open popup devil
+    EndIf
+EndFunc
+
+Func testCheckColorPopUpDevil()
+    checkColorPopUpDevil()
+    Return True
 EndFunc
 
 Func testSwithChar()
