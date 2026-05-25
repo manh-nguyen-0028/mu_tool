@@ -297,10 +297,11 @@ Func processGoEventDevil()
 
 			; Bat dau click icon devil
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			secondWait(1)
 
 			; Check and click into NPC devil
 			$npmSearchResult = searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
-			secondWait(2)
+			secondWait(1)
 
 			; Click into NPC devil
 			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)

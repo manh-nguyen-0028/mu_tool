@@ -716,33 +716,47 @@ Func goSportStadium($sportNo = 1)
 	sendKeyTab()
 EndFunc   ;==>goSportStadium
 
-Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
-	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
-
-	; Search NPC devil
+; Method: getNpcSearchArea
+; Description: Lấy tọa độ vùng tìm kiếm NPC từ config
+Func getNpcSearchArea(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearchX1, ByRef $npcSearchY1)
 	$npcSearchX = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x")
 	$npcSearchY = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y")
 	$npcSearchX1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x_1")
 	$npcSearchY1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y_1")
-	$npcSearchColor = 0xB9AA95
+EndFunc   ;==>getNpcSearchArea
 
-	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+; Method: moveAndSearchNpcPixel
+; Description: Di chuyển nhân vật và tìm kiếm NPC bằng pixel search, thử tối đa $maxRetry lần
+Func moveAndSearchNpcPixel($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, $maxRetry = 2)
+	Local $npcSearch = 0
+	Local $countSearchPixel = 0
 
-	$totalSearch = 0 ;
-	While $npcSearch = 0 And $totalSearch < 5
+	While $npcSearch = 0 And $countSearchPixel < $maxRetry
+		$moveCheckNpcX = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_x")
+		$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
+		_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+		secondWait(2)
 		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+		$countSearchPixel = $countSearchPixel + 1
+	WEnd
 
-		$countSearchPixel = 0 ;
+	Return $npcSearch
+EndFunc   ;==>moveAndSearchNpcPixel
 
-		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $npcSearch = 0 And $countSearchPixel < 2
-			$moveCheckNpcX = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_x")
-			$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
-			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
-			secondWait(2)
-			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
-			$countSearchPixel = $countSearchPixel + 1 ;
-		WEnd
+; Method: searchNpcDevil
+; Description: Tìm kiếm NPC Devil, thử di chuyển và click icon devil nếu không thấy
+Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
+	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+
+	Local $npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, $npcSearch = 0, $totalSearch = 0
+
+	Local $totalSearch = 0
+	While $npcSearch = 0 And $totalSearch < 5
+		$npcSearch = npcSearchColorResult($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+
+		;~ If $npcSearch = 0 Then
+		;~ 	$npcSearch = moveAndSearchNpcPixel($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+		;~ EndIf
 
 		If $npcSearch = 0 Then
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
@@ -752,6 +766,14 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
 
 	Return $npcSearch
 EndFunc   ;==>searchNpcDevil
+
+Func npcSearchColorResult(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearchX1, ByRef $npcSearchY1, ByRef $npcSearchColor)
+	secondWait(1)
+	$npcSearchColor = 0xB9AA95
+	getNpcSearchArea($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1)
+	Local $npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+	Return $npcSearch
+EndFunc   ;==>npcSearchColor
 
 ; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
