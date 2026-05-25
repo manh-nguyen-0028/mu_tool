@@ -180,8 +180,9 @@ Func withDrawRs($jAccountInfo)
 				writeLogFile($logFile, "IP khong chinh chu khong the RS")
 			Else
 				; thuc hien nhap captcha va submit
-				solveImageCaptchaAz($sSession,"//img[@class='captcha_img']", 90, 5)
-				checkCaptchaThenSubmit($sSession)
+				;~ solveImageCaptchaAz($sSession,"//img[@class='captcha_img']", 90, 5)
+				;~ checkCaptchaThenSubmit($sSession)
+				submitButton($sSession)
 				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']")
 				writeLogFile($logFile, "Rut reset thanh cong !")
 				; Thực hiện thay đổi nhân vật nếu reset_online = false, nếu reset_online = true thì không cần thực hiện thay đổi nhân vật mà sẽ thực hiện reset online luôn
@@ -210,13 +211,11 @@ Func withDrawRs($jAccountInfo)
 					; lay ngay cua $lastTimeRs. neu ngay khac ngay hien tai thi thuc hien buff char
 					$lastTimeRsDay = StringLeft($lastTimeRs, 10)
 					$timeNowDay = StringLeft($timeNow, 10)
-					If $lastTimeRsDay <> $timeNowDay Then
-						writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char !")
+					$needBuff = getPropertyJson($jItem, "is_buff")
+					If $lastTimeRsDay <> $timeNowDay And $needBuff Then
+						writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char ! " & $charName & "$lastTimeRsDay = " & $lastTimeRsDay & "$timeNowDay = " & $timeNowDay)
 						; check xem co can buff khong, neu can buff thi thuc hien buff, neu khong can buff thi bo qua
-						$needBuff = getPropertyJson($jItem, "is_buff")
-						If $needBuff Then 
-							goPageBuffChar($sSession)
-						EndIf
+						goPageBuffChar($sSession)
 					EndIf
 					$jsonRsGame[$i] = $jItem
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)

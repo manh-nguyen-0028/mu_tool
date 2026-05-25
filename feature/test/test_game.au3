@@ -6,7 +6,7 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="QueHaTay"
+$charName="Shakky"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
@@ -18,7 +18,7 @@ $isHaveQuest = False
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
-testGoMapLvl()
+;~ testGoMapLvl()
 ;~ testChoiseServer()
 ;~ testSendKeyEsc()
 ;~ testResetNomal()
@@ -30,7 +30,7 @@ testGoMapLvl()
 ;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
-;~ testSearchNPC()
+testSearchNPC()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
 ;~ testSwithChar()
@@ -46,6 +46,26 @@ testGoMapLvl()
 ;~ testSplitString()
 ;~ testChangeThenReturnChar($charName)
 ;~ testcheckLvl400($charName)
+
+;~ quickTest()
+
+Func quickTest()
+	;~ Local $jAccountInfo = createMockAccountInfo()
+	;~ Local $oAccountInfo = extractAccountInfo($jAccountInfo)
+	;~ _ArrayDisplay($oAccountInfo.Keys(), "Keys in oAccountInfo")
+	;~ _ArrayDisplay($oAccountInfo.Items(), "Values in oAccountInfo")
+	Local $lastTimeRs = "2026/05/14 12:26:00"
+	$timeNow = getTimeNow()
+
+    $lastTimeRsDay = StringLeft($lastTimeRs, 10)
+    $timeNowDay = StringLeft($timeNow, 10)
+
+    If $lastTimeRsDay <> $timeNowDay Then
+        writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char ! " & $charName & "$lastTimeRsDay = " & $lastTimeRsDay & "$timeNowDay = " & $timeNowDay)
+        ; check xem co can buff khong, neu can buff thi thuc hien buff, neu khong can buff thi bo qua
+        ;~ goPageBuffChar($sSession)
+    EndIf
+EndFunc
 
 Func testAddPointInGame()
     addPointInGame()

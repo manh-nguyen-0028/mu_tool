@@ -71,6 +71,7 @@ Func checkIp($sSession)
 EndFunc   ;==>checkIp
 
 Func login($sSession, $username, $password)
+	writeLogFile($logFile, "Đăng nhập vào website với username: " & $username)
 	; vao website
 	navigateUrl($sSession, $baseMuUrl)
 	;~ secondWait(5)
@@ -81,14 +82,6 @@ Func login($sSession, $username, $password)
 	; Truong hop $sTitle co chứa chuỗi trong $sTitleLoginSuccess thi kiem tra tiep xem gia tri user name co dung voi bien $username khong
 	; Neu khong dung thi thuc hien logout va lay lai $sTitle
 	If StringInStr($sTitle, $sTitleLoginSuccess) Or StringInStr($sTitle, $sTitleLoginSuccess_EN) Then
-	;~ Phan tu html co dang nhu sau, lay text phan tu trong h4 id="t-account_name_title"
-			; <div class="t-account-title">
-
-	;~                   <h4 id="t-account_name_title">maka</h4>
-	;~       <h7>(Hà Nội 2003)</h7>
-
-
-	;~   </div>
 		$sElement = findElement($sSession, "//h4[@id='t-account_name_title']")
 		$sValue = getTextElement($sSession, $sElement)
 		writeLogFile($logFile, "$sValue account login: " & $sValue)
@@ -102,6 +95,8 @@ Func login($sSession, $username, $password)
 			$sTitle = getTitleWebsite($sSession)
 			writeLogFile($logFile, "Logout success!")
 		EndIf
+	Else
+		writeLogFile($logFile, "Chua login, tiep tuc login voi account: " & $username)
 	EndIf
 
 	While (StringInStr($sTitle, $sTitleLoginSuccess) = 0) And (StringInStr($sTitle, $sTitleLoginSuccess_EN) = 0)
@@ -186,6 +181,11 @@ Func loginWebsite($sSession, $username, $password)
 	checkCaptchaThenSubmit($sSession)
 	Return $isSuccess
 EndFunc   ;==>loginWebsite
+
+Func submitButton($sSession)
+	_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
+	secondWait(2)
+EndFunc   ;==>checkCaptchaThenSubmit
 
 Func checkCaptchaThenSubmit($sSession)
 	$sElement = findElement($sSession, "//input[@name='captcha']")
