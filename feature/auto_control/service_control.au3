@@ -2,6 +2,7 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs.au3"
+#include "../auto_buff/auto_buff.au3"
 #RequireAdmin
 
 start()
@@ -27,6 +28,7 @@ Func start()
 	While True
 		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
 			startAutoRs()
+			startAutoBuff()
 		EndIf
 		$timeLoop = _JSONGet($jsonPositionConfig, "common.auto.time_loop_auto_rs")
 		If (Number($timeLoop) = 0 Or Number($timeLoop) == 60) Then
