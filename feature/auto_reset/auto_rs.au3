@@ -604,13 +604,15 @@ Func checkLvlInWebByChangeChar($sSession, $rsCount, $charName, $lvlStopCheck, $t
 		$timeCheck += 1
 		If $nLvl <> $tmpLvl Or $nLvl < 20 Then
 			$tmpLvl = $nLvl
-			writeLogFile($logFile, "Lvl thay doi! Lvl hien tai: " & $nLvl)
+			writeLogFile($logFile, "Lvl thay doi! Lvl hien tai: " & $nLvl & " - lvl tmp:" & $tmpLvl)
 		Else
 			writeLogFile($logFile, "Lvl khong thay doi! Lvl hien tai: " & $nLvl & " - Thuc hien thay doi nhan vat de check lvl !")
 			changeThenReturnChar($charName)
 			minisizeMain($mainNo)
-			minuteWait($timeDelay)
+			
 		EndIf
+
+		minuteWait($timeDelay)
 
 		$sLogReset = getLogReset($sSession, $charName)
 		$nLvl = getCurrentlvl($sLogReset)
@@ -890,6 +892,12 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 
 		activeAndMoveWin($mainNo)
 		_MU_followLeader(1)
+
+		If $oAccountInfo.Item("onAutoPlus") Then 
+			startAutoPlus()
+			secondWait(1)
+			If $oAccountInfo.Item("switchServer") Then switchSvInGame($oAccountInfo)
+		EndIf
 
 		If Not $resetOnline Then
 			; 10. minisize main
