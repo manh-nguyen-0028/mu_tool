@@ -819,6 +819,7 @@ Func checkTimeInNight($timeRs, $timeInNight)
 EndFunc
 
 Func updateLastTimeRs($charName, $lastTimeRs)
+	writeLogFile($logFile, "Can update last time rs: " & $charName & " - time: " & $lastTimeRs)
 	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	For $i = 0 To UBound($jsonRsGame) - 1
 		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")

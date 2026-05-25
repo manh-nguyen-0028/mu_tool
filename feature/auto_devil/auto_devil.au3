@@ -297,13 +297,26 @@ Func processGoEventDevil()
 
 			; Bat dau click icon devil
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			secondWait(1)
 
 			; Check and click into NPC devil
-			$npmSearchResult = searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
-			secondWait(2)
-
-			; Click into NPC devil
-			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
+			Local $npcX = 0, $npcY = 0
+			If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+				MouseMove($npcX, $npcY)
+				secondWait(1)
+				; Click into NPC devil
+				clickToNpcDevil($npcX, $npcY)
+				; check open popup devil
+				If checkColorPopUpDevil() Then 
+					actionGoDevilSuccess($devilNo)
+				Else
+					actionGoDevilFail($isNeedFollowLeader)
+				EndIf
+			EndIf
+			
+			
+			; check
+			;~ clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
 
 			minisizeMainByChar($charName)
 			writeLogFile($logFile, "char item end at: " & @MIN & " phut - " & @SEC & " giay")
@@ -315,6 +328,21 @@ Func processGoEventDevil()
 	Return $jsonAccountActiveDevil
 
 EndFunc   ;==>processGoEvent
+
+Func actionGoDevilSuccess($devilNo)
+	writeLogFile($logFile, "Thuc hien click vao devil")
+	clickPositionByDevilNo($devilNo)
+	secondWait(4)
+	_MU_Start_AutoZ()
+EndFunc
+
+Func actionGoDevilFail($isNeedFollowLeader)
+	writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
+	If $isNeedFollowLeader Then
+		writeLogFile($logFile, "Thuc hien follow leader")
+		_MU_followLeader(1)
+	EndIf
+EndFunc
 
 Func processFastJoinAccounts($aCharJoinDevil)
 	writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($aCharJoinDevil))
