@@ -215,7 +215,7 @@ Func withDrawRs($jAccountInfo)
 					If $lastTimeRsDay <> $timeNowDay And $needBuff Then
 						writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char ! " & $charName & "$lastTimeRsDay = " & $lastTimeRsDay & "$timeNowDay = " & $timeNowDay)
 						; check xem co can buff khong, neu can buff thi thuc hien buff, neu khong can buff thi bo qua
-						goPageBuffChar($sSession)
+						;~ goPageBuffChar($sSession)
 					EndIf
 					$jsonRsGame[$i] = $jItem
 					setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
@@ -388,7 +388,7 @@ Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff)
 			_JSONSet($sTimeReset, $jItem, "last_time_reset")
 			$jsonRsGame[$i] = $jItem
 			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
-			If $resetInDay == 1 And $isBuff Then goPageBuffChar($sSession)
+			;~ If $resetInDay == 1 And $isBuff Then goPageBuffChar($sSession)
 		EndIf
 	Next
 	Return $resetInDay
@@ -419,8 +419,10 @@ Func addPointInGame()
 	sendKeyC()
 	secondWait(1)
 	;~ addPointInGame()
-	; Click vao button cong diem
-	clickButtonAddPoint()
+	; Click vao button cong diem 2 lan de tranh truong hop do lag ma chua kip add point thi het gio
+	For $i = 0 To 1
+		clickButtonAddPoint()
+	Next
 
 	; send key c de tat bang c 
 	sendKeyC()

@@ -48,8 +48,7 @@ Func checkThenGoDevilEvent()
 	; 17 < current hour < 20 => $nextHour =@HOUR+1
 	; 20 < current hour < 22 => if current min < 30 => next time = current hour, min = 30. if current min > 30 => next time = current hour + 1, min = 00
 	Local $nextTime = calculateNextDevilEventTime(@HOUR, @MIN)
-	Local $nextHour = $nextTime[0]
-	Local $nextMin = $nextTime[1]
+	Local $nextHour = $nextTime[0], $nextMin = $nextTime[1], $nextSec = 20
 
 	; Danh sách các giờ cần kiểm tra, cách nhau bởi dấu phẩy
 	Local $validHours = ",7,10,12,14,16,18,20,21,22,23,"
@@ -64,14 +63,18 @@ Func checkThenGoDevilEvent()
 	If @HOUR == 23 And @MIN > 30 Then
 		$nextHour = 0
 		$nextMin = 0
+		$nextSec = 40
 		; Thuc hien cho toi 00h00 ngay ke tiep
 		$waitMin = 60 - @MIN
 		writeLogFile($logFile, "Current time is 23h and min > 30. Sleep until next day: " & $waitMin & " minutes")
 		minuteWait($waitMin)
 	EndIf
 
-	$nextTime = createTimeToTicks($nextHour, $nextMin, "20")
+	$nextTime = createTimeToTicks($nextHour, $nextMin, $nextSec)
 	$diffTime = diffTime(getCurrentTime(), $nextTime)
+
+	writeLogFile($logFile, "nextHour: " & $nextHour & " - nextMin: " & $nextMin & " - nextSec: " & $nextSec)
+	writeLogFile($logFile, "Current time: " & getCurrentTime() & " - Next time: " & $nextTime & " - Diff time: " & $diffTime)
 
 	If $diffTime > 0 Then
 		; Check exists auto_rs.exe
