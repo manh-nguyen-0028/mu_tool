@@ -67,7 +67,7 @@ Func startAutoRs()
 		If "withdraw" == $type Then
 			withDrawRs($aAccValidate[$i])
 		ElseIf "web_auto_plus" == $type Then
-			writeLogFile($logFile, "Thuc hien reset voi web sau do chay lvl voi auto plus !")
+			resetWebAutoPlus($aAccValidate[$i])
 		ElseIf "auto_plus" == $type Then
 			writeLogFile($logFile, "Thuc hien reset hoan toan voi auto plus !")
 		Else
@@ -229,6 +229,81 @@ Func withDrawRs($jAccountInfo)
 	EndIf
 	writeLogMethodEnd("processWithDrawReset", @ScriptLineNumber, $jAccountInfo)
 EndFunc   ;==>withDrawRs
+
+; Method: resetWebAutoPlus
+; Description: Reset qua web sau do chay lvl voi auto plus. Xu ly giong reset() voi Not $resetOnline
+Func resetWebAutoPlus($jAccountInfo)
+	$charName = getPropertyJson($jAccountInfo, "char_name")
+	$mainNo = getMainNoByChar($charName)
+	writeLogFile($logFile, "Begin handle resetWebAutoPlus with account: " & $charName & " - main no: " & $mainNo)
+	; Xu ly giong nhu reset() voi truong hop Not $resetOnline
+	$activeMain = activeAndMoveWin($mainNo)
+	If Not $activeMain Then $activeMain = switchOtherChar($charName)
+	If $activeMain Then
+		minisizeMain($mainNo)
+		$minuteCheck = Number(@MIN)
+		If $minuteCheck > 52 Then
+			$minuteWait = (60 - $minuteCheck) + 8
+			minuteWait($minuteWait)
+		ElseIf $minuteCheck < 8 Then
+			$minuteWait = 8 - $minuteCheck
+			minuteWait($minuteWait)
+		EndIf
+		processResetWebAutoPlus($jAccountInfo)
+	EndIf
+	writeLogFile($logFile, "End handle resetWebAutoPlus with account: " & $charName)
+EndFunc   ;==>resetWebAutoPlus
+
+; Method: processResetWebAutoPlus
+; Description: Thuc hien reset tren web, sau do quay lai game stop + start auto_plus roi an game
+Func processResetWebAutoPlus($jAccountInfo)
+	writeLogMethodStart("processResetWebAutoPlus", @ScriptLineNumber, $jAccountInfo)
+	Local $oAccountInfo = extractAccountInfo($jAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$timeInNight = $oAccountInfo.Item("time_in_night")
+	$timeRs = $oAccountInfo.Item("time_rs")
+
+	writeLogFile($logFile, "Begin handle processResetWebAutoPlus with account: " & $charName)
+	$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
+	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
+	If $isLoginSuccess Then
+		$timeNow = getTimeNow()
+		$sLogReset = getLogReset($sSession, $oAccountInfo.Item("charName"))
+		$lastTimeRs = getTimeReset($sLogReset, 0)
+		$rsCount = getRsCount($sLogReset)
+		$nLvl = getCurrentlvl($sLogReset)
+		$nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
+
+		If Not _ProcessRs_CheckTimeToReset($jAccountInfo, $checkTimeInNight, $timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return
+
+		$lvlCanRs = calculateRequiredLevelForReset($rsCount)
+		writeLogFile($logFile, @ScriptLineNumber & " : Rs hien tai: " & $rsCount & " - Lvl can thiet de RS la: " & $lvlCanRs)
+		$mainNo = getMainNoByChar($charName)
+
+		If $nLvl >= $lvlCanRs Then
+			; Chuan bi game truoc khi reset (giong Not $resetOnline)
+			_ProcessRs_PrepareGameBeforeReset(False, $mainNo, $charName)
+			; Reset tren web
+			resetInWeb($sSession, $oAccountInfo)
+			; Cap nhat thong tin reset
+			_ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"))
+			; Quay lai game va thuc hien stop + start auto_plus
+			returnChar($mainNo)
+			secondWait(1)
+			addPointInGame()
+			secondWait(1)
+			stopAutoPlus()
+			secondWait(2)
+			startAutoPlus()
+			secondWait(1)
+		Else
+			_ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, $charName, False)
+		EndIf
+
+		minisizeMain($mainNo)
+	EndIf
+	writeLogMethodEnd("processResetWebAutoPlus", @ScriptLineNumber, $jAccountInfo)
+EndFunc   ;==>processResetWebAutoPlus
 
 Func extractAccountInfo($jAccountInfo)
 	Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
