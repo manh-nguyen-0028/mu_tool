@@ -91,10 +91,15 @@ withDrawRs($jAccountInfo)
 │  └─ Click confirm → ghi log lỗi
 ├─ Nếu thành công:
 │  ├─ submitButton() + confirm     [Submit rút reset]
+│  ├─ getWithdrawTimeRs()          [Lấy time_rs từ trang reset_in_out]
+│  │  ├─ navigateUrl("web/bank/reset_in_out.shtml")
+│  │  ├─ Tìm element div.alert.alert-warning
+│  │  ├─ Lấy text → regex "(\d+)/" → trích số trước dấu "/"
+│  │  └─ Return Number (ví dụ: "2/5" → 2)
 │  ├─ Nếu reset_online = false:
 │  │  ├─ changeThenReturnChar()    [Đổi nhân vật trong game]
 │  │  └─ switchToMainCharItem()    [Quay về main char nếu cần]
-│  └─ Cập nhật JSON config (time_rs, last_time_reset, buff nếu sang ngày mới)
+│  └─ Cập nhật JSON config (time_rs = getWithdrawTimeRs(), last_time_reset, buff nếu sang ngày mới)
 ```
 
 ---

@@ -185,6 +185,9 @@ Func withDrawRs($jAccountInfo)
 				submitButton($sSession)
 				findAndClick($sSession, "//button[@class='swal2-confirm swal2-styled']")
 				writeLogFile($logFile, "Rut reset thanh cong !")
+				; Lay time_rs tu trang reset_in_out sau khi rut reset
+				$withdrawTimeRs = getWithdrawTimeRs($sSession, $charName)
+				writeLogFile($logFile, "Withdraw time_rs: " & $withdrawTimeRs)
 				; Thực hiện thay đổi nhân vật nếu reset_online = false, nếu reset_online = true thì không cần thực hiện thay đổi nhân vật mà sẽ thực hiện reset online luôn
 				If Not $resetOnline Then
 					writeLogFile($logFile, "Thuc hien thay đổi nhân vật sau khi withdraw reset !")
@@ -201,10 +204,15 @@ Func withDrawRs($jAccountInfo)
 				For $i = 0 To UBound($jsonRsGame) - 1
 					$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
 					If $charNameTmp == $charName Then
+					Local $jItem = $jsonRsGame[$i]
+					; Dùng giá trị time_rs lấy từ trang withdraw thay vì getRsInDay
+					If $withdrawTimeRs >= 0 Then
+						_JSONSet($withdrawTimeRs, $jItem, "time_rs")
+					Else
 						$sLogReset = getLogReset($sSession, $charName)
 						$resetInDay = getRsInDay($sLogReset)
-					Local $jItem = $jsonRsGame[$i]
-					_JSONSet($resetInDay, $jItem, "time_rs")
+						_JSONSet($resetInDay, $jItem, "time_rs")
+					EndIf
 					; last time rs
 					$sTimeReset = getTimeReset($sLogReset, 0)
 					_JSONSet($sTimeReset, $jItem, "last_time_reset")
@@ -229,6 +237,34 @@ Func withDrawRs($jAccountInfo)
 	EndIf
 	writeLogMethodEnd("processWithDrawReset", @ScriptLineNumber, $jAccountInfo)
 EndFunc   ;==>withDrawRs
+
+; Method: getWithdrawTimeRs
+; Description: Lay gia tri time_rs tu trang web/bank/reset_in_out.shtml sau khi rut reset
+; Tra ve so luot event da nhan (vi du: "2/5" -> 2), tra ve -1 neu khong tim thay
+Func getWithdrawTimeRs($sSession, $charName)
+	writeLogMethodStart("getWithdrawTimeRs", @ScriptLineNumber, $charName)
+	navigateUrl($sSession, combineUrl("web/bank/reset_in_out.shtml"))
+	secondWait(3)
+	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[contains(@class,'alert alert-warning')]")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay element alert-warning tren trang reset_in_out")
+		writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
+		Return -1
+	EndIf
+	Local $sText = _WD_ElementAction($sSession, $sElement, 'text')
+	writeLogFile($logFile, "Alert warning text: " & $sText)
+	; Text co dang: "Hom nay, ban da nhan 2/5 luot event..." -> lay so truoc dau "/"
+	Local $aResult = StringRegExp($sText, "(\d+)/", 1)
+	If @error Then
+		writeLogFile($logFile, "Khong the trich xuat time_rs tu text: " & $sText)
+		writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
+		Return -1
+	EndIf
+	Local $timeRs = Number($aResult[0])
+	writeLogFile($logFile, "time_rs tu trang withdraw: " & $timeRs)
+	writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
+	Return $timeRs
+EndFunc   ;==>getWithdrawTimeRs
 
 ; Method: resetWebAutoPlus
 ; Description: Reset qua web sau do chay lvl voi auto plus. Xu ly giong reset() voi Not $resetOnline
