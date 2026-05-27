@@ -393,8 +393,7 @@ Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 		If $activeWin Then
 			handleBeforeReset()
 			; chi can doi nhan vat thoi
-			;~ secondWait(1)
-			changeChar($mainNo)
+			If changeChar($mainNo) Then Return True
 		EndIf
 	Else
 		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
@@ -530,7 +529,10 @@ Func processReset($jAccountInfo)
 		$mainNo = getMainNoByChar($charName)
 
 		If $nLvl >= $lvlCanRs Then
-			_ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
+			If Not _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName) Then
+				writeLogFile($logFile, "Chuan bi game truoc khi reset that bai !")
+				Return
+			EndIf
 			resetInWeb($sSession, $oAccountInfo)
 			$resetInDay = _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"))
 			If Not $resetOnline Then _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount, $resetInDay)

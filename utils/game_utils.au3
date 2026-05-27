@@ -1176,18 +1176,20 @@ Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
 Func changeChar($mainNo)
 	writeLogFile($logFile, "Begin change char !")
-	sendKeyEsc()
-	; Bam chon nhat vat khac
-	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-	secondWait(2)
-	; Check title
-	;~ $checkActive = 
-	If activeAndMoveWin($mainNo) Then
+	Local $result = False
+	; Lap lai hanh dong thay doi nhan vat cho toi khi nao thay doi duoc nhan vat moi (activeAndMoveWin($mainNo) = False). Toi da 3 lan thu, moi lan thu cach nhau 5s
+	For $i = 1 To 3 Step +1
 		sendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-		secondWait(2)
-	EndIf
+		secondWait(2) 
+		If Not activeAndMoveWin($mainNo) Then
+			writeLogFile($logFile, "Lan thu " & $i & ": Khong the active duoc cua so game sau khi bam chon nhan vat khac !")
+			$result = True
+			ExitLoop
+		EndIf
+	Next
+	Return $result
 EndFunc   ;==>changeChar
 
 #cs
