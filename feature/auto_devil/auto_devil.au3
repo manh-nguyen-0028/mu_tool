@@ -489,7 +489,7 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 				writeLogFile($logFile, "Char: " & $charName & " da vao devil thanh cong")
 				; Luu lai danh sach char da join devil thanh cong de sau nay xu ly
 				ReDim $aCharJoinDevil[UBound($aCharJoinDevil) + 1]
-				$aCharJoinDevil[UBound($aCharJoinDevil) - 1] = $charName
+				$aCharJoinDevil[UBound($aCharJoinDevil) - 1] = $jsonAccountActiveDevil[$i]
 				$charJoinSuccess = $charJoinSuccess & $charName & @CRLF
 			Else
 				writeLogFile($logFile, "Char: " & $charName & " khong vao dc devil")
