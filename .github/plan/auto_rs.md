@@ -74,9 +74,11 @@ resetWebAutoPlus($jAccountInfo)
    │  ├─ addPointInGame()                           [Cộng điểm stat]
    │  ├─ stopAutoPlus()                             [Tắt auto plus hiện tại]
    │  ├─ startAutoPlus()                            [Bật lại auto plus]
-   │  └─ minisizeMain()                             [Ẩn cửa sổ game → hoàn thành]
+   │  └─ sendKeyF8()                             [Ẩn cửa sổ game → hoàn thành]
    └─ Nếu không đủ level:
-      └─ _ProcessRs_HandleNotEnoughLevel(False)     [Xử lý chưa đủ level]
+      ├─ stopAutoPlus()                             [Tắt auto plus hiện tại]
+      ├─ startAutoPlus()                            [Bật lại auto plus]
+      └─ sendKeyF8()                             [Ẩn cửa sổ game → hoàn thành]
 ```
 
 ### Withdraw Flow (type = "withdraw")
@@ -245,5 +247,5 @@ auto_rs.au3
 3. **Thời gian an toàn**: Reset tránh phút 52-8 (đổi giờ server) — chỉ áp dụng cho `reset_online = false`
 4. **Level tính theo reset count**: rs < 50 → lvl = 200 + rs*5; rs >= 50 → lvl = 400
 5. **Buff ngày mới**: Tự động buff khi phát hiện ngày reset cuối khác ngày hiện tại (cho cả withdraw và reset)
-6. **web_auto_plus**: Reset qua web, quay game chỉ stop/start auto plus rồi ẩn — không train level, không follow leader, không chuyển map
+6. **web_auto_plus**: Reset qua web; nếu đủ level thì reset rồi quay game stop/start auto plus, nếu chưa đủ level thì vẫn stop/start auto plus rồi ẩn — không train level, không follow leader, không chuyển map
 7. **Type chưa implement**: `auto_plus` hiện chỉ ghi log, chưa có logic xử lý

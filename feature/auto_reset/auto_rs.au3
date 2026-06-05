@@ -328,18 +328,23 @@ Func processResetWebAutoPlus($jAccountInfo)
 			secondWait(1)
 			addPointInGame()
 			secondWait(1)
-			stopAutoPlus()
-			secondWait(2)
-			startAutoPlus()
-			secondWait(1)
+			_ProcessRs_RestartAutoPlus()
 		Else
-			_ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, $charName, False)
+			_ProcessRs_RestartAutoPlus()
 		EndIf
 
-		minisizeMain($mainNo)
+		sendKeyF8()
 	EndIf
 	writeLogMethodEnd("processResetWebAutoPlus", @ScriptLineNumber, $jAccountInfo)
 EndFunc   ;==>processResetWebAutoPlus
+
+Func _ProcessRs_RestartAutoPlus()
+	secondWait(1)
+	stopAutoPlus()
+	secondWait(2)
+	startAutoPlus()
+	secondWait(1)
+EndFunc   ;==>_ProcessRs_RestartAutoPlus
 
 Func extractAccountInfo($jAccountInfo)
 	Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
