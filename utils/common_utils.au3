@@ -20,7 +20,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $devilFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
-Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName
+Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName
 Global $aCharInAccount
 
 ; Khai báo biến toàn cục
@@ -75,6 +75,8 @@ Func init()
 				$autoAuctionConfigFileName = $value
 			ElseIf "reset_online" == $type Then
 				$resetOnlineConfigFileName = $value
+			ElseIf "auto_buff" == $type Then
+				$autoBuffFileName = $value
 			EndIf
 		EndIf
 	Next
@@ -656,7 +658,7 @@ Func merge2Array($firstJson, $secondJson)
 	Next
 
 	$textConvert = "[" & $mergeInfo & "]"
-	writeLogFile($logFile, "Text convert merge info account rs: " & $textConvert)
+	;~ writeLogFile($logFile, "Text convert merge info account rs: " & $textConvert)
 	$result = _JSONDecode($textConvert)
 	
 	Return $result
@@ -816,4 +818,16 @@ Func checkTimeInNight($timeRs, $timeInNight)
 	If (Number($timeRs) < Number($timeInNight)) Then $result = True	
 	writeLogMethodEnd("checkTimeInNight result = " & $result,@ScriptLineNumber)
 	Return $result
+EndFunc
+
+Func updateLastTimeRs($charName, $lastTimeRs)
+	writeLogFile($logFile, "Can update last time rs: " & $charName & " - time: " & $lastTimeRs)
+	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i = 0 To UBound($jsonRsGame) - 1
+		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
+		If $charNameTmp == $charName Then
+			_JSONSet($lastTimeRs, $jsonRsGame[$i], "last_time_reset")
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+		EndIf
+	Next
 EndFunc

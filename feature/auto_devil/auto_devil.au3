@@ -48,8 +48,7 @@ Func checkThenGoDevilEvent()
 	; 17 < current hour < 20 => $nextHour =@HOUR+1
 	; 20 < current hour < 22 => if current min < 30 => next time = current hour, min = 30. if current min > 30 => next time = current hour + 1, min = 00
 	Local $nextTime = calculateNextDevilEventTime(@HOUR, @MIN)
-	Local $nextHour = $nextTime[0]
-	Local $nextMin = $nextTime[1]
+	Local $nextHour = $nextTime[0], $nextMin = $nextTime[1], $nextSec = 20
 
 	; Danh sách các giờ cần kiểm tra, cách nhau bởi dấu phẩy
 	Local $validHours = ",7,10,12,14,16,18,20,21,22,23,"
@@ -64,14 +63,18 @@ Func checkThenGoDevilEvent()
 	If @HOUR == 23 And @MIN > 30 Then
 		$nextHour = 0
 		$nextMin = 0
+		$nextSec = 40
 		; Thuc hien cho toi 00h00 ngay ke tiep
 		$waitMin = 60 - @MIN
 		writeLogFile($logFile, "Current time is 23h and min > 30. Sleep until next day: " & $waitMin & " minutes")
 		minuteWait($waitMin)
 	EndIf
 
-	$nextTime = createTimeToTicks($nextHour, $nextMin, "20")
+	$nextTime = createTimeToTicks($nextHour, $nextMin, $nextSec)
 	$diffTime = diffTime(getCurrentTime(), $nextTime)
+
+	writeLogFile($logFile, "nextHour: " & $nextHour & " - nextMin: " & $nextMin & " - nextSec: " & $nextSec)
+	writeLogFile($logFile, "Current time: " & getCurrentTime() & " - Next time: " & $nextTime & " - Diff time: " & $diffTime)
 
 	If $diffTime > 0 Then
 		; Check exists auto_rs.exe
@@ -82,9 +85,20 @@ Func checkThenGoDevilEvent()
 		; Sleep until next time
 		$diffTime = diffTime(getCurrentTime(), $nextTime)
 		Sleep($diffTime)
-		processGoEventDevil()
+		$jsonAccountActive = processGoEventDevil()
+
+		; Check accounts in devil
+		$aCharJoinDevil = checkAccountsInDevil($jsonAccountActive)
+
+		; Process fast join accounts $aCharJoinDevil
+		processFastJoinAccounts($aCharJoinDevil)
+		secondWait(10)
+
+		; process swith main char
+		switchToMainChar($aCharJoinDevil)
+
 		;Sleep 26 minute
-		sleep26Min()
+		sleep26Min($aCharJoinDevil)
 
 		; Rs after go devil success
 		writeLogFile($logFile, "Finish event devil")
@@ -98,10 +112,9 @@ Func checkThenGoDevilEvent()
 	EndIf
 EndFunc   ;==>checkThenGoDevilEvent
 
-Func sleep26Min()
+Func sleep26Min($aCharJoinDevil)
 	; Neu $jsonAccountActiveDevil = 0 thi khong can thuc hien sleep
-	$jsonAccountActiveDevil = getArrayActiveDevil()
-	If UBound($jsonAccountActiveDevil) == 0 Then
+	If UBound($aCharJoinDevil) == 0 Then
 		writeLogFile($logFile, "Khong co tai khoan active devil. Ket thuc xu ly sleep26Min")
 		Return
 	EndIf
@@ -114,32 +127,30 @@ Func sleep26Min()
 	Local $nextTimeFollowLeader = createTimeToTicks(@HOUR, $nextMinFollowLeader, 10)
 	$timeLeft = timeLeft($currentTime, $nextTimeFollowLeader)
 	$diffTime = diffTime($currentTime, $nextTimeFollowLeader)
-	writeLogFile($logFile, "Current time: " & $currentTime & " - Next time follow leader: " & $nextTimeFollowLeader)
+	;~ writeLogFile($logFile, "Current time: " & $currentTime & " - Next time follow leader: " & $nextTimeFollowLeader)
 	writeLogFile($logFile, "Time left util next time follow leader: " & $timeLeft)
 	Sleep($diffTime)
 
 	; Chi trong truong hop la 20,21,22 moi thuc hien follow leader
 	If @HOUR == 20 Or @HOUR == 21 Or @HOUR == 22 Or @HOUR == 11 Then
 		writeLogFile($logFile, "Khong phai thoi gian follow leader hoac chuyen main chinh, chi thuc hien xu ly sau khi ket thuc devil")
-		$jsonAccountActiveDevil = getArrayActiveDevil()
-		For $i = 0 To UBound($jsonAccountActiveDevil) - 1
-			If $jsonAccountActiveDevil[$i] <> '' Then
-				$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-				$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
+		;~ $jsonAccountActiveDevil = getArrayActiveDevil()
+		For $i = 0 To UBound($aCharJoinDevil) - 1
+			If $aCharJoinDevil[$i] <> '' Then
+				$charName = _JSONGet($aCharJoinDevil[$i], "char_name")
+				$isNeedFollowLeader = _JSONGet($aCharJoinDevil[$i], "is_need_follow_leader")
 				; Truong hop khong can follow leader thi khong can xu ly
-				;~ If Not $isNeedFollowLeader Then ContinueLoop
-				$mainNo = getMainNoByChar($charName)
-				If activeAndMoveWin($mainNo) Then
+				If activeAndMoveWinByChar($charName) Then
 					handelWhenFinshDevilEvent()
-					minisizeMain($mainNo)
+					minisizeMainByChar($charName)
 				EndIf
 			EndIf
 		Next
 	Else
-		handleAfterDevilEvent()
+		handleAfterDevilEvent($aCharJoinDevil)
 		; Thuc hien swith sang main chinh
-		$jsonAccountActiveDevil = getArrayActiveDevil()
-		switchToMainChar($jsonAccountActiveDevil)
+		;~ $jsonAccountActiveDevil = getArrayActiveDevil()
+		switchToMainChar($aCharJoinDevil)
 	EndIf
 	Return True
 EndFunc   ;==>sleep26Min
@@ -179,7 +190,6 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	$result[1] = $nextMin
 
 	writeLogFile($logFile, "Next hour: " & $nextHour & " - Next min: " & $nextMin)
-
 	; Trả về mảng chứa nextHour và nextMin
 
 	Return $result
@@ -208,6 +218,12 @@ Func getListFastMove($jsonAccountActiveDevil)
 	Return $jsonAccountFastJoin
 EndFunc
 
+Func reloadArrayActive()
+	$jsonAccountActiveDevil = getArrayActiveDevil()
+	writeLogFile($logFile, "So luong account active: " & UBound($jsonAccountActiveDevil))
+	Return $jsonAccountActiveDevil
+EndFunc
+
 #cs
 	Xu ly vao event devil.
 	Can check xem da du 400 lvl hay chua. Neu chua du 400 lvl thi thoi khong can vao lam gi
@@ -218,12 +234,15 @@ Func processGoEventDevil()
 	writeLogFile($logFile, "Start method: processGoEvent")
 	Local $jsonAccountActiveDevil, $jsonAccountFastJoin
 	; Get account devil
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+	$jsonAccountActiveDevil = reloadArrayActive()
 
 	If Not validateAmountDevil($jsonAccountActiveDevil) Then Return
 
 	$jsonAccountFastJoin = getListFastMove($jsonAccountActiveDevil)
 
+	writeLogFile($logFile, "So luong account active: " & UBound($jsonAccountActiveDevil))
+
+	writeLogFile($logFile, "DEVIL start at: " & @MIN & " phut - " & @SEC & " giay")
 	; Go devil
 	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
 		; Truong hop thoi gian tham gia khac cac phut 0 > 5, 30 -> 35 thi thuc hien thoat khoi vong for
@@ -233,8 +252,10 @@ Func processGoEventDevil()
 		EndIf
 
 		If $jsonAccountActiveDevil[$i] <> '' Then
+			writeLogFile($logFile, "char item start at: " & @MIN & " phut - " & @SEC & " giay")
 			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
+			;~ $checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
+			$checkRuongK = True
 			$devilNo = _JSONGet($jsonAccountActiveDevil[$i], "devil_no")
 			$isCheck400Lvl = _JSONGet($jsonAccountActiveDevil[$i], "is_check_400lv")
 			$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
@@ -250,6 +271,7 @@ Func processGoEventDevil()
 				writeLogFile($logFile, "Khong tim thay cua so win")
 				writeLogFile($logFile, "Ket thuc xu ly: " & $charName)
 				ContinueLoop ;
+				
 			EndIf
 
 			$checkLvl400 = True
@@ -267,46 +289,66 @@ Func processGoEventDevil()
 			EndIf
 
 			; Neu check ruong K = 0 thi thuc hien mo ruong K ra xem co khong, sau do moi click devil
-			If Not $checkRuongK Then
-				$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
-				If $checkRuongK Then
-					$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-					_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
-					setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
-				EndIf
-			EndIf
+			;~ If Not $checkRuongK Then
+			;~ 	$checkRuongK = checkRuongK($jsonAccountActiveDevil[$i])
+			;~ 	If $checkRuongK Then
+			;~ 		$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
+			;~ 		_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
+			;~ 		setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
+			;~ 	EndIf
+			;~ EndIf
 
 			; Bat dau click icon devil
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			secondWait(1)
 
 			; Check and click into NPC devil
-			$npmSearchResult = searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
+			Local $npcX = 0, $npcY = 0
+			If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+				MouseMove($npcX, $npcY)
+				secondWait(1)
+				; Click into NPC devil
+				clickToNpcDevil($npcX, $npcY)
+				; check open popup devil
+				If checkColorPopUpDevil() Then 
+					actionGoDevilSuccess($devilNo)
+				Else
+					actionGoDevilFail($isNeedFollowLeader)
+				EndIf
+			EndIf
+			
+			
+			; check
+			;~ clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
 
-			; Click into NPC devil
-			clickNpcDevil($npmSearchResult, $devilNo, $isNeedFollowLeader)
-
-			minisizeMain($mainNo)
+			minisizeMainByChar($charName)
+			writeLogFile($logFile, "char item end at: " & @MIN & " phut - " & @SEC & " giay")
 		EndIf
 	Next
 
-	secondWait(5)
+	writeLogFile($logFile, "DEVIL end at: " & @MIN & " phut - " & @SEC & " giay")
 
-	; Check accounts in devil
-	checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
-
-	; Process fast join accounts
-	processFastJoinAccounts($jsonAccountFastJoin)
-	secondWait(30)
-
-	; process swith main char
-	switchToMainChar($jsonAccountActiveDevil)
-
-	writeLogFile($logFile, "Finish processGoEvent")
+	Return $jsonAccountActiveDevil
 
 EndFunc   ;==>processGoEvent
 
-Func processFastJoinAccounts($jsonAccountFastJoin)
-	writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($jsonAccountFastJoin))
+Func actionGoDevilSuccess($devilNo)
+	writeLogFile($logFile, "Thuc hien click vao devil")
+	clickPositionByDevilNo($devilNo)
+	secondWait(4)
+	_MU_Start_AutoZ()
+EndFunc
+
+Func actionGoDevilFail($isNeedFollowLeader)
+	writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
+	If $isNeedFollowLeader Then
+		writeLogFile($logFile, "Thuc hien follow leader")
+		_MU_followLeader(1)
+	EndIf
+EndFunc
+
+Func processFastJoinAccounts($aCharJoinDevil)
+	writeLogFile($logFile, "Start method: processFastJoinAccounts with accounts: " & convertJsonToString($aCharJoinDevil))
 
 	;Kiem tra cac truong hop join nhanh, khong can doi het event
 	Local $nextMinMove = 6
@@ -322,48 +364,48 @@ Func processFastJoinAccounts($jsonAccountFastJoin)
 
 	$timeLeftGoFastMove = timeLeft(getCurrentTime(), $nextTimeMove)
 
-	writeLogFile($logFile, "Time left util next fast move: " & $timeLeftGoFastMove)
-
 	$timeDiffNextMove = diffTime(createTimeToTicks(@HOUR, @MIN, @SEC), $nextTimeMove)
 
 	writeLogFile($logFile, "Begin sleep util next fast move: " & $timeDiffNextMove)
 
 	Sleep($timeDiffNextMove)
 
-	For $i = 0 To UBound($jsonAccountFastJoin) - 1
-		Local $charName = _JSONGet($jsonAccountFastJoin[$i], "char_name")
-		Local $needCheckAutoZ = _JSONGet($jsonAccountFastJoin[$i], "need_check_auto_z")
+	For $i = 0 To UBound($aCharJoinDevil) - 1
+		Local $charName = _JSONGet($aCharJoinDevil[$i], "char_name")
+		Local $needCheckAutoZ = _JSONGet($aCharJoinDevil[$i], "need_check_auto_z")
 		Local $mainNo = getMainNoByChar($charName)
+		$fastMove = _JSONGet($aCharJoinDevil[$i], "is_fast_join")
+		$onAutoPlus = _JSONGet($aCharJoinDevil[$i], "on_auto_plus")
 
-		Local $checkActiveWin = activeAndMoveWin($mainNo)
-		secondWait(2)
-
-		; Truong hop main hien tai khong duoc active, active main khac
-		If $checkActiveWin == False Then $checkActiveWin = switchOtherChar($charName)
-
-		; Move other map
-		moveOtherMap($charName)
-
-		;~ _MU_followLeader(1)
-
-		;~ checkAutoZAfterFollowLead($needCheckAutoZ)
-
-		startAutoPlus()
-
-		minisizeMain($mainNo)
+		If $fastMove Then
+			writeLogFile($logFile, "Account: " & $charName & " - Fast move ")
+			; Truong hop main hien tai khong duoc active, active main khac
+			If Not activeAndMoveWin($mainNo) Then $checkActiveWin = switchOtherChar($charName)
+			If activeAndMoveWin($mainNo) Then
+				; Move other map
+				moveOtherMap($charName)
+				; follow leader then auto plus
+				followLeadThenStartAutoPlus($charName, $onAutoPlus)
+				;~ If $needCheckAutoZ Then checkAutoZAfterFollowLead()
+				sendKeyF8()
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move thanh cong")
+			Else
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move that bai vi khong active duoc main nao")
+			EndIf
+		EndIf
 	Next
 EndFunc
 
 ; Method: handleAfterDevilEvent
 ; Description: Handles the actions to be taken after finishing the devil event for each active devil account.
-Func handleAfterDevilEvent()
-	$jsonAccountActiveDevil = getArrayActiveDevil()
-	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
-		If $jsonAccountActiveDevil[$i] <> '' Then
-			$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-			$checkRuongK = _JSONGet($jsonAccountActiveDevil[$i], "have_ruong_k")
-			$isFastMove = _JSONGet($jsonAccountActiveDevil[$i], "is_fast_join")
-			$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
+Func handleAfterDevilEvent($aCharJoinDevil)
+	;~ $jsonAccountActiveDevil = $aCharJoinDevil
+	For $i = 0 To UBound($aCharJoinDevil) - 1
+		If $aCharJoinDevil[$i] <> '' Then
+			$charName = _JSONGet($aCharJoinDevil[$i], "char_name")
+			$checkRuongK = _JSONGet($aCharJoinDevil[$i], "have_ruong_k")
+			$isFastMove = _JSONGet($aCharJoinDevil[$i], "is_fast_join")
+			$isNeedFollowLeader = _JSONGet($aCharJoinDevil[$i], "is_need_follow_leader")
 			$mainNo = getMainNoByChar($charName)
 
 			writeLogFile($logFile, "Xu ly sau khi ket thuc devil voi Char: " & $charName)
@@ -410,7 +452,7 @@ Func handleAfterDevilEvent()
 					writeLogFile($logFile, "Char: " & $charName & " - can follow leader => thuc hien follow leader")
 					_MU_followLeader(1)
 					secondWait(8)
-					If Not $checkRuongK And checkRuongK($jsonAccountActiveDevil[$i]) Then
+					If Not $checkRuongK And checkRuongK($aCharJoinDevil[$i]) Then
 						$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 						_JSONSet(True, $jsonDevilConfig, $charName & "." & "have_ruong_k")
 						setJsonToFileFormat($jsonPathRoot & $devilFileName, $jsonDevilConfig)
@@ -427,25 +469,47 @@ Func handleAfterDevilEvent()
 	Next
 EndFunc   ;==>handleAfterDevilEvent
 
-Func checkAccountsInDevil($jsonAccountActiveDevil, $isNeedFollowLeader)
-	writeLogFile($logFile, "Start method: checkAccountsInDevil with accounts: " & convertJsonToString($jsonAccountActiveDevil))
-	Local $sCharNotJoinDevil = ""
+Func checkAccountsInDevil($jsonAccountActiveDevil)
+	writeLogFile($logFile, "Start method: checkAccountsInDevil with accounts")
+	Local $sCharNotJoinDevil = "", $charJoinSuccess = ""
+	; Tao array de luu danh sach char da join devil thanh cong
+	Local $aCharJoinDevil[0]
 
 	; Kiem tra xem cac acc da vao dc devil chua
 	For $i = 0 To UBound($jsonAccountActiveDevil) - 1
-		Local $charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
-		Local $mainNo = getMainNoByChar($charName)
+		$charName = _JSONGet($jsonAccountActiveDevil[$i], "char_name")
+		$isNeedFollowLeader = _JSONGet($jsonAccountActiveDevil[$i], "is_need_follow_leader")
+		$mainNo = getMainNoByChar($charName)
 
 		; Truong hop main hien tai khong duoc active, active main khac
 		If Not activeAndMoveWin($mainNo) Then switchOtherChar($charName)
 
-		If activeAndMoveWin($mainNo) And Not checkActiveAutoHome() Then
-			$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
-			actionWhenCantJoinDevil($isNeedFollowLeader)
+		If activeAndMoveWin($mainNo) Then
+			If checkActiveAutoHome()  Then
+				writeLogFile($logFile, "Char: " & $charName & " da vao devil thanh cong")
+				; Luu lai danh sach char da join devil thanh cong de sau nay xu ly
+				ReDim $aCharJoinDevil[UBound($aCharJoinDevil) + 1]
+				$aCharJoinDevil[UBound($aCharJoinDevil) - 1] = $jsonAccountActiveDevil[$i]
+				$charJoinSuccess = $charJoinSuccess & $charName & @CRLF
+			Else
+				writeLogFile($logFile, "Char: " & $charName & " khong vao dc devil")
+				$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
+				actionWhenCantJoinDevil($isNeedFollowLeader)
+			EndIf
+			$charInfo = $jsonAccountActiveDevil[$i]
+			Local $charName = _JSONGet($charInfo, "char_name")
+			Local $swithOtherMain = _JSONGet($charInfo, "switch_other_main")
+			Local $mainCharName = _JSONGet($charInfo, "main_char_name")
+			; Chi thuc hien khi $swithOtherMain = true va mainCharName khac rong
+			If $swithOtherMain And $mainCharName <> "" Then switchToMainCharItem($charName, $mainCharName)
 		EndIf
+		; Thuc hien an mainNo
+		writeLogFile($logFile, "Char: " & $charName & " - Thuc hien an main")
 		minisizeMain($mainNo)
 	Next
 
 	writeLogFile($logFile, "Char not join devil: " & $sCharNotJoinDevil)
-	switchToMainChar($jsonAccountActiveDevil)
+	writeLogFile($logFile, "Char join devil success: " & $charJoinSuccess)
+	;~ switchToMainChar($jsonAccountActiveDevil)
+	Return $aCharJoinDevil
 EndFunc   ;==>checkAccountsInDevil

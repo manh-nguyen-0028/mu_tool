@@ -67,8 +67,7 @@ Func startWithDrawRs()
 		; Begin withdraw reset
 		withdrawRs($username, $password, $charName,$hourPerRs)
 		; Logout account
-		_WD_Navigate($sSession, $baseMuUrl & "account/logout.shtml")
-		secondWait(5)
+		navigateUrl($sSession, $baseMuUrl & "account/logout.shtml")
 		; check last reset
 	Next
 

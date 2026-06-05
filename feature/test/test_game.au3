@@ -6,7 +6,7 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="BiThuXa"
+$charName="Shakky"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
@@ -18,16 +18,21 @@ $isHaveQuest = False
 activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
+;~ testGoMapLvl()
 ;~ testChoiseServer()
+;~ testSendKeyEsc()
+;~ testResetNomal()
 ;~ testReturnChar()
 ;~ testMoveOtherMap()
 ;~ testFollowLead($charName)
 ;~ testClickDevil($charName)
 ;~ testChangeServer($charName)
-;~ testcheckLvl400($charName)
+;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
+testSearchNPCThenClick()
+;~ testCheckColorPopUpDevil()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
 ;~ testSwithChar()
@@ -41,7 +46,33 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testSwitchSvInGame()
 ;~ testCheckMainActive("Zalo")
 ;~ testSplitString()
-testChangeThenReturnChar($charName)
+;~ testChangeThenReturnChar($charName)
+;~ testcheckLvl400($charName)
+
+;~ quickTest()
+
+Func quickTest()
+	;~ Local $jAccountInfo = createMockAccountInfo()
+	;~ Local $oAccountInfo = extractAccountInfo($jAccountInfo)
+	;~ _ArrayDisplay($oAccountInfo.Keys(), "Keys in oAccountInfo")
+	;~ _ArrayDisplay($oAccountInfo.Items(), "Values in oAccountInfo")
+	Local $lastTimeRs = "2026/05/14 12:26:00"
+	$timeNow = getTimeNow()
+
+    $lastTimeRsDay = StringLeft($lastTimeRs, 10)
+    $timeNowDay = StringLeft($timeNow, 10)
+
+    If $lastTimeRsDay <> $timeNowDay Then
+        writeLogFile($logFile, "Da chuyen sang ngay moi sau khi withdraw reset ! Thuc hien buff char ! " & $charName & "$lastTimeRsDay = " & $lastTimeRsDay & "$timeNowDay = " & $timeNowDay)
+        ; check xem co can buff khong, neu can buff thi thuc hien buff, neu khong can buff thi bo qua
+        ;~ goPageBuffChar($sSession)
+    EndIf
+EndFunc
+
+Func testAddPointInGame()
+    addPointInGame()
+    Return True
+EndFunc
 
 Func testFollowLead($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
@@ -64,7 +95,7 @@ EndFunc
 
 Func testcheckLvl400($charName)
     activeAndMoveWin(getMainNoByChar($charName))    
-    checkLvl400($mainNo)
+    check400LvlImage()
     Return True
 EndFunc
 
@@ -85,9 +116,27 @@ Func testGoToSportArena($charName)
 EndFunc
 
 Func testSearchNPC()
-    secondWait(3)
-    $npcSearch = searchNpcDevil($charName,$checkRuongK, 3, $isHaveQuest)
-    clickNpcDevil($npcSearch, 3, True)
+    Local $npcX = 0, $npcY = 0
+    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+        MouseMove($npcX, $npcY)
+        secondWait(1)
+    EndIf
+EndFunc
+Func testSearchNPCThenClick()
+    secondWait(1)
+    Local $npcX = 0, $npcY = 0
+    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+        MouseMove($npcX, $npcY)
+        secondWait(1)
+        ; Click into NPC devil
+        clickToNpcDevil($npcX, $npcY)
+        ; check open popup devil
+    EndIf
+EndFunc
+
+Func testCheckColorPopUpDevil()
+    checkColorPopUpDevil()
+    Return True
 EndFunc
 
 Func testSwithChar()
@@ -403,6 +452,15 @@ EndFunc
 ;~ 	Return True
 ;~ EndFunc
 
+Func testResetNomal()
+    ; Chuan bi reset
+    _ProcessRs_PrepareGameBeforeReset(False, $mainNo, $charName)
+    secondWait(2)
+    ; Tien trinh reset gia lap
+    ; resetweb()
+    returnChar($mainNo)
+EndFunc
+
 Func testReturnChar()
     returnChar($mainNo)
     Return True
@@ -484,3 +542,8 @@ Func testSplitString()
 	writeLogFile($logFile, "switchOtherChar -> checkActiveOtherChar tra ve: charFound: " & $charFound & " - numberChar: " & $numberChar & " - $charNameOtherChar: " & $charNameOtherChar)
     Return True
 EndFunc
+
+Func testSendKeyEsc()
+	sendKeyEsc()
+	secondWait(1)
+EndFunc   ;==>sendKeyEsc

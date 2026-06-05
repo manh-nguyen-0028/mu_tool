@@ -169,9 +169,26 @@ Func handelWhenFinshDevilEvent()
 	_MU_MouseClick_Delay(150, 228)
 EndFunc   ;==>handelWhenFinshDevilEvent
 
+Func handleBeforeReset()
+	sendEnterThenClickCenter()
+EndFunc
+
+Func sendEnterThenClickCenter()
+	sendKeyEnter()
+	sendKeyEnter()
+	clickCenterChar()
+	Return True
+EndFunc
+
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendKeyEnter()
+	; Close popup event devil 239, 126
+	$closePopupX = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_x")
+	$closePopupY = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_y")
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($closePopupX, $closePopupY)
+	Next
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
@@ -253,27 +270,17 @@ Func checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
 Func checkOpenPopupDevil()
-	; TODO: Tam thoi khong check popup devil
-	Return True
-	; can phai doi 5s de check auto home
-;~ secondWait(5)
-;~ ; Thuc hien check auto home
-;~ $pathImage = $imagePathRoot & "devil" & "\popup_devil_open.bmp"
-;~ $result = False
-;~ $x = 0
-;~ $y = 0
-;~ $x1 = 800
-;~ $y1 = 600
-;~ $imageTolerance = _JSONGet($jsonPositionConfig,"common.image_search.tolerance")
-;~ If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
-
-;~ $imageSearchResult = _ImageSearch_Area($pathImage, $x, $y, $x1, $y1, $imageTolerance, True)
-;~ If $imageSearchResult[0] == 1 Then
-;~ 	$result = True
-;~ 	;~ MouseMove(607,541)
-;~ EndIf
-;~ If Not $result Then writeLogFile($logFile, "Khong mo popup devil")
-;~ Return $result
+	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
+	If $npcSearch = 0 Then
+		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+		Return False
+	Else
+		; Truong hop thay roi thi thoat khoi vong lap
+		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+		$npcX = $npcSearch[0]
+		$npcY = $npcSearch[1]
+		Return True
+	EndIf 
 EndFunc   ;==>checkOpenPopupDevil
 
 Func searchNvpNotActiveAutoZ()
@@ -310,16 +317,18 @@ Func checkAutoOffBuff()
 EndFunc   ;==>checkAutoOffBuff
 
 Func check400LvlImage()
+	secondWait(1)
 	$pathImage = $imagePathRoot & "common" & "\400lv.bmp"
 	Return searchImageFullScreenMu($pathImage)
 EndFunc   ;==>check400LvlImage
 
 Func searchImageFullScreenMu($pathImage)
 	$result = False
-	$fullScreenX = _JSONGet($jsonPositionConfig, "common.full_screen.x")
-	$fullScreenY = _JSONGet($jsonPositionConfig, "common.full_screen.y")
-	$fullScreenX1 = _JSONGet($jsonPositionConfig, "common.full_screen.x1")
-	$fullScreenY1 = _JSONGet($jsonPositionConfig, "common.full_screen.y1")
+	$fullScreenX = _JSONGet($jsonPositionConfig, "common.screen_800_600.x")
+	$fullScreenY = _JSONGet($jsonPositionConfig, "common.screen_800_600.y")
+	$fullScreenX1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.x1")
+	$fullScreenY1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.y1")
+	writeLogFile($logFile, "Search image full screen with param: x:" & $fullScreenX & " y:" & $fullScreenY & " x1:" & $fullScreenX1 & " y1:" & $fullScreenY1 & " and path image: " & $pathImage)
 	$imageSearchResult = _ImageSearch_Area($pathImage, $fullScreenX, $fullScreenY, $fullScreenX1, $fullScreenY1, 100, True)
 	If $imageSearchResult[0] == 1 Then $result = True
 	Return $result
@@ -373,8 +382,7 @@ EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
-	activeAndMoveWin(getMainNoByChar($charName))
-	secondWait(2)
+	activeAndMoveWinByChar($charName)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
 	$haveAddPoint = True
@@ -392,12 +400,9 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	EndIf
 	clickIconDevilByCondition($typeCheck, $isHaveQuest)
 
-	secondWait(1)
-
 	; Nhap enter de vao devil
 	sendKeyEnter()
-;~ ; Sleep 4s
-	secondWait(4)
+	secondWait(1)
 EndFunc   ;==>clickIconDevil
 
 Func clickIconDevilByCondition($type, $isHaveQuest)
@@ -477,7 +482,8 @@ Func switchOtherChar($currentChar)
 			writeLogFile($logFile, "Bat dau chuyen sang main cần thiết: " & $currentChar)
 			; active + move main tim thay
 			activeAndMoveWinByChar($charFound)
-			secondWait(2)
+			;~ secondWait(2)
+			sendEnterThenClickCenter()
 			; Thuc hien click chuyen nhan vat cung tai khoan
 			clickOtherChar($currentChar)
 
@@ -486,8 +492,8 @@ Func switchOtherChar($currentChar)
 			While Not activeAndMoveWinByChar($currentChar) And $timeCheck < 5
 				If $timeCheck >= 2 And Number($numberChar) > 1 Then
 					clickOtherChar2($currentChar)
-				Else
-					secondWait(1)
+				;~ Else
+				;~ 	secondWait(1)
 				EndIf
 				secondWait(1)
 				$timeCheck += 1
@@ -577,7 +583,7 @@ Func moveOtherMap($charName)
 		secondWait(1)
 		writeLogFile($logFile, "Bat dau chuyen map khac")
 		sendKeyM()
-		secondWait(2)
+		secondWait(1)
 		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
 		$moveOtherMapY = _JSONGet($jsonPositionConfig, "button.move.other_map_y")
 		; Click lien tuc 3 lan
@@ -700,49 +706,97 @@ Func goSportStadium($sportNo = 1)
 	sendKeyTab()
 EndFunc   ;==>goSportStadium
 
-Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest)
-	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
-
-	; Search NPC devil
+; Method: getNpcSearchArea
+; Description: Lấy tọa độ vùng tìm kiếm NPC từ config
+Func getNpcSearchArea(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearchX1, ByRef $npcSearchY1)
 	$npcSearchX = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x")
 	$npcSearchY = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y")
 	$npcSearchX1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_x_1")
 	$npcSearchY1 = _JSONGet($jsonPositionConfig, "button.npc_search.npc_search_y_1")
-;~ $npcSearchColor = 0x8B8171
-	$npcSearchColor = 0xB9AA95
+EndFunc   ;==>getNpcSearchArea
 
-	$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+; Method: moveAndSearchNpcPixel
+; Description: Di chuyển nhân vật và tìm kiếm NPC bằng pixel search, thử tối đa $maxRetry lần
+Func moveAndSearchNpcPixel($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, $maxRetry = 2)
+	Local $npcSearch = 0
+	Local $countSearchPixel = 0
 
-;~ writeLogFile($logFile, "NPC search: " & $npcSearch)
+	While $npcSearch = 0 And $countSearchPixel < $maxRetry
+		$moveCheckNpcX = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_x")
+		$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
+		_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
+		secondWait(2)
+		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 4)
+		$countSearchPixel = $countSearchPixel + 1
+	WEnd
 
-;~ _ArrayDisplay($npcSearch)
+	Return $npcSearch
+EndFunc   ;==>moveAndSearchNpcPixel
 
-	$totalSearch = 0 ;
-;~ 671 1050
+Func checkColorPopUpDevil()
+	;~ 0x9A3C00
+	;~ 250, 460
+	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
+	If $npcSearch = 0 Then
+		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+		Return False
+	Else
+		; Truong hop thay roi thi thoat khoi vong lap
+		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+		;~ $npcX = $npcSearch[0]
+		;~ $npcY = $npcSearch[1]
+		Return True
+	EndIf 
+
+EndFunc
+
+; Method: searchNpcDevil
+; Description: Tìm kiếm NPC Devil, thử di chuyển và click icon devil nếu không thấy
+Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX, ByRef $npcY)
+	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
+	$result = False
+
+	Local $npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, $npcSearch = 0, $totalSearch = 0
+
 	While $npcSearch = 0 And $totalSearch < 5
-		$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+		$npcSearch = npcSearchColorResult($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
 
-		$countSearchPixel = 0 ;
-
-		; Nếu tìm quá 3 lần ko thấy thì thực hiện click vao event devil
-		While $npcSearch = 0 And $countSearchPixel < 2
-			$moveCheckNpcX = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_x")
-			$moveCheckNpcY = _JSONGet($jsonPositionConfig, "button.event_devil.move_check_npc_y")
-			_MU_MouseClick_Delay($moveCheckNpcX, $moveCheckNpcY)
-			secondWait(2)
-			$npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
-			$countSearchPixel = $countSearchPixel + 1 ;
-		WEnd
+		;~ If $npcSearch = 0 Then
+		;~ 	$npcSearch = moveAndSearchNpcPixel($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor)
+		;~ EndIf
 
 		If $npcSearch = 0 Then
 			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 			$totalSearch = $totalSearch + 1
+		Else
+			; Truong hop thay roi thi thoat khoi vong lap
+			writeLogFile($logFile, "Da tim thay NPC tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
+			$npcX = $npcSearch[0]
+			$npcY = $npcSearch[1]
+			$result = True
+			ExitLoop
 		EndIf
 	WEnd
 
-	Return $npcSearch
+	Return $result
 EndFunc   ;==>searchNpcDevil
 
+Func npcSearchColorResult(ByRef $npcSearchX, ByRef $npcSearchY, ByRef $npcSearchX1, ByRef $npcSearchY1, ByRef $npcSearchColor)
+	secondWait(1)
+	$npcSearchColor = 0xB9AA95
+	getNpcSearchArea($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1)
+	Local $npcSearch = PixelSearch($npcSearchX, $npcSearchY, $npcSearchX1, $npcSearchY1, $npcSearchColor, 5)
+	Return $npcSearch
+EndFunc   ;==>npcSearchColor
+
+Func clickToNpcDevil($npcSearchX, $npcSearchY)
+	$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
+	$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
+	$npcX = $npcSearchX + Number($npcSearchDeviationX)
+	$npcY = $npcSearchY + Number($npcSearchDeviationY)
+	mouseClickDelayAlt($npcX, $npcY)
+	secondWait(3)
+EndFunc
 ; Method: clickNpcDevil
 ; Description: Clicks on the NPC devil based on the search results and initiates the devil event.
 Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
@@ -752,12 +806,8 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$npcSearchDeviationX = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_x")
 		$npcSearchDeviationY = _JSONGet($jsonPositionConfig, "button.npc_search.deviation_y")
 
-;~ writeLogFile($logFile, "Do chenh lech: X= " & $npcSearchDeviationX & " - Y= " & $npcSearchDeviationY)
-
 		$npcX = $npcSearch[0] + Number($npcSearchDeviationX)
 		$npcY = $npcSearch[1] + Number($npcSearchDeviationY)
-;~ $npcX = $npcSearch[0] - 131
-;~ $npcY = $npcSearch[1]
 		mouseClickDelayAlt($npcX, $npcY)
 		secondWait(3)
 		; Doan nay check xem co mo duoc bang devil hay khong ? Thuc hien check ma mau, neu tim thay thi moi click vao devil + bat autoZ
@@ -765,12 +815,11 @@ Func clickNpcDevil($npcSearch, $devilNo, $isNeedFollowLeader)
 		$devil_open_y = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_y")
 		$devil_open_color = _JSONGet($jsonPositionConfig, "button.event_devil.check_devil_open_color")
 
-;~ $checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 		$checkOpenDevil = checkOpenPopupDevil()
 		If $checkOpenDevil Then
 			writeLogFile($logFile, "Thuc hien click vao devil")
 			clickPositionByDevilNo($devilNo)
-			secondWait(6)
+			secondWait(4)
 			_MU_Start_AutoZ()
 		Else
 			writeLogFile($logFile, "Khong tim thay vi tri cua popup chon devil")
@@ -877,7 +926,7 @@ EndFunc
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
-	writeLogFile($logFile, "Begin active and move win: " & $mainName)
+	;~ writeLogFile($logFile, "Begin active and move win: " & $mainName)
 	Local $expected = $mainName
 	Local $list = WinList()
 	Local $i
@@ -899,7 +948,7 @@ Func activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWin
 
 Func activeAndMoveWinByChar($charName)
-	writeLogFile($logFile, "Begin active and move win by char: " & $charName)
+	;~ writeLogFile($logFile, "Begin active and move win by char: " & $charName)
 	$mainName = getMainNoByChar($charName)
 	Return activeAndMoveWin($mainName)
 EndFunc   ;==>activeAndMoveWinByChar
@@ -928,6 +977,7 @@ Func sendKeyTab()
 EndFunc   ;==>sendKeyTab
 
 Func sendKeyEsc()
+	writeLogFile($logFile, "Send key ESC !")
 	sendKeyDelay("{ESC}")
 	secondWait(1)
 EndFunc   ;==>sendKeyEsc
@@ -936,6 +986,11 @@ Func sendKeyM()
 	sendKeyDelay("m")
 	secondWait(1)
 EndFunc   ;==>sendKeyM
+
+Func sendKeyC()
+	sendKeyDelay("c")
+	secondWait(1)
+EndFunc   ;==>sendKeyC
 
 Func sendKeyS()
 	clickCenterChar()
@@ -1028,13 +1083,10 @@ Func checkActiveParentMain($charName)
 EndFunc   ;==>checkActiveParentMain
 
 Func stopAutoPlus()
-	; 558 220
 	$stopAutoPlusX = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_x")
 	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
 	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
-	; Click ra 1 vi tri khac de an popup
-	;~ secondWait(3)
-	;~ _MU_MouseClick_Delay(558, 220)
+
 	Return True
 EndFunc
 
@@ -1124,18 +1176,20 @@ Nếu đủ thì thực hiện thay đổi nhân vật
 #ce
 Func changeChar($mainNo)
 	writeLogFile($logFile, "Begin change char !")
-	sendKeyEsc()
-	; Bam chon nhat vat khac
-	_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-	secondWait(3)
-	; Check title
-	$checkActive = activeAndMoveWin($mainNo)
-	If $checkActive Then
-		sendKeyDelay("{ESC}")
+	Local $result = False
+	; Lap lai hanh dong thay doi nhan vat cho toi khi nao thay doi duoc nhan vat moi (activeAndMoveWin($mainNo) = False). Toi da 3 lan thu, moi lan thu cach nhau 5s
+	For $i = 1 To 3 Step +1
+		sendKeyEsc()
 		; Bam chon nhat vat khac
 		_MU_MouseClick_Delay(getProperty("button.change_char.x"), getProperty("button.change_char.y"))
-		secondWait(3)
-	EndIf
+		secondWait(2) 
+		If Not activeAndMoveWin($mainNo) Then
+			writeLogFile($logFile, "Lan thu " & $i & ": Khong the active duoc cua so game sau khi bam chon nhan vat khac !")
+			$result = True
+			ExitLoop
+		EndIf
+	Next
+	Return $result
 EndFunc   ;==>changeChar
 
 #cs
@@ -1220,3 +1274,25 @@ Func _clickServerChoice($serverNumber)
     _MU_MouseClick_Delay(Number($svX), Number($svY))
     Return True
 EndFunc   ;==>_clickServerChoice
+
+Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+	; follow leader
+	_MU_followLeader(1)
+	; start auto plus
+	If $onAutoPlus Then startAutoPlus()
+EndFunc
+
+Func handleIsNotMainChar($oAccountInfo)
+	$charName = $oAccountInfo.Item("charName")
+	$mainNoMinisize = getMainNoByChar($charName)
+	If Not $oAccountInfo.Item("isMainCharacter") Then
+		writeLogFile($logFile, "Xu ly truong hop main khong phai la main chinh")
+		$otherChar = $oAccountInfo.Item("mainCharName")
+		If $otherChar <> "" Then
+			$resultWwithChar = switchOtherChar($otherChar)
+			If $resultWwithChar Then $mainNoMinisize = getMainNoByChar($otherChar)
+		EndIf
+		minisizeMain($mainNoMinisize)
+		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
+	EndIf
+EndFunc

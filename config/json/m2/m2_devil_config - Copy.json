@@ -1,0 +1,9 @@
+[
+  {"active":true,"have_ruong_k": true,"have_quest": false,"char_name":"NhanToVang","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "JoyBoy","is_check_400lv": false,"is_need_follow_leader": true},
+  {"active":false,"have_ruong_k": true,"have_quest": false,"char_name":"LinLinLin","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": false,"main_char_name": "Roger","is_check_400lv": false,"is_need_follow_leader": true},
+  {"active":false,"have_ruong_k": true,"have_quest": false,"char_name":"TienSi","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "Roger","is_check_400lv": false,"is_need_follow_leader": true},
+  {"active":false,"have_ruong_k":true,"have_quest": false,"char_name":"PhanThi","devil_no":4,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "DianaST","is_check_400lv": false,"is_need_follow_leader": true,"need_check_auto_z": false},
+  {"active":true,"have_ruong_k":true,"have_quest": false,"char_name":"Shakky","devil_no":4,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "TraSua","is_check_400lv": false,"is_need_follow_leader": true,"need_check_auto_z": false},
+  {"active":true,"have_ruong_k":true,"have_quest": true,"char_name":"Vitxauxi","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "BLUU","is_check_400lv": false,"is_need_follow_leader": true,"need_check_auto_z": false},
+  {"active":false,"have_ruong_k": true,"have_quest": false,"char_name":"PhoTuong","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": false,"main_char_name": "BuHotLe","is_check_400lv": true,"is_need_follow_leader": true}
+]

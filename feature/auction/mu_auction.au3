@@ -47,7 +47,7 @@ Func test()
 
 
 	; Mở trang web
-	_WD_Navigate($sSession, $sURL)
+	navigateUrl($sSession, $sURL)
 
 	Local $sClassName = "x1n2onr6 x1ja2u2z x9f619 x78zum5 xdt5ytf x2lah0s x193iq5w xjkvuk6 x1cnzs8"
 	Local $sText = "Thành viên đảm nhận vai trò này"
@@ -190,8 +190,7 @@ EndFunc   ;==>performAuctionProcess
 Func auction($idUrl, $maxPrice, $adminIDs)
 	$maxPriceTmp = Number($maxPrice) * 105 / 100
 	writeLogFile($logFile, "Bắt đầu đấu giá cho id : " & $idUrl & ". Giá tối đa: " & $maxPrice)
-	_WD_Navigate($sSession, getUrlAuction($idUrl))
-	secondWait(5)
+	navigateUrl($sSession, getUrlAuction($idUrl))
 	; Check title co chua chuoi Đấu giá vật phẩm BOSS khong. Neu co thi xem nhu thanh cong, neu khong thi bao loi va thoat khoi ham
 	$sTitle = getTitleWebsite($sSession)
 	$titleAuctionSuccess = 'Đấu giá vật phẩm BOSS'

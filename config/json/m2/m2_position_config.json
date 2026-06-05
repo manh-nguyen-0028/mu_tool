@@ -11,7 +11,7 @@
       "max_rs_po": 10
     },
     "web": {
-      "mu_url": "https://hn.mugamethuvn.info/"
+      "mu_url": "https://hn.gamethuvn.com/"
     },
     "game": {
       "exe_path": "D:\\MUGameThuVN_Full_MB\\MU.exe",
@@ -23,7 +23,7 @@
       "button_login_x": 1212,
       "button_login_y": 693,
       "button_change_account_x": 351,
-		  "button_change_account_y": 345,
+      "button_change_account_y": 345,
       "button_add_account_x": 0,
       "button_add_account_y": 0,
       "input_username_x": 0,
@@ -45,15 +45,9 @@
     "full_screen": {
       "x": 0,
       "y": 0,
-      "x1": 1056,
-      "y1": 789
+      "x1": 800,
+      "y1": 600
     },
-	  "screen_800_600": {
-		"x": 0,
-		"y": 0,
-		"x1": 800,
-		"y1": 600
-	  },
     "chrome": {
       "path": "chromedriver\\chromedriver-win64\\chromedriver.exe",
       "profile": "Profile 1",
@@ -70,35 +64,33 @@
     }
   },
   "button": {
-    "bang_c": {
-      "add_point_x": 429,
-      "add_point_y": 178,
-      "add_point_confirm_x": 356,
-      "add_point_confirm_y": 445
+    "dong_y": {
+      "x": 100,
+      "y": 200
     },
     "train_in_game": {
-      "button_x": 100,
-      "button_y": 200,
-      "button_start_x": 100,
-      "button_start_y": 200,
-      "button_stop_x": 306,
-      "button_stop_y": 78,
-      "checkbox_reset_x": 0,
-      "checkbox_reset_y": 0
+      "button_x": 155,
+      "button_y": 61,
+      "button_start_x": 98,
+      "button_start_y": 386,
+      "button_stop_x": 303,
+      "button_stop_y": 77,
+      "checkbox_reset_x": 90,
+      "checkbox_reset_y": 170
     },
     "swith_sv_in_game": {
-      "button_x": 100,
-      "button_y": 200,
-      "choise_sv_1_x": 230,
-      "choise_sv_1_y": 234,
-      "choise_sv_5_x": 230,
-      "choise_sv_5_y": 234,
-      "choise_sv_6_x": 230,
-      "choise_sv_6_y": 234,
-      "choise_sv_8_x": 230,
-      "choise_sv_8_y": 234,
-      "choise_sv_10_x": 230,
-      "choise_sv_10_y": 234
+      "button_x": 58,
+      "button_y": 43,
+      "choise_sv_1_x": 305,
+      "choise_sv_1_y": 287,
+      "choise_sv_5_x": 322,
+      "choise_sv_5_y": 336,
+      "choise_sv_6_x": 460,
+      "choise_sv_6_y": 341,
+      "choise_sv_8_x": 316,
+      "choise_sv_8_y": 363,
+      "choise_sv_10_x": 464,
+      "choise_sv_10_y": 366
     },
     "xac_nhan": {
       "x": 100,
@@ -117,12 +109,12 @@
       "y": 200
     },
     "npc_search": {
-      "npc_search_x": 236, 
+      "npc_search_x": 236,
       "npc_search_y": 70,
       "npc_search_x_1": 485,
       "npc_search_y_1": 402,
       "deviation_x": 0,
-      "deviation_y": 30
+      "deviation_y": 10
     },
     "icon_event_common": {
       "x": 100,
@@ -137,16 +129,14 @@
       "move_check_npc_y": 372,
       "check_devil_open_x": 778,
       "check_devil_open_y": 663,
-      "check_devil_open_color": "0x1B1B1B",
-      "close_popup_event_devil_x": 239,
-      "close_popup_event_devil_y": 126
+      "check_devil_open_color": "0x1B1B1B"
     },
     "event_devil_icon": {
       "x": 29,
       "y": 199,
-      "x_2": 109, 
+      "x_2": 109,
       "y_2": 165,
-      "x_3": 130, 
+      "x_3": 130,
       "y_3": 166,
       "x_quest": 22,
       "y_quest": 261,
@@ -154,18 +144,18 @@
       "chap_nhan_y": 476,
       "huy_bo_x": 554,
       "huy_bo_y": 475,
-      "devil_2_x": 141,
-      "devil_2_y": 326,
-      "devil_3_x": 107,
-      "devil_3_y": 349,
-      "devil_4_x": 127,
-      "devil_4_y": 380,
-      "devil_5_x": 122,
-      "devil_5_y": 412,
-      "devil_6_x": 125,
-      "devil_6_y": 441,
-      "devil_7_x": 137,
-      "devil_7_y": 474
+      "devil_2_x": 84,
+      "devil_2_y": 261,
+      "devil_3_x": 92,
+      "devil_3_y": 291,
+      "devil_4_x": 84,
+      "devil_4_y": 322,
+      "devil_5_x": 84,
+      "devil_5_y": 355,
+      "devil_6_x": 84,
+      "devil_6_y": 385,
+      "devil_7_x": 84,
+      "devil_7_y": 415
     },
     "event_devil_icon_no_had_k": {
       "x": 37,
@@ -182,22 +172,22 @@
       "position_1_y": 70,
       "position_2_x": 596,
       "position_2_y": 115,
-      "button_x":612,
-      "button_y":159
+      "button_x": 612,
+      "button_y": 159
     },
     "event_icon": {
       "x": 134,
       "y": 97,
-      "map_lvl_x": 370,
-      "map_lvl_y": 210,
+      "map_lvl_x": 196,
+      "map_lvl_y": 138,
       "map_lvl_center_x": 383,
       "map_lvl_center_y": 190,
-      "map_stadium_x": 348,
-      "map_stadium_y": 311
+      "map_stadium_x": 196,
+      "map_stadium_y": 275
     },
     "move": {
-      "other_map_x": 152,
-      "other_map_y": 237
+      "other_map_x": 153,
+      "other_map_y": 224
     },
     "change_char": {
       "x": 395,
@@ -210,26 +200,26 @@
       "choise_sv_y": 234,
       "choise_sv_1_x": 401,
       "choise_sv_1_y": 234,
-      "choise_sv_6_x": 401,
-      "choise_sv_6_y": 234,
-      "choise_sv_8_x": 401,
-      "choise_sv_8_y": 234,
-      "choise_sv_10_x": 401,
-      "choise_sv_10_y": 234
+      "choise_sv_6_x": 370,
+      "choise_sv_6_y": 330,
+      "choise_sv_8_x": 391,
+      "choise_sv_8_y": 354,
+      "choise_sv_10_x": 396,
+      "choise_sv_10_y": 377
     },
     "switch_char": {
-      "icon_x": 646, 
+      "icon_x": 646,
       "icon_y": 538,
       "icon_x_2": 443,
       "icon_y_2": 386,
       "button_change_x_active_autoz": 265,
       "button_change_y_active_autoz": 285,
-      "button_change_x_not_active_autoz": 269,
-      "button_change_y_not_active_autoz": 259,
+      "button_change_x_not_active_autoz": 267,
+      "button_change_y_not_active_autoz": 273,
       "close_popup_x": 407,
-      "close_popup_y": 66, 
-      "button_first_char_x": 230,
-      "button_first_char_y": 234
+      "close_popup_y": 66,
+      "button_first_char_x": 351,
+      "button_first_char_y": 159
     },
     "screen_mouse_move": {
       "center_x": 389,
@@ -238,20 +228,20 @@
       "center_char_y": 299
     },
     "close_shop_chao": {
-      "x": 287,
-      "y": 323
+      "x": 307,
+      "y": 315
     },
     "close_shop": {
       "x": 238,
       "y": 125
     },
     "close_chao": {
-      "x": 512, 
+      "x": 512,
       "y": 496
     },
     "loren_sport1": {
-      "x": 474,
-      "y": 387
+      "x": 359,
+      "y": 338
     },
     "check_lvl_400": {
       "x": 134,
@@ -279,10 +269,10 @@
       "y": 453,
       "x1": 525,
       "y1": 564,
-      "plus_x": 298,
-      "plus_y": 453,
-      "plus_x1": 525,
-      "plus_y1": 564
+      "plus_x": 22,
+      "plus_y": 39,
+      "plus_x1": 436,
+      "plus_y1": 318
     },
     "sport_arena_1": {
       "x": 304,
@@ -293,8 +283,8 @@
       "y": 380
     },
     "sport_arena_3": {
-      "x": 152,
-      "y": 493
+      "x": 301,
+      "y": 447
     }
   },
   "web": {
