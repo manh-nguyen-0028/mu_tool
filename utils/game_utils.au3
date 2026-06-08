@@ -868,7 +868,8 @@ Func resizeGame($GAME_TITLE)
 	WinWait($GAME_TITLE)
 	$hWnd = WinGetHandle($GAME_TITLE)
 	If @error Or $hWnd = "" Then
-		MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
+		;~ MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
+		writeLogFile($logFile, "Không tìm thấy cửa sổ: " & $GAME_TITLE)
 		Exit
 	EndIf
 
