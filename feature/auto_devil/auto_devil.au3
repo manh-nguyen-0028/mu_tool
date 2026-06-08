@@ -141,7 +141,8 @@ Func sleep26Min($aCharJoinDevil)
 				$isNeedFollowLeader = _JSONGet($aCharJoinDevil[$i], "is_need_follow_leader")
 				; Truong hop khong can follow leader thi khong can xu ly
 				If activeAndMoveWinByChar($charName) Then
-					handelWhenFinshDevilEvent()
+					;~ handelWhenFinshDevilEvent()
+					sendEnterThenClickCenter()
 					minisizeMainByChar($charName)
 				EndIf
 			EndIf
@@ -444,7 +445,7 @@ Func handleAfterDevilEvent($aCharJoinDevil)
 
 			If $checkActiveWin Then
 				; Truong $isActiveParentMain = True thi khong handelWhenFinshDevilEvent ma chi follow leader thoi
-				If Not $isActiveParentMain Then handelWhenFinshDevilEvent()
+				If Not $isActiveParentMain Then sendEnterThenClickCenter()
 				; Check follow leader
 				If $isNeedFollowLeader Then
 					; Thuc hien chuyen map

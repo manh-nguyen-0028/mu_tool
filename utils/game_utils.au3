@@ -160,13 +160,14 @@ Func handelWhenFinshDevilEvent()
 		sendKeyEnter()
 	Next
 	; Neu dang bat shop thi thuc hien tat shop
-	$closeShopX = _JSONGet($jsonPositionConfig, "button.close_shop_chao.x")
-	$closeShopY = _JSONGet($jsonPositionConfig, "button.close_shop_chao.y")
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay($closeShopX, $closeShopY)
-	Next
+	;~ $closeShopX = _JSONGet($jsonPositionConfig, "button.close_shop_chao.x")
+	;~ $closeShopY = _JSONGet($jsonPositionConfig, "button.close_shop_chao.y")
+	;~ For $i = 0 To 1 Step +1
+	;~ 	_MU_MouseClick_Delay($closeShopX, $closeShopY)
+	;~ Next
 	; Click ra ngaoi 1 lan nua cho chac
-	_MU_MouseClick_Delay(150, 228)
+	;~ _MU_MouseClick_Delay(150, 228)
+	clickCenterChar()
 EndFunc   ;==>handelWhenFinshDevilEvent
 
 Func handleBeforeReset()
@@ -431,7 +432,7 @@ Func clickIconDevilByCondition($type, $isHaveQuest)
 		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_3")
 		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_3")
 	EndIf
-	For $i = 0 To 2 Step +1
+	For $i = 0 To 1 Step +1
 		_MU_MouseClick_Delay($devilIconX, $devilIconY)
 	Next
 	Return True
@@ -867,7 +868,8 @@ Func resizeGame($GAME_TITLE)
 	WinWait($GAME_TITLE)
 	$hWnd = WinGetHandle($GAME_TITLE)
 	If @error Or $hWnd = "" Then
-		MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
+		;~ MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
+		writeLogFile($logFile, "Không tìm thấy cửa sổ: " & $GAME_TITLE)
 		Exit
 	EndIf
 
@@ -1276,6 +1278,8 @@ Func _clickServerChoice($serverNumber)
 EndFunc   ;==>_clickServerChoice
 
 Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+	; Thuc hien click vao giua man hinh truoc da
+	clickCenterChar()
 	; follow leader
 	_MU_followLeader(1)
 	; start auto plus
