@@ -161,6 +161,7 @@ EndFunc   ;==>sleep26Min
 Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	Local $result[2]     ; Mảng để lưu trữ nextHour và nextMin
 	Local $nextHour, $nextMin = 0
+	Local $timeWaitGoDevil = _JSONGet($jsonPositionConfig, "common.auto.min_wait_go_devil")
 
 	Switch $currentHour
 		Case 0 To 2
@@ -186,6 +187,18 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	; Adjust minutes for specific cases
 	If $nextHour > @HOUR Then $nextMin = 0
 
+	; $next min se + them $timeWaitGoDevil neu $timeWaitGoDevil khac 0 va khong phai la 60 (truong hop 60 thi se chuyen sang gio tiep theo nen khong can + them phut)
+	If $timeWaitGoDevil <> 0 And $timeWaitGoDevil <> 60 Then
+		$nextMin += $timeWaitGoDevil
+		If $nextMin >= 60 Then
+			$nextMin -= 60
+			$nextHour += 1
+			If $nextHour >= 24 Then
+				$nextHour = 0
+			EndIf
+		EndIf
+	EndIf
+	
 	; Gán giá trị vào mảng
 	$result[0] = $nextHour
 	$result[1] = $nextMin
