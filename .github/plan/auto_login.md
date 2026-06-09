@@ -17,7 +17,7 @@ processAutoLogin()
       ├─ activeAndMoveWin()      [Step 3: Active + move window - game_utils]
       ├─ clickAddAccount()              [Step 4: Click add account]
       ├─ inputCredentials()             [Step 5: Nhập user/pass]
-      ├─ confirmLogin()                 [Step 6: Click confirm/first account]
+      ├─ confirmLogin()                 [Step 6: Click first account]
       ├─ waitLoadUser()                 [Step 7: Chờ load user]
       ├─ selectServer()                 [Step 8: returnServer() - game_utils]
       ├─ selectCharacter()              [Step 9: returnChar() - game_utils]
@@ -49,12 +49,14 @@ processAutoLogin()
    - Handle retry logic nếu character sai
 
 ### Phase 3: Login Steps (6 hàm)
-7. `runGameExe()` — Step 1: Mở game exe từ common.game.exe_path
-8. `clickButtonStart()` — Step 2: Click vị trí button_start_x/y
+7. `runGameExe()` — Step 1: Mở game exe từ common.game.exe_path → chờ 5s → click OK popup báo lỗi (tọa độ cấu hình trong file config)
+8. `clickButtonStart()` — Step 2: Sử dụng ControlClick("[TITLE:MU GamethuVN - Season 21; CLASS:#32770]", "", "[CLASS:Button; INSTANCE:2]")
 9. `activeAndMoveGameWindow()` — Step 3: Active + move launcher window (dùng activeAndMoveWin())
-10. `clickAddAccount()` — Step 4: Click button_add_account_x/y
-11. `inputCredentials(, )` — Step 5: Click username → input → click password → input
-12. `confirmLogin()` — Step 6: Click button confirm hoặc first_account_x/y
+10. `clickAddAccount()` — Step 4:
+  - Thực hiện click vào button xóa account tại vị trí số 2 4 lần (vị trí button trong file config)
+  - Click button_add_account_x/y
+11. `inputCredentials(, )` — Step 5: Click username → input → click password → input → chờ 2s rồi send enter
+12. `confirmLogin()` — Step 6: Click button first_account_x/y
 
 ### Phase 4: Server/Character Selection & Verification (5 hàm)
 13. `waitLoadUser()` — Step 7: Chờ X giây (wait_load_user_sec, default 5s)

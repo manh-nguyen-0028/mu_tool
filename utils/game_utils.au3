@@ -183,17 +183,17 @@ EndFunc
 
 Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien send Enter 1 lan de loai bo dialog
-	sendKeyEnter()
+	sendEnterThenClickCenter()
 	; Close popup event devil 239, 126
 	$closePopupX = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_x")
 	$closePopupY = _JSONGet($jsonPositionConfig, "button.event_devil.close_popup_event_devil_y")
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay($closePopupX, $closePopupY)
-	Next
+	
+	_MU_MouseClick_Delay($closePopupX, $closePopupY)
+
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
-		checkAutoZAfterFollowLead(True)
+		;~ checkAutoZAfterFollowLead(True)
 	EndIf
 	Return True
 EndFunc   ;==>actionWhenCantJoinDevil
@@ -532,7 +532,7 @@ Func clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 	; => Click vao icon chuyen
 	_MU_MouseClick_Delay($swithCharIconX, $swithCharIconY)
 
-	secondWait(2)
+	;~ secondWait(2)
 
 	; => Kiem tra tinh trang active AutoZ cua nhan vat phu
 	$result = searchNvpNotActiveAutoZ()

@@ -9,12 +9,12 @@
 ; ===========================================================================
 ; AUTO LOGIN GAME - XUAT PHAT TU DAU
 ; 12 BUOC LOGIN:
-; 1. Mo chuong trinh theo common.game.exe_path
-; 2. Click vao vi tri button.login.button_start_x/y
+; 1. Mo chuong trinh theo common.game.exe_path, cho 5s va click OK popup loi theo config
+; 2. Dung ControlClick vao button Start cua launcher
 ; 3. Active va move cua so launcher/game
-; 4. Click vao button them tai khoan
-; 5. Nhap username / password
-; 6. Click vao vi tri tai khoan dau tien hoac button confirm
+; 4. Click xoa account o vi tri so 2 4 lan, sau do click vao button them tai khoan
+; 5. Nhap username / password, cho 2 giay roi nhan Enter
+; 6. Click vao vi tri tai khoan dau tien
 ; 7. Cho man hinh load user theo button.login.wait_load_user_sec
 ; 8. Thuc hien chon server su dung returnServer($serverNumber)
 ; 9. Su dung returnChar de chon nhan vat vao game
@@ -188,11 +188,6 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 		Return False
 	EndIf
 
-	If Not clickChangeAccount() Then
-		writeLoginReport($sUsername, $sCharName, "failed_clickChangeAccount()_start", $iServerNo, getChannelNumber($accountConfig))
-		Return False
-	EndIf
-
 	If Not clickAddAccount() Then
 		writeLoginReport($sUsername, $sCharName, "failed_add_account", $iServerNo, getChannelNumber($accountConfig))
 		Return False
@@ -255,71 +250,87 @@ Func runGameExe()
 		Return False
 	EndIf
 
-	Local $iPID = Run('"D:\MUGameThuVN_Full_MB\MU.exe"', "D:\MUGameThuVN_Full_MB")
-	WinWait("MU GamethuVN")
-	WinActivate("MU GamethuVN")
+	Local $iPID = Run('"' & $sGameExePath & '"')
 	If $iPID = 0 Then
 		writeLogFile($logFile, "LỖI: Không thể mở game exe: " & $sGameExePath)
 		Return False
 	EndIf
 
+	WinWait("MU GamethuVN")
+	WinActivate("MU GamethuVN")
+
+	writeLogFile($logFile, "Chờ 5 giây trước khi xử lý popup lỗi")
+	secondWait(5)
+
+	Local $iPopupErrorOkX = getLoginProperty("popup_error_ok_x")
+	Local $iPopupErrorOkY = getLoginProperty("popup_error_ok_y")
+
+	If $iPopupErrorOkX = "" Or $iPopupErrorOkY = "" Then
+		$iPopupErrorOkX = getProperty("button.dong_y.x")
+		$iPopupErrorOkY = getProperty("button.dong_y.y")
+	EndIf
+
+	If $iPopupErrorOkX <> "" And $iPopupErrorOkY <> "" Then
+		$iPopupErrorOkX = Number($iPopupErrorOkX)
+		$iPopupErrorOkY = Number($iPopupErrorOkY)
+		writeLogFile($logFile, "Click OK popup lỗi tại X=" & $iPopupErrorOkX & ", Y=" & $iPopupErrorOkY)
+		_MU_MouseClick_Delay($iPopupErrorOkX, $iPopupErrorOkY)
+	Else
+		writeLogFile($logFile, "CẢNH BÁO: Không tìm thấy tọa độ popup_error_ok_x/y (hoặc button.dong_y.x/y), bỏ qua click popup")
+	EndIf
+
 	writeLogFile($logFile, "✓ Đã mở game exe, PID: " & $iPID)
-	secondWait(6)
+	secondWait(1)
 	Return True
 EndFunc   ;==>runGameExe
 
 Func clickButtonStart()
-	writeLogFile($logFile, "Step 2: clickButtonStart() - Click button Start")
+	writeLogFile($logFile, "Step 2: clickButtonStart() - ControlClick button Start")
 
-	Local $iButtonStartX = getLoginProperty("button_start_x")
-	Local $iButtonStartY = getLoginProperty("button_start_y")
+	Local $sLauncherTitle = "[TITLE:MU GamethuVN - Season 21; CLASS:#32770]"
+	Local $sLauncherControl = "[CLASS:Button; INSTANCE:2]"
+	Local $iControlClickResult = ControlClick($sLauncherTitle, "", $sLauncherControl)
 
-	If $iButtonStartX = "" Or $iButtonStartY = "" Then
-		writeLogFile($logFile, "LỖI: Không tìm thấy button_start_x hoặc button_start_y")
+	If $iControlClickResult = 0 Then
+		writeLogFile($logFile, "LỖI: ControlClick button Start thất bại với title=" & $sLauncherTitle & " control=" & $sLauncherControl)
 		Return False
 	EndIf
 
-	$iButtonStartX = Number($iButtonStartX)
-	$iButtonStartY = Number($iButtonStartY)
-
-	writeLogFile($logFile, "Click tại X=" & $iButtonStartX & ", Y=" & $iButtonStartY)
-	_MU_MouseClick_Delay($iButtonStartX, $iButtonStartY)
+	writeLogFile($logFile, "Đã ControlClick button Start thành công")
 
 	secondWait(10)
 	Return True
 EndFunc   ;==>clickButtonStart
 
-Func clickChangeAccount()
-	writeLogFile($logFile, "Step 4: ClickChangeAccount() - Click button 'ClickChangeAccount'")
-
-	Local $iChangeAccountX = getLoginProperty("button_change_account_x")
-	Local $iChangeAccountY = getLoginProperty("button_change_account_y")
-	
-	If $iChangeAccountX = "" Or $iChangeAccountY = "" Then
-		writeLogFile($logFile, "LỖI: Không tìm thấy button_change_account_x hoặc button_change_account_y")
-		Return False
-	EndIf
-
-	writeLogFile($logFile, "Click change Account tại X=" & $iChangeAccountX & ", Y=" & $iChangeAccountY)
-	_MU_MouseClick_Delay($iChangeAccountX, $iChangeAccountY)
-
-	secondWait(5)
-	Return True
-EndFunc
-
 Func clickAddAccount()
-	writeLogFile($logFile, "Step 4: clickAddAccount() - Click button 'Add Account'")
+	writeLogFile($logFile, "Step 4: clickAddAccount() - Xoa account vi tri 2 roi them account")
+
+	Local $iDeleteAccountX = getLoginProperty("button_delete_account_x")
+	Local $iDeleteAccountY = getLoginProperty("button_delete_account_y")
 
 	Local $iAddAccountX = getLoginProperty("button_add_account_x")
 	Local $iAddAccountY = getLoginProperty("button_add_account_y")
+
+	If $iDeleteAccountX = "" Or $iDeleteAccountY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy button_delete_account_x hoặc button_delete_account_y")
+		Return False
+	EndIf
 
 	If $iAddAccountX = "" Or $iAddAccountY = "" Then
 		writeLogFile($logFile, "LỖI: Không tìm thấy button_add_account_x hoặc button_add_account_y")
 		Return False
 	EndIf
 
+	$iDeleteAccountX = Number($iDeleteAccountX)
+	$iDeleteAccountY = Number($iDeleteAccountY)
 	$iAddAccountX = Number($iAddAccountX)
 	$iAddAccountY = Number($iAddAccountY)
+
+	For $i = 1 To 4
+		writeLogFile($logFile, "Click xoa account lan " & $i & " tai X=" & $iDeleteAccountX & ", Y=" & $iDeleteAccountY)
+		_MU_MouseClick_Delay($iDeleteAccountX, $iDeleteAccountY)
+		secondWait(1)
+	Next
 
 	writeLogFile($logFile, "Click Add Account tại X=" & $iAddAccountX & ", Y=" & $iAddAccountY)
 	_MU_MouseClick_Delay($iAddAccountX, $iAddAccountY)
@@ -329,7 +340,7 @@ Func clickAddAccount()
 EndFunc   ;==>clickAddAccount
 
 Func inputCredentials($sUsername, $sPassword)
-	writeLogFile($logFile, "Step 5: inputCredentials() - Nhập username và password")
+	writeLogFile($logFile, "Step 5: inputCredentials() - Nhập username và password, chờ rồi Enter")
 
 	Local $iUsernameX = getLoginProperty("input_username_x")
 	Local $iUsernameY = getLoginProperty("input_username_y")
@@ -370,6 +381,7 @@ Func inputCredentials($sUsername, $sPassword)
 	Next
 
 	writeLogFile($logFile, "✓ Đã nhập password (ẩn)")
+	secondWait(2)
 
 	sendKeyEnter()
 	
@@ -377,30 +389,20 @@ Func inputCredentials($sUsername, $sPassword)
 EndFunc   ;==>inputCredentials
 
 Func confirmLogin()
-	writeLogFile($logFile, "Step 6: confirmLogin() - Click button confirm hoặc first account")
+	writeLogFile($logFile, "Step 6: confirmLogin() - Click first account")
 
-	Local $iConfirmX = getLoginProperty("button_confirm_x")
-	Local $iConfirmY = getLoginProperty("button_confirm_y")
-
-	If $iConfirmX = "" Or $iConfirmY = "" Then
-		$iConfirmX = getLoginProperty("first_account_x")
-		$iConfirmY = getLoginProperty("first_account_y")
-	EndIf
+	Local $iConfirmX = getLoginProperty("first_account_x")
+	Local $iConfirmY = getLoginProperty("first_account_y")
 
 	If $iConfirmX = "" Or $iConfirmY = "" Then
-		$iConfirmX = getLoginProperty("button_submit_x")
-		$iConfirmY = getLoginProperty("button_submit_y")
-	EndIf
-
-	If $iConfirmX = "" Or $iConfirmY = "" Then
-		writeLogFile($logFile, "LỖI: Không tìm thấy tọa độ confirm button")
+		writeLogFile($logFile, "LỖI: Không tìm thấy first_account_x hoặc first_account_y")
 		Return False
 	EndIf
 
 	$iConfirmX = Number($iConfirmX)
 	$iConfirmY = Number($iConfirmY)
 
-	writeLogFile($logFile, "Click confirm/first account tại X=" & $iConfirmX & ", Y=" & $iConfirmY)
+	writeLogFile($logFile, "Click first account tại X=" & $iConfirmX & ", Y=" & $iConfirmY)
 	_MU_MouseClick_Delay($iConfirmX, $iConfirmY)
 	secondWait(2)
 

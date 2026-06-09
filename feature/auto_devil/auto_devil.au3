@@ -90,6 +90,8 @@ Func checkThenGoDevilEvent()
 		; Check accounts in devil
 		$aCharJoinDevil = checkAccountsInDevil($jsonAccountActive)
 
+		secondWait(10)
+
 		; Process fast join accounts $aCharJoinDevil
 		processFastJoinAccounts($aCharJoinDevil)
 		secondWait(10)
@@ -188,7 +190,7 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 	If $nextHour > @HOUR Then $nextMin = 0
 
 	; $next min se + them $timeWaitGoDevil neu $timeWaitGoDevil khac 0 va khong phai la 60 (truong hop 60 thi se chuyen sang gio tiep theo nen khong can + them phut)
-	If $timeWaitGoDevil <> 0 And $timeWaitGoDevil <> 60 Then
+	If $timeWaitGoDevil <> Default And $timeWaitGoDevil <> 0 And $timeWaitGoDevil <> 60 Then
 		$nextMin += $timeWaitGoDevil
 		If $nextMin >= 60 Then
 			$nextMin -= 60
@@ -198,7 +200,7 @@ Func calculateNextDevilEventTime($currentHour = @HOUR, $currentMin = @MIN)
 			EndIf
 		EndIf
 	EndIf
-	
+
 	; Gán giá trị vào mảng
 	$result[0] = $nextHour
 	$result[1] = $nextMin
