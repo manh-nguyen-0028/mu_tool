@@ -45,3 +45,20 @@ Ghi lại các thay đổi tọa độ trong `position_config.json` / `m1_positi
 - Thêm: `button.bang_c.add_point_confirm_y` = 445 — Tọa độ Y nút xác nhận cộng điểm
 - **Used by:** `addPointInGame()` trong `feature/auto_reset/auto_rs.au3`
 - **Feature:** `feature/auto_reset/auto_rs.au3`
+
+### 2026/06/09 — Auto Devil — Thêm thời gian chờ tối thiểu trước khi đi Devil
+- **Compare:** main → update/v1.22
+- **Section:** `common.auto`
+- Thêm: `common.auto.min_wait_go_devil` = 1 — Cấu hình số phút chờ tối thiểu trước khi thực hiện luồng đi Devil
+- **Used by:** `calculateNextDevilEventTime()` trong `feature/auto_devil/auto_devil.au3`
+- **Feature:** `feature/auto_devil/auto_devil.au3`
+
+### 2026/06/09 — Auto Login — Đổi tên key xóa account trong launcher
+- **Compare:** main → update/v1.22
+- **Section:** `common.login`
+- Xóa: `common.login.button_change_account_x` = 351 — Đổi tên key tọa độ X nút xóa account để tên rõ nghĩa hơn
+- Xóa: `common.login.button_change_account_y` = 345 — Đổi tên key tọa độ Y nút xóa account để tên rõ nghĩa hơn
+- Thêm: `common.login.button_delete_account_x` = 351 — Key mới cho tọa độ X nút xóa account
+- Thêm: `common.login.button_delete_account_y` = 345 — Key mới cho tọa độ Y nút xóa account
+- **Used by:** `clickAddAccount()` trong `feature/auto_login/auto_login.au3`
+- **Feature:** `feature/auto_login/auto_login.au3`
