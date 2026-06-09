@@ -4,6 +4,7 @@
 #include <Date.au3>
 #include "../../utils/common_utils.au3"
 #include "../../utils/game_utils.au3"
+#include "../auto_login/auto_login.au3"
 #RequireAdmin
 
 ; ===========================================================================
@@ -28,7 +29,31 @@ EndIf
 writeLogFile($hTestLog, "===== TEST LOGIN START =====")
 writeLogFile($hTestLog, "Thoi gian: " & _NowCalc())
 
+$logFile = $hTestLog
+
 ; ======================= CHON CASE CAN CHAY =======================
+; Tests theo tung step trong plan
+;~ testStep01_initConfigs()
+;~ testStep02_getLoginProperty("button_add_account_x")
+;~ testStep03_getServerNumberFirstActive()
+;~ testStep04_getCharInAccountFirstActive()
+;~ testStep05_processAutoLoginManual()
+;~ testStep06_processLoginFirstActiveManual()
+;~ testStep07_runGameExeManual()
+;~ testStep08_clickButtonStartManual()
+;~ testStep09_activeAndMoveLauncherManual()
+;~ testStep10_clickAddAccountManual()
+;~ testStep11_inputCredentialsFirstActiveManual()
+;~ testStep12_confirmLoginManual()
+;~ testStep13_waitLoadUserManual()
+;~ testStep14_selectServerFirstActiveManual()
+;~ testStep15_selectCharacterFirstActiveManual()
+;~ testStep16_verifyCharacterLoadedFirstActiveManual()
+;~ testStep17_handleWrongCharacterFirstActiveManual()
+;~ testStep18_writeLoginReportSample()
+;~ testStep19_startEntryPointManual()
+;~ testStep20_mainEntryPointManual()
+
 ; Unit tests
 ;~ testCase01_getLoginProperties()
 ;~ testCase02_getCharInAccount("char1")
@@ -42,10 +67,186 @@ writeLogFile($hTestLog, "Thoi gian: " & _NowCalc())
 ;~ testCase08_multipleAccountsCase()
 
 ; Quick smoke
-testQuickRunAutoLogin()
+;~ testQuickRunAutoLogin()
 
 writeLogFile($hTestLog, "===== TEST LOGIN END =====")
 FileClose($hTestLog)
+
+; ---------------------------------------------------------------------------
+; TESTS THEO STEPS TRONG PLAN
+; ---------------------------------------------------------------------------
+
+Func testStep01_initConfigs()
+    writeLogFile($hTestLog, "[STEP-01] init() + init_auto_login()")
+
+    Local $bInitCommon = init()
+    Local $bInitAutoLogin = init_auto_login()
+
+    If $bInitCommon And $bInitAutoLogin And UBound($jAccountLoginConfig) > 0 Then
+        writeLogFile($hTestLog, "[PASS] Khoi tao config thanh cong, so account = " & UBound($jAccountLoginConfig))
+        Return True
+    EndIf
+
+    writeLogFile($hTestLog, "[FAIL] Khoi tao config that bai")
+    Return False
+EndFunc
+
+Func testStep02_getLoginProperty($propertyName)
+    writeLogFile($hTestLog, "[STEP-02] getLoginProperty(" & $propertyName & ")")
+    init()
+
+    Local $value = getLoginProperty($propertyName)
+    If $value = "" Then
+        writeLogFile($hTestLog, "[FAIL] Khong lay duoc property: " & $propertyName)
+        Return False
+    EndIf
+
+    writeLogFile($hTestLog, "[PASS] " & $propertyName & " = " & $value)
+    Return True
+EndFunc
+
+Func testStep03_getServerNumberFirstActive()
+    writeLogFile($hTestLog, "[STEP-03] getServerNumber()")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Local $serverNo = getServerNumber($accountConfig)
+    writeLogFile($hTestLog, "[PASS] server_no = " & $serverNo & " cho char " & $sCharName)
+    Return True
+EndFunc
+
+Func testStep04_getCharInAccountFirstActive()
+    writeLogFile($hTestLog, "[STEP-04] getCharInAccount()")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return testCase02_getCharInAccount($sCharName)
+EndFunc
+
+Func testStep05_processAutoLoginManual()
+    writeLogFile($hTestLog, "[STEP-05] processAutoLogin() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Chuan bi UI game va config hop le truoc khi chay")
+    init()
+    init_auto_login()
+    Return processAutoLogin()
+EndFunc
+
+Func testStep06_processLoginFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-06] processLogin() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Chuan bi launcher/game san sang cho account dau tien")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
+EndFunc
+
+Func testStep07_runGameExeManual()
+    writeLogFile($hTestLog, "[STEP-07] runGameExe() - manual")
+    init()
+    Return runGameExe()
+EndFunc
+
+Func testStep08_clickButtonStartManual()
+    writeLogFile($hTestLog, "[STEP-08] clickButtonStart() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Launcher popup da mo truoc khi chay")
+    Return clickButtonStart()
+EndFunc
+
+Func testStep09_activeAndMoveLauncherManual()
+    writeLogFile($hTestLog, "[STEP-09] activeAndMoveGameWindow() - manual")
+    Return activeAndMoveWin("MU GamethuVN - Season 21")
+EndFunc
+
+Func testStep10_clickAddAccountManual()
+    writeLogFile($hTestLog, "[STEP-10] clickAddAccount() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Launcher dang active va visible")
+    init()
+    Return clickAddAccount()
+EndFunc
+
+Func testStep11_inputCredentialsFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-11] inputCredentials() - manual")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return inputCredentials($sUsername, $sPassword)
+EndFunc
+
+Func testStep12_confirmLoginManual()
+    writeLogFile($hTestLog, "[STEP-12] confirmLogin() - manual")
+    init()
+    Return confirmLogin()
+EndFunc
+
+Func testStep13_waitLoadUserManual()
+    writeLogFile($hTestLog, "[STEP-13] waitLoadUser()")
+    init()
+    waitLoadUser()
+    writeLogFile($hTestLog, "[PASS] waitLoadUser da chay xong")
+    Return True
+EndFunc
+
+Func testStep14_selectServerFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-14] selectServer() - manual")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return selectServer($iServerNo)
+EndFunc
+
+Func testStep15_selectCharacterFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-15] selectCharacter() - manual")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return selectCharacter($sCharName)
+EndFunc
+
+Func testStep16_verifyCharacterLoadedFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-16] verifyCharacterLoaded() - manual")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return verifyCharacterLoaded($sCharName)
+EndFunc
+
+Func testStep17_handleWrongCharacterFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-17] handleWrongCharacter() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Chi chay khi dang o tinh huong vao sai character")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    $iRetryCount = 0
+    Return handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
+EndFunc
+
+Func testStep18_writeLoginReportSample()
+    writeLogFile($hTestLog, "[STEP-18] writeLoginReport()")
+    resetLoginReport()
+    writeLoginReport("test_user", "test_char", "success", 1, 1)
+    Return assertReportHasStatus("success", 1)
+EndFunc
+
+Func testStep19_startEntryPointManual()
+    writeLogFile($hTestLog, "[STEP-19] start() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Se chay full flow auto login")
+    Return start()
+EndFunc
+
+Func testStep20_mainEntryPointManual()
+    writeLogFile($hTestLog, "[STEP-20] main() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Se chay full flow auto login qua entry point main()")
+    main()
+    Return True
+EndFunc
 
 ; ---------------------------------------------------------------------------
 ; UNIT TESTS
@@ -228,6 +429,33 @@ EndFunc
 ; ---------------------------------------------------------------------------
 ; HELPER
 ; ---------------------------------------------------------------------------
+
+Func getFirstActiveAccountData(ByRef $accountConfig, ByRef $sUsername, ByRef $sPassword, ByRef $sCharName, ByRef $iServerNo, ByRef $iChannelNo)
+    init()
+    init_auto_login()
+
+    If UBound($jAccountLoginConfig) = 0 Then
+        writeLogFile($hTestLog, "[FAIL] Khong co account login nao trong config")
+        Return False
+    EndIf
+
+    For $i = 0 To UBound($jAccountLoginConfig) - 1
+        $accountConfig = $jAccountLoginConfig[$i]
+        If getPropertyJson($accountConfig, "active") Then
+            $sUsername = getPropertyJson($accountConfig, "username")
+            $sPassword = getPropertyJson($accountConfig, "password")
+            $sCharName = getPropertyJson($accountConfig, "char_name")
+            $iServerNo = getServerNumber($accountConfig)
+            $iChannelNo = getChannelNumber($accountConfig)
+
+            writeLogFile($hTestLog, "[INFO] First active account: " & $sUsername & " / " & $sCharName)
+            Return True
+        EndIf
+    Next
+
+    writeLogFile($hTestLog, "[FAIL] Khong tim thay account active=true")
+    Return False
+EndFunc
 
 Func runAutoLoginScript()
     If Not FileExists($sAutoLoginScript) Then

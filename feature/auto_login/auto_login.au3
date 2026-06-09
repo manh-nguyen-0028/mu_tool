@@ -31,8 +31,6 @@ Global $jAccountLoginConfig
 Global $iRetryCount = 0
 Global Const $MAX_RETRY = 1
 
-start()
-
 ; ============ PHASE 1: HELPER FUNCTIONS (4 HAM) ============
 
 ; Method: init_auto_login
@@ -586,6 +584,7 @@ Func main()
 	start()
 EndFunc   ;==>main
 
-If @Compiled = 0 Then
+
+If StringLower(@ScriptName) = "auto_login.au3" Then
 	main()
 EndIf
