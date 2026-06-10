@@ -13,17 +13,18 @@ processAutoLogin()
 └─ For each account (active: true)
    └─ processLogin(username, password, charName, serverNo)
       ├─ runGameExe()                  [Step 1: Mở game]
-      ├─ clickButtonStart()             [Step 2: Click button start]
-      ├─ activeAndMoveWin()      [Step 3: Active + move window - game_utils]
-      ├─ clickAddAccount()              [Step 4: Click add account]
-      ├─ inputCredentials()             [Step 5: Nhập user/pass]
-      ├─ confirmLogin()                 [Step 6: Click first account]
-      ├─ waitLoadUser()                 [Step 7: Chờ load user]
-      ├─ selectServer()                 [Step 8: returnServer() - game_utils]
-      ├─ selectCharacter()              [Step 9: returnChar() - game_utils]
-      ├─ verifyCharacterLoaded()        [Step 10: Check char đúng (qua char_in_account.txt)]
-      ├─ handleWrongCharacter()         [Step 11: F8 + retry nếu char sai]
-      └─ writeLoginReport()             [Step 12: Ghi report]
+      ├─ clickButtonStart()             [Step 2: Click button start → Đợi 5s]
+      ├─ activeAndMoveWin()             [Step 3: Active + move window → Click button thêm tài khoản phía ngoài]
+      ├─ processLoginAccount()          [Step 4: Process login]
+      │   ├─ clickAddAccount()          [Step 4.1: Click add account trong form login]
+      │   ├─ inputCredentials()         [Step 4.2: Nhập user/pass]
+      │   └─ confirmLogin()             [Step 4.3: Click first account]
+      ├─ waitLoadUser()                 [Step 5: Chờ load user]
+      ├─ selectServer()                 [Step 6: returnServer() - game_utils]
+      ├─ selectCharacter()              [Step 7: returnChar() - game_utils]
+      ├─ verifyCharacterLoaded()        [Step 8: Check char đúng (qua char_in_account.txt)]
+      ├─ handleWrongCharacter()         [Step 9: F8 + retry nếu char sai]
+      └─ writeLoginReport()             [Step 10: Ghi report]
 `
 
 ### Helper Functions
@@ -44,46 +45,48 @@ processAutoLogin()
 
 ### Phase 2: Main Loop & Login Orchestration (2 hàm)
 5. `processAutoLogin()` — Loop qua active accounts, gọi processLogin() cho mỗi
-6. `processLogin(, , , )` — Orchestrate 12 bước:
+6. `processLogin(, , , )` — Orchestrate 10 bước:
    - Gọi từng step function (runGameExe → clickButtonStart → ... → writeLoginReport)
    - Handle retry logic nếu character sai
 
-### Phase 3: Login Steps (6 hàm)
+### Phase 3: Login Steps (7 hàm)
 7. `runGameExe()` — Step 1: Mở game exe từ common.game.exe_path → chờ 5s → click OK popup báo lỗi (tọa độ cấu hình trong file config)
-8. `clickButtonStart()` — Step 2: Sử dụng ControlClick("[TITLE:MU GamethuVN - Season 21; CLASS:#32770]", "", "[CLASS:Button; INSTANCE:2]")
-9. `activeAndMoveGameWindow()` — Step 3: Active + move launcher window (dùng activeAndMoveWin())
-10. `clickAddAccount()` — Step 4:
-  - Thực hiện click vào button xóa account tại vị trí số 2 4 lần (vị trí button trong file config)
-  - Click button_add_account_x/y
-11. `inputCredentials(, )` — Step 5: Click username → input → click password → input → chờ 2s rồi send enter
-12. `confirmLogin()` — Step 6: Click button first_account_x/y
+8. `clickButtonStart()` — Step 2: Sử dụng ControlClick("[TITLE:MU GamethuVN - Season 21; CLASS:#32770]", "", "[CLASS:Button; INSTANCE:2]") → Đợi 5s
+9. `activeAndMoveGameWindow()` — Step 3: Active + move launcher window (dùng activeAndMoveWin()) → Click button thêm tài khoản phía ngoài (button_outer_add_account_x/y)
+10. `processLoginAccount(, )` — Step 4: Xử lý form đăng nhập:
+  - Gọi `clickAddAccount()` (Step 4.1)
+  - Gọi `inputCredentials()` (Step 4.2)
+  - Gọi `confirmLogin()` (Step 4.3)
+11. `clickAddAccount()` — Step 4.1: Click vào button xóa account tại vị trí số 2 (4 lần) → Click button_add_account_x/y
+12. `inputCredentials(, )` — Step 4.2: Click username → input → click password → input → chờ 2s rồi send enter
+13. `confirmLogin()` — Step 4.3: Click button first_account_x/y
 
 ### Phase 4: Server/Character Selection & Verification (5 hàm)
-13. `waitLoadUser()` — Step 7: Chờ X giây (wait_load_user_sec, default 5s)
-14. `selectServer()` — Step 8: Gọi returnServer() từ game_utils
-15. `selectCharacter()` — Step 9: Gọi returnChar() để chọn character
-16. `verifyCharacterLoaded()` — Step 10:
+14. `waitLoadUser()` — Step 5: Chờ X giây (wait_load_user_sec, default 5s)
+15. `selectServer()` — Step 6: Gọi returnServer() từ game_utils
+16. `selectCharacter()` — Step 7: Gọi returnChar() để chọn character
+17. `verifyCharacterLoaded()` — Step 8:
     - Lấy danh sách char cùng account qua getCharInAccount()
     - So sánh với character active (window title)
     - Return: True/False
-17. `handleWrongCharacter(, , , )` — Step 11:
+18. `handleWrongCharacter(, , , )` — Step 9:
     - Nếu character SAI → sendKeyF8() → chờ 2-3s → retry processLogin() (1 lần)
     - Nếu lần 2 vẫn SAI → return False, ghi log error
 
 ### Phase 5: Report & Entry Point (3 hàm)
-18. `writeLoginReport(, , , , )` — Step 12:
+19. `writeLoginReport(, , , , )` — Step 10:
     - Ghi file output/report_user_login.txt
     - Format: YYYY-MM-DD HH:MM:SS | username | char_name | status | server | channel
     - Status: success | retry_success | failed | timeout | wrong_password
-19. `start()` — Entry point: init() → open log → processAutoLogin() → close log
-20. `main()` — Gọi start() khi file run
+20. `start()` — Entry point: init() → open log → processAutoLogin() → close log
+21. `main()` — Gọi start() khi file run
 
 ---
 
 ## Relevant Files
 
 ### Implementation
-- [feature/auto_login/auto_login.au3](feature/auto_login/auto_login.au3) — **Rewrite hoàn toàn** (20 hàm)
+- [feature/auto_login/auto_login.au3](feature/auto_login/auto_login.au3) — **Rewrite hoàn toàn** (21 hàm)
 
 ### Reuse from Utils
 - [utils/game_utils.au3](utils/game_utils.au3) — Reuse:

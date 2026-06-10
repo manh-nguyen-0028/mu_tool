@@ -41,18 +41,19 @@ $logFile = $hTestLog
 ;~ testStep06_processLoginFirstActiveManual()
 ;~ testStep07_runGameExeManual()
 ;~ testStep08_clickButtonStartManual()
-;~ testStep09_activeAndMoveLauncherManual()
-;~ testStep10_clickAddAccountManual()
-;~ testStep11_inputCredentialsFirstActiveManual()
-;~ testStep12_confirmLoginManual()
-;~ testStep13_waitLoadUserManual()
-;~ testStep14_selectServerFirstActiveManual()
-;~ testStep15_selectCharacterFirstActiveManual()
-;~ testStep16_verifyCharacterLoadedFirstActiveManual()
-;~ testStep17_handleWrongCharacterFirstActiveManual()
-;~ testStep18_writeLoginReportSample()
-;~ testStep19_startEntryPointManual()
-;~ testStep20_mainEntryPointManual()
+;~ testStep09_activeAndMoveGameWindowManual()
+;~ testStep10_processLoginAccountFirstActiveManual()
+;~ testStep11_clickAddAccountManual()
+;~ testStep12_inputCredentialsFirstActiveManual()
+;~ testStep13_confirmLoginManual()
+;~ testStep14_waitLoadUserManual()
+;~ testStep15_selectServerFirstActiveManual()
+;~ testStep16_selectCharacterFirstActiveManual()
+;~ testStep17_verifyCharacterLoadedFirstActiveManual()
+;~ testStep18_handleWrongCharacterFirstActiveManual()
+;~ testStep19_writeLoginReportSample()
+;~ testStep20_startEntryPointManual()
+;~ testStep21_mainEntryPointManual()
 
 ; Unit tests
 ;~ testCase01_getLoginProperties()
@@ -155,20 +156,31 @@ Func testStep08_clickButtonStartManual()
     Return clickButtonStart()
 EndFunc
 
-Func testStep09_activeAndMoveLauncherManual()
+Func testStep09_activeAndMoveGameWindowManual()
     writeLogFile($hTestLog, "[STEP-09] activeAndMoveGameWindow() - manual")
-    Return activeAndMoveWin("MU GamethuVN - Season 21")
+    init()
+    Return activeAndMoveGameWindow()
 EndFunc
 
-Func testStep10_clickAddAccountManual()
-    writeLogFile($hTestLog, "[STEP-10] clickAddAccount() - manual")
+Func testStep10_processLoginAccountFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-10] processLoginAccount() - manual")
+    writeLogFile($hTestLog, "[PREPARE] Da vao man hinh login va co account active")
+
+    Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
+    If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
+
+    Return processLoginAccount($sUsername, $sPassword)
+EndFunc
+
+Func testStep11_clickAddAccountManual()
+    writeLogFile($hTestLog, "[STEP-11] clickAddAccount() - manual")
     writeLogFile($hTestLog, "[PREPARE] Launcher dang active va visible")
     init()
     Return clickAddAccount()
 EndFunc
 
-Func testStep11_inputCredentialsFirstActiveManual()
-    writeLogFile($hTestLog, "[STEP-11] inputCredentials() - manual")
+Func testStep12_inputCredentialsFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-12] inputCredentials() - manual")
 
     Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
     If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
@@ -176,22 +188,22 @@ Func testStep11_inputCredentialsFirstActiveManual()
     Return inputCredentials($sUsername, $sPassword)
 EndFunc
 
-Func testStep12_confirmLoginManual()
-    writeLogFile($hTestLog, "[STEP-12] confirmLogin() - manual")
+Func testStep13_confirmLoginManual()
+    writeLogFile($hTestLog, "[STEP-13] confirmLogin() - manual")
     init()
     Return confirmLogin()
 EndFunc
 
-Func testStep13_waitLoadUserManual()
-    writeLogFile($hTestLog, "[STEP-13] waitLoadUser()")
+Func testStep14_waitLoadUserManual()
+    writeLogFile($hTestLog, "[STEP-14] waitLoadUser()")
     init()
     waitLoadUser()
     writeLogFile($hTestLog, "[PASS] waitLoadUser da chay xong")
     Return True
 EndFunc
 
-Func testStep14_selectServerFirstActiveManual()
-    writeLogFile($hTestLog, "[STEP-14] selectServer() - manual")
+Func testStep15_selectServerFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-15] selectServer() - manual")
 
     Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
     If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
@@ -199,8 +211,8 @@ Func testStep14_selectServerFirstActiveManual()
     Return selectServer($iServerNo)
 EndFunc
 
-Func testStep15_selectCharacterFirstActiveManual()
-    writeLogFile($hTestLog, "[STEP-15] selectCharacter() - manual")
+Func testStep16_selectCharacterFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-16] selectCharacter() - manual")
 
     Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
     If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
@@ -208,8 +220,8 @@ Func testStep15_selectCharacterFirstActiveManual()
     Return selectCharacter($sCharName)
 EndFunc
 
-Func testStep16_verifyCharacterLoadedFirstActiveManual()
-    writeLogFile($hTestLog, "[STEP-16] verifyCharacterLoaded() - manual")
+Func testStep17_verifyCharacterLoadedFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-17] verifyCharacterLoaded() - manual")
 
     Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
     If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
@@ -217,8 +229,8 @@ Func testStep16_verifyCharacterLoadedFirstActiveManual()
     Return verifyCharacterLoaded($sCharName)
 EndFunc
 
-Func testStep17_handleWrongCharacterFirstActiveManual()
-    writeLogFile($hTestLog, "[STEP-17] handleWrongCharacter() - manual")
+Func testStep18_handleWrongCharacterFirstActiveManual()
+    writeLogFile($hTestLog, "[STEP-18] handleWrongCharacter() - manual")
     writeLogFile($hTestLog, "[PREPARE] Chi chay khi dang o tinh huong vao sai character")
 
     Local $accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo
@@ -228,21 +240,21 @@ Func testStep17_handleWrongCharacterFirstActiveManual()
     Return handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
 EndFunc
 
-Func testStep18_writeLoginReportSample()
-    writeLogFile($hTestLog, "[STEP-18] writeLoginReport()")
+Func testStep19_writeLoginReportSample()
+    writeLogFile($hTestLog, "[STEP-19] writeLoginReport()")
     resetLoginReport()
     writeLoginReport("test_user", "test_char", "success", 1, 1)
     Return assertReportHasStatus("success", 1)
 EndFunc
 
-Func testStep19_startEntryPointManual()
-    writeLogFile($hTestLog, "[STEP-19] start() - manual")
+Func testStep20_startEntryPointManual()
+    writeLogFile($hTestLog, "[STEP-20] start() - manual")
     writeLogFile($hTestLog, "[PREPARE] Se chay full flow auto login")
     Return start()
 EndFunc
 
-Func testStep20_mainEntryPointManual()
-    writeLogFile($hTestLog, "[STEP-20] main() - manual")
+Func testStep21_mainEntryPointManual()
+    writeLogFile($hTestLog, "[STEP-21] main() - manual")
     writeLogFile($hTestLog, "[PREPARE] Se chay full flow auto login qua entry point main()")
     main()
     Return True
@@ -255,7 +267,8 @@ EndFunc
 Func testCase01_getLoginProperties()
     writeLogFile($hTestLog, "[CASE-01] getLoginProperty/getProperty for login keys")
 
-    Local $aKeys[13] = [ _
+    Local $aKeys[15] = [ _
+        "button_outer_add_account_x", "button_outer_add_account_y", _
         "button_delete_account_x", "button_delete_account_y", _
         "button_add_account_x", "button_add_account_y", _
         "input_username_x", "input_username_y", _

@@ -8,19 +8,17 @@
 
 ; ===========================================================================
 ; AUTO LOGIN GAME - XUAT PHAT TU DAU
-; 12 BUOC LOGIN:
+; 10 BUOC LOGIN:
 ; 1. Mo chuong trinh theo common.game.exe_path, cho 5s va click OK popup loi theo config
-; 2. Dung ControlClick vao button Start cua launcher
-; 3. Active va move cua so launcher/game
-; 4. Click xoa account o vi tri so 2 4 lan, sau do click vao button them tai khoan
-; 5. Nhap username / password, cho 2 giay roi nhan Enter
-; 6. Click vao vi tri tai khoan dau tien
-; 7. Cho man hinh load user theo button.login.wait_load_user_sec
-; 8. Thuc hien chon server su dung returnServer($serverNumber)
-; 9. Su dung returnChar de chon nhan vat vao game
-; 10. Kiem tra xem nhan vat dang nhap co la nhan vat chinh hoac nhan vat trong tai khoan hay khong
-; 11. Neu co window cung tai khoan va character SAI -> sendKeyF8()
-; 12. Ghi update status user da login vao output/report_user_login.txt
+; 2. Dung ControlClick vao button Start cua launcher, cho 5s
+; 3. Active va move cua so launcher/game, click vao button them tai khoan phia ngoai
+; 4. Process login (clickAddAccount -> inputCredentials -> confirmLogin)
+; 5. Cho man hinh load user theo button.login.wait_load_user_sec
+; 6. Thuc hien chon server su dung returnServer($serverNumber)
+; 7. Su dung returnChar de chon nhan vat vao game
+; 8. Kiem tra xem nhan vat dang nhap co la nhan vat chinh hoac nhan vat trong tai khoan hay khong
+; 9. Neu co window cung tai khoan va character SAI -> sendKeyF8()
+; 10. Ghi update status user da login vao output/report_user_login.txt
 ; ===========================================================================
 
 ; Global variables
@@ -167,7 +165,7 @@ Func processAutoLogin()
 EndFunc   ;==>processAutoLogin
 
 ; Method: processLogin
-; Description: Orchestrate 12 steps login
+; Description: Orchestrate 10 steps login
 Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 	writeLogFile($logFile, ">>> processLogin(" & $sCharName & ", server=" & $iServerNo & ")")
 
@@ -180,24 +178,23 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 		writeLoginReport($sUsername, $sCharName, "failed_button_start", $iServerNo, getChannelNumber($accountConfig))
 		Return False
 	EndIf
-	
-	If Not activeAndMoveWin("MU GamethuVN - Season 21") Then
+
+	If Not activeAndMoveGameWindow() Then
 		writeLoginReport($sUsername, $sCharName, "failed_window_active", $iServerNo, getChannelNumber($accountConfig))
 		Return False
 	EndIf
 
-	If Not clickAddAccount() Then
-		writeLoginReport($sUsername, $sCharName, "failed_add_account", $iServerNo, getChannelNumber($accountConfig))
-		Return False
-	EndIf
-
-	If Not inputCredentials($sUsername, $sPassword) Then
-		writeLoginReport($sUsername, $sCharName, "failed_input_credentials", $iServerNo, getChannelNumber($accountConfig))
-		Return False
-	EndIf
-
-	If Not confirmLogin() Then
-		writeLoginReport($sUsername, $sCharName, "failed_confirm_login", $iServerNo, getChannelNumber($accountConfig))
+	If Not processLoginAccount($sUsername, $sPassword) Then
+		Switch @error
+			Case 1
+				writeLoginReport($sUsername, $sCharName, "failed_add_account", $iServerNo, getChannelNumber($accountConfig))
+			Case 2
+				writeLoginReport($sUsername, $sCharName, "failed_input_credentials", $iServerNo, getChannelNumber($accountConfig))
+			Case 3
+				writeLoginReport($sUsername, $sCharName, "failed_confirm_login", $iServerNo, getChannelNumber($accountConfig))
+			Case Else
+				writeLoginReport($sUsername, $sCharName, "failed_process_login", $iServerNo, getChannelNumber($accountConfig))
+		EndSwitch
 		Return False
 	EndIf
 
@@ -248,7 +245,8 @@ Func runGameExe()
 		Return False
 	EndIf
 
-	Local $iPID = Run('"' & $sGameExePath & '"')
+	Local $sDir = StringRegExpReplace($sGameExePath, "\\[^\\]+$", "")
+	Local $iPID = Run('"' & $sGameExePath & '"', $sDir)
 	If $iPID = 0 Then
 		writeLogFile($logFile, "LỖI: Không thể mở game exe: " & $sGameExePath)
 		Return False
@@ -296,12 +294,56 @@ Func clickButtonStart()
 
 	writeLogFile($logFile, "Đã ControlClick button Start thành công")
 
-	secondWait(10)
+	secondWait(5)
 	Return True
 EndFunc   ;==>clickButtonStart
 
+Func activeAndMoveGameWindow()
+	writeLogFile($logFile, "Step 3: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
+
+	If Not activeAndMoveWin("MU GamethuVN - Season 21") Then
+		writeLogFile($logFile, "LỖI: Không active/move được launcher window")
+		Return False
+	EndIf
+
+	Local $iOuterAddAccountX = getLoginProperty("button_outer_add_account_x")
+	Local $iOuterAddAccountY = getLoginProperty("button_outer_add_account_y")
+
+	If $iOuterAddAccountX = Default Or $iOuterAddAccountX = "" Or $iOuterAddAccountY = Default Or $iOuterAddAccountY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy button_outer_add_account_x/y hoặc button_add_account_x/y")
+		Return False
+	EndIf
+
+	$iOuterAddAccountX = Number($iOuterAddAccountX)
+	$iOuterAddAccountY = Number($iOuterAddAccountY)
+
+	writeLogFile($logFile, "Click button thêm tài khoản phía ngoài tại X=" & $iOuterAddAccountX & ", Y=" & $iOuterAddAccountY)
+	_MU_MouseClick_Delay($iOuterAddAccountX, $iOuterAddAccountY)
+	secondWait(5)
+
+	Return True
+EndFunc   ;==>activeAndMoveGameWindow
+
+Func processLoginAccount($sUsername, $sPassword)
+	writeLogFile($logFile, "Step 4: processLoginAccount() - clickAddAccount -> inputCredentials -> confirmLogin")
+
+	If Not clickAddAccount() Then
+		Return SetError(1, 0, False)
+	EndIf
+
+	If Not inputCredentials($sUsername, $sPassword) Then
+		Return SetError(2, 0, False)
+	EndIf
+
+	If Not confirmLogin() Then
+		Return SetError(3, 0, False)
+	EndIf
+
+	Return True
+EndFunc   ;==>processLoginAccount
+
 Func clickAddAccount()
-	writeLogFile($logFile, "Step 4: clickAddAccount() - Xoa account vi tri 2 roi them account")
+	writeLogFile($logFile, "Step 4.1: clickAddAccount() - Xoa account vi tri 2 roi them account")
 
 	Local $iDeleteAccountX = getLoginProperty("button_delete_account_x")
 	Local $iDeleteAccountY = getLoginProperty("button_delete_account_y")
@@ -323,11 +365,13 @@ Func clickAddAccount()
 	$iDeleteAccountY = Number($iDeleteAccountY)
 	$iAddAccountX = Number($iAddAccountX)
 	$iAddAccountY = Number($iAddAccountY)
-
+	
 	For $i = 1 To 4
 		writeLogFile($logFile, "Click xoa account lan " & $i & " tai X=" & $iDeleteAccountX & ", Y=" & $iDeleteAccountY)
 		_MU_MouseClick_Delay($iDeleteAccountX, $iDeleteAccountY)
 		secondWait(1)
+		sendKeyEnter()
+		secondWait(2)
 	Next
 
 	writeLogFile($logFile, "Click Add Account tại X=" & $iAddAccountX & ", Y=" & $iAddAccountY)
@@ -338,7 +382,7 @@ Func clickAddAccount()
 EndFunc   ;==>clickAddAccount
 
 Func inputCredentials($sUsername, $sPassword)
-	writeLogFile($logFile, "Step 5: inputCredentials() - Nhập username và password, chờ rồi Enter")
+	writeLogFile($logFile, "Step 4.2: inputCredentials() - Nhập username và password, chờ rồi Enter")
 
 	Local $iUsernameX = getLoginProperty("input_username_x")
 	Local $iUsernameY = getLoginProperty("input_username_y")
@@ -387,7 +431,7 @@ Func inputCredentials($sUsername, $sPassword)
 EndFunc   ;==>inputCredentials
 
 Func confirmLogin()
-	writeLogFile($logFile, "Step 6: confirmLogin() - Click first account")
+	writeLogFile($logFile, "Step 4.3: confirmLogin() - Click first account")
 
 	Local $iConfirmX = getLoginProperty("first_account_x")
 	Local $iConfirmY = getLoginProperty("first_account_y")
@@ -402,15 +446,18 @@ Func confirmLogin()
 
 	writeLogFile($logFile, "Click first account tại X=" & $iConfirmX & ", Y=" & $iConfirmY)
 	_MU_MouseClick_Delay($iConfirmX, $iConfirmY)
-	secondWait(2)
+	secondWait(3)
 
+	; Thuc hien send key Enter de vao game
+	sendKeyEnter()
+	secondWait(3)
 	Return True
 EndFunc   ;==>confirmLogin
 
 ; ============ PHASE 4: SERVER/CHARACTER SELECTION & VERIFICATION (5 HAM) ============
 
 Func waitLoadUser()
-	writeLogFile($logFile, "Step 7: waitLoadUser() - Chờ load user")
+	writeLogFile($logFile, "Step 5: waitLoadUser() - Chờ load user")
 
 	Local $iWaitSec = getLoginProperty("wait_load_user_sec")
 	If $iWaitSec = "" Then
@@ -423,7 +470,7 @@ Func waitLoadUser()
 EndFunc   ;==>waitLoadUser
 
 Func selectServer($iServerNo)
-	writeLogFile($logFile, "Step 8: selectServer(" & $iServerNo & ")")
+	writeLogFile($logFile, "Step 6: selectServer(" & $iServerNo & ")")
 
 	If $iServerNo <= 0 Then
 		$iServerNo = 1
@@ -441,7 +488,7 @@ Func selectServer($iServerNo)
 EndFunc   ;==>selectServer
 
 Func selectCharacter($sCharName)
-	writeLogFile($logFile, "Step 9: selectCharacter(" & $sCharName & ")")
+	writeLogFile($logFile, "Step 7: selectCharacter(" & $sCharName & ")")
 
 	Local $sMainNo = getMainNoByChar($sCharName)
 	writeLogFile($logFile, "Window title format: " & $sMainNo)
@@ -461,7 +508,7 @@ Func selectCharacter($sCharName)
 EndFunc   ;==>selectCharacter
 
 Func verifyCharacterLoaded($sCharName)
-	writeLogFile($logFile, "Step 10: verifyCharacterLoaded(" & $sCharName & ")")
+	writeLogFile($logFile, "Step 8: verifyCharacterLoaded(" & $sCharName & ")")
 
 	Local $aCharList = getCharInAccount($sCharName)
 
@@ -509,7 +556,7 @@ Func verifyCharacterLoaded($sCharName)
 EndFunc   ;==>verifyCharacterLoaded
 
 Func handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
-	writeLogFile($logFile, "Step 11: handleWrongCharacter() - Xử lý character sai")
+	writeLogFile($logFile, "Step 9: handleWrongCharacter() - Xử lý character sai")
 
 	If $iRetryCount >= $MAX_RETRY Then
 		writeLogFile($logFile, "LỖI: Đã retry " & $iRetryCount & " lần, vượt quá giới hạn")
@@ -532,7 +579,7 @@ EndFunc   ;==>handleWrongCharacter
 ; ============ PHASE 5: REPORT & ENTRY POINT (3 HAM) ============
 
 Func writeLoginReport($sUsername, $sCharName, $sStatus, $iServerNo, $iChannelNo)
-	writeLogFile($logFile, "Step 12: writeLoginReport() - Ghi report login")
+	writeLogFile($logFile, "Step 10: writeLoginReport() - Ghi report login")
 
 	Local $sTimestamp = _NowCalc()
 	Local $sReportLine = $sTimestamp & " | " & $sUsername & " | " & $sCharName & " | " & $sStatus & " | " & $iServerNo & " | " & $iChannelNo
