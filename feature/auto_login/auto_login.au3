@@ -276,7 +276,7 @@ Func runGameExe()
 	EndIf
 
 	writeLogFile($logFile, "✓ Đã mở game exe, PID: " & $iPID)
-	secondWait(1)
+	secondWait(3)
 	Return True
 EndFunc   ;==>runGameExe
 
@@ -293,13 +293,19 @@ Func clickButtonStart()
 	EndIf
 
 	writeLogFile($logFile, "Đã ControlClick button Start thành công")
-
-	secondWait(5)
+	
 	Return True
 EndFunc   ;==>clickButtonStart
 
 Func activeAndMoveGameWindow()
 	writeLogFile($logFile, "Step 3: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
+
+	$timeCheck = 0
+	While Not activeAndMoveWin("MU GamethuVN - Season 21") And $timeCheck < 10
+		writeLogFile($logFile, "Chưa active được window, thử lại sau 1s... (timeCheck=" & $timeCheck & ")")
+		secondWait(1)
+		$timeCheck += 1
+	WEnd
 
 	If Not activeAndMoveWin("MU GamethuVN - Season 21") Then
 		writeLogFile($logFile, "LỖI: Không active/move được launcher window")
@@ -427,6 +433,7 @@ Func inputCredentials($sUsername, $sPassword)
 
 	sendKeyEnter()
 	
+	secondWait(3)
 	Return True
 EndFunc   ;==>inputCredentials
 
@@ -446,11 +453,11 @@ Func confirmLogin()
 
 	writeLogFile($logFile, "Click first account tại X=" & $iConfirmX & ", Y=" & $iConfirmY)
 	_MU_MouseClick_Delay($iConfirmX, $iConfirmY)
-	secondWait(3)
+	secondWait(5)
 
 	; Thuc hien send key Enter de vao game
 	sendKeyEnter()
-	secondWait(3)
+	secondWait(5)
 	Return True
 EndFunc   ;==>confirmLogin
 
