@@ -255,8 +255,8 @@ Func runGameExe()
 	WinWait("MU GamethuVN")
 	WinActivate("MU GamethuVN")
 
-	writeLogFile($logFile, "Chờ 5 giây trước khi xử lý popup lỗi")
-	secondWait(5)
+	writeLogFile($logFile, "Chờ 3 giây trước khi xử lý popup lỗi")
+	secondWait(3)
 
 	Local $iPopupErrorOkX = getLoginProperty("popup_error_ok_x")
 	Local $iPopupErrorOkY = getLoginProperty("popup_error_ok_y")
@@ -276,7 +276,7 @@ Func runGameExe()
 	EndIf
 
 	writeLogFile($logFile, "✓ Đã mở game exe, PID: " & $iPID)
-	secondWait(3)
+	secondWait(5)
 	Return True
 EndFunc   ;==>runGameExe
 
@@ -299,7 +299,7 @@ EndFunc   ;==>clickButtonStart
 
 Func activeAndMoveGameWindow()
 	writeLogFile($logFile, "Step 3: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
-
+	secondWait(2)
 	Local $iElapsedSec = 0
 	Local $bActive = False
 	While $iElapsedSec < 10 And Not $bActive
@@ -314,6 +314,8 @@ Func activeAndMoveGameWindow()
 	If Not $bActive Then
 		writeLogFile($logFile, "LỖI: Không active/move được launcher window sau " & $iElapsedSec & " giây")
 		Return False
+	Else
+		secondWait(10)
 	EndIf
 
 	Local $iOuterAddAccountX = getLoginProperty("button_outer_add_account_x")
