@@ -52,7 +52,7 @@ processAutoLogin()
 ### Phase 3: Login Steps (7 hàm)
 7. `runGameExe()` — Step 1: Mở game exe từ common.game.exe_path → chờ 5s → click OK popup báo lỗi (tọa độ cấu hình trong file config)
 8. `clickButtonStart()` — Step 2: Sử dụng ControlClick("[TITLE:MU GamethuVN - Season 21; CLASS:#32770]", "", "[CLASS:Button; INSTANCE:2]") → Đợi 5s
-9. `activeAndMoveGameWindow()` — Step 3: Active + move launcher window (dùng activeAndMoveWin()) → Click button thêm tài khoản phía ngoài (button_outer_add_account_x/y)
+9. `activeAndMoveGameWindow()` — Step 3: Active + move launcher window (dùng activeAndMoveWin()) → nếu False thì chờ 1s và thử lại, tối đa 10s → Click button thêm tài khoản phía ngoài (button_outer_add_account_x/y) → check pixel theo config (button_outer_add_account_check_x/y, button_outer_add_account_check_color, button_outer_add_account_check_max_retry); nếu màu khớp thì coi như thành công
 10. `processLoginAccount(, )` — Step 4: Xử lý form đăng nhập:
   - Gọi `clickAddAccount()` (Step 4.1)
   - Gọi `inputCredentials()` (Step 4.2)

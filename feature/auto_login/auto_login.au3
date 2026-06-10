@@ -300,32 +300,78 @@ EndFunc   ;==>clickButtonStart
 Func activeAndMoveGameWindow()
 	writeLogFile($logFile, "Step 3: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
 
-	$timeCheck = 0
-	While Not activeAndMoveWin("MU GamethuVN - Season 21") And $timeCheck < 10
-		writeLogFile($logFile, "Chưa active được window, thử lại sau 1s... (timeCheck=" & $timeCheck & ")")
-		secondWait(1)
-		$timeCheck += 1
+	Local $iElapsedSec = 0
+	Local $bActive = False
+	While $iElapsedSec < 10 And Not $bActive
+		$bActive = activeAndMoveWin("MU GamethuVN - Season 21")
+		If Not $bActive Then
+			writeLogFile($logFile, "Chưa active được window, thử lại sau 1s... (elapsed=" & $iElapsedSec & "s)")
+			secondWait(1)
+			$iElapsedSec += 1
+		EndIf
 	WEnd
 
-	If Not activeAndMoveWin("MU GamethuVN - Season 21") Then
-		writeLogFile($logFile, "LỖI: Không active/move được launcher window")
+	If Not $bActive Then
+		writeLogFile($logFile, "LỖI: Không active/move được launcher window sau " & $iElapsedSec & " giây")
 		Return False
 	EndIf
 
 	Local $iOuterAddAccountX = getLoginProperty("button_outer_add_account_x")
 	Local $iOuterAddAccountY = getLoginProperty("button_outer_add_account_y")
+	Local $iCheckPixelX = getLoginProperty("button_outer_add_account_check_x")
+	Local $iCheckPixelY = getLoginProperty("button_outer_add_account_check_y")
+	Local $sCheckPixelColor = getLoginProperty("button_outer_add_account_check_color")
+	Local $iCheckPixelMaxRetry = getLoginProperty("button_outer_add_account_check_max_retry")
 
 	If $iOuterAddAccountX = Default Or $iOuterAddAccountX = "" Or $iOuterAddAccountY = Default Or $iOuterAddAccountY = "" Then
 		writeLogFile($logFile, "LỖI: Không tìm thấy button_outer_add_account_x/y hoặc button_add_account_x/y")
 		Return False
 	EndIf
 
+	If $iCheckPixelX = Default Or $iCheckPixelX = "" Or $iCheckPixelY = Default Or $iCheckPixelY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy button_outer_add_account_check_x/y")
+		Return False
+	EndIf
+
+	If $sCheckPixelColor = "" Then
+		$sCheckPixelColor = "0xFFFFFF"
+	EndIf
+
+	If $iCheckPixelMaxRetry = "" Or Number($iCheckPixelMaxRetry) <= 0 Then
+		$iCheckPixelMaxRetry = 10
+	EndIf
+
 	$iOuterAddAccountX = Number($iOuterAddAccountX)
 	$iOuterAddAccountY = Number($iOuterAddAccountY)
+	$iCheckPixelX = Number($iCheckPixelX)
+	$iCheckPixelY = Number($iCheckPixelY)
+	$iCheckPixelMaxRetry = Number($iCheckPixelMaxRetry)
+	Local $iExpectedColor = Number($sCheckPixelColor)
 
 	writeLogFile($logFile, "Click button thêm tài khoản phía ngoài tại X=" & $iOuterAddAccountX & ", Y=" & $iOuterAddAccountY)
 	_MU_MouseClick_Delay($iOuterAddAccountX, $iOuterAddAccountY)
-	secondWait(5)
+
+	Local $bCheckAddAccount = False
+	Local $iCheckCount = 0
+	While Not $bCheckAddAccount And $iCheckCount < $iCheckPixelMaxRetry
+		If PixelGetColor($iCheckPixelX, $iCheckPixelY) = $iExpectedColor Then
+			$bCheckAddAccount = True
+		Else
+			$iCheckCount += 1
+			If $iCheckCount < $iCheckPixelMaxRetry Then
+				writeLogFile($logFile, "Chua xac nhan duoc mau tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & ", thu lai sau 1s... (lan=" & $iCheckCount & "/" & $iCheckPixelMaxRetry & ")")
+				secondWait(1)
+			EndIf
+		EndIf
+	WEnd
+
+	If Not $bCheckAddAccount Then
+		writeLogFile($logFile, "LỖI: Pixel check tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & " khong phai mau " & $sCheckPixelColor & " sau " & $iCheckPixelMaxRetry & " lan")
+		Return False
+	EndIf
+
+	writeLogFile($logFile, "✓ Pixel check tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & " la " & $sCheckPixelColor & ", Step 3 thanh cong")
+	secondWait(1)
 
 	Return True
 EndFunc   ;==>activeAndMoveGameWindow
