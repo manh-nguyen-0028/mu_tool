@@ -274,9 +274,8 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 
 	If $bCharVerified Then
 		writeLogFile($logFile, "✓ Character " & $sCharName & " login ĐÚNG")
-		writeLogFile($logFile, "Character đúng -> thực hiện sendKeyF8 để đóng game theo flow")
-		sendKeyF8()
-		secondWait(2)
+		writeLogFile($logFile, "Character đúng -> thực hiện minisize main theo flow")
+		minisizeMainByChar($sCharName)
 		writeLoginReport($sUsername, $sCharName, "success", $iServerNo, $iChannelNo)
 		Return True
 	Else
@@ -680,7 +679,7 @@ Func selectCharacter($sCharName)
 	EndIf
 EndFunc   ;==>selectCharacter
 
-Func verifyCharacterLoaded($sCharName)
+Func verifyCharacterLoaded(ByRef $sCharName)
 	writeLogFile($logFile, "Step 10: verifyCharacterLoaded(" & $sCharName & ")")
 
 	; Check character muc tieu dang active hay chua
@@ -699,8 +698,9 @@ Func verifyCharacterLoaded($sCharName)
 	writeLogFile($logFile, "verifyCharacterLoaded -> charFound=" & $charFound & " | numberChar=" & $numberChar)
 
 	If $charFound <> "" Then
-		writeLogFile($logFile, "✗ Character SAI - đang active char khác cùng account: " & $charFound)
-		Return False
+		writeLogFile($logFile, "✓ Character hợp lệ trong cùng account (active char khác): " & $charFound)
+		$sCharName = $charFound
+		Return True
 	EndIf
 
 	writeLogFile($logFile, "LỖI: Không tìm thấy game window active cho character " & $sCharName)
