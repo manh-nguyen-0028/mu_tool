@@ -37,24 +37,25 @@ Global Const $MAX_RETRY = 1
 ; Method: preCheckActiveMainInSameAccount
 ; Description: Kiem tra trong cung tai khoan da co main nao dang active hay chua
 Func preCheckActiveMainInSameAccount($sCharName)
-	Local $aCharList = getCharInAccount($sCharName)
-
-	If UBound($aCharList) = 0 Then
-		writeLogFile($logFile, "CẢNH BÁO: Không có danh sách char cùng account cho " & $sCharName & ", fallback check theo char hiện tại")
-		If checkActiveWinByChar($sCharName) Then
-			writeLogFile($logFile, "Đã có main active: " & $sCharName)
-			Return True
-		EndIf
-		Return False
+	; Kiem tra nhanh main hien tai
+	If checkActiveWinByChar($sCharName) Then
+		writeLogFile($logFile, "Đã có main active: " & $sCharName)
+		Return True
 	EndIf
 
-	For $i = 0 To UBound($aCharList) - 1
-		Local $sOtherChar = $aCharList[$i]
-		If checkActiveWinByChar($sOtherChar) Then
-			writeLogFile($logFile, "Đã có main active trong cùng account: " & $sOtherChar)
-			Return True
-		EndIf
-	Next
+	; Dung method trong game_utils de tim main khac cung account dang active
+	Local $currentChar = $sCharName
+	Local $charNameOtherChar = checkActiveOtherChar($currentChar)
+	; $charNameOtherChar: JoyBoy|2 - > charFound: JoyBoy - numberChar: 2
+	Local $charFound = StringSplit($charNameOtherChar, "|")[1]
+	Local $numberChar = StringSplit($charNameOtherChar, "|")[2]
+
+	writeLogFile($logFile, "preCheckActiveMainInSameAccount -> charFound=" & $charFound & " | numberChar=" & $numberChar)
+
+	If $charFound <> "" Then
+		writeLogFile($logFile, "Đã có main active trong cùng account: " & $charFound)
+		Return True
+	EndIf
 
 	Return False
 EndFunc   ;==>preCheckActiveMainInSameAccount
@@ -153,6 +154,16 @@ Func processAutoLogin()
 	If UBound($jAccountLoginConfig) = 0 Then
 		writeLogFile($logFile, "LỖI: Không có account nào để login")
 		Return False
+	Else
+		writeLogFile($logFile, "Tổng account trong config: " & UBound($jAccountLoginConfig))
+		; in ra username va charname, trang thai active cua tung account
+		For $i = 0 To UBound($jAccountLoginConfig) - 1
+			Local $accountConfig = $jAccountLoginConfig[$i]
+			Local $sUsername = getPropertyJson($accountConfig, "username")
+			Local $sCharName = getPropertyJson($accountConfig, "char_name")
+			Local $bActive = getPropertyJson($accountConfig, "active")
+			writeLogFile($logFile, "Account " & ($i + 1) & ": username=" & $sUsername & ", char_name=" & $sCharName & ", active=" & $bActive)
+		Next
 	EndIf
 
 	writeLogFile($logFile, "Tổng account: " & UBound($jAccountLoginConfig))
@@ -207,13 +218,6 @@ EndFunc   ;==>processAutoLogin
 Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 	writeLogFile($logFile, ">>> processLogin(" & $sCharName & ", server=" & $iServerNo & ")")
 	Local $iChannelNo = getChannelNumber($accountConfig)
-
-	; Pre-check lan 2 trong processLogin
-	If preCheckActiveMainInSameAccount($sCharName) Then
-		writeLogFile($logFile, "Pre-check trong processLogin: đã có main active, return ngay")
-		writeLoginReport($sUsername, $sCharName, "already_logged_in", $iServerNo, $iChannelNo)
-		Return True
-	EndIf
 
 	If Not closeExistingGameWindow() Then
 		writeLoginReport($sUsername, $sCharName, "failed_close_existing_window", $iServerNo, $iChannelNo)
@@ -270,6 +274,9 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 
 	If $bCharVerified Then
 		writeLogFile($logFile, "✓ Character " & $sCharName & " login ĐÚNG")
+		writeLogFile($logFile, "Character đúng -> thực hiện sendKeyF8 để đóng game theo flow")
+		sendKeyF8()
+		secondWait(2)
 		writeLoginReport($sUsername, $sCharName, "success", $iServerNo, $iChannelNo)
 		Return True
 	Else
@@ -676,49 +683,28 @@ EndFunc   ;==>selectCharacter
 Func verifyCharacterLoaded($sCharName)
 	writeLogFile($logFile, "Step 10: verifyCharacterLoaded(" & $sCharName & ")")
 
-	Local $aCharList = getCharInAccount($sCharName)
-
-	If UBound($aCharList) = 0 Then
-		writeLogFile($logFile, "CẢNH BÁO: Không tìm thấy danh sách character cùng tài khoản")
-		Return False
-	EndIf
-
-	writeLogFile($logFile, "Danh sách character cùng tài khoản: " & _ArrayToString($aCharList, ", "))
-
-	Local $aWindowList = WinList()
-	Local $bFoundCorrectChar = False
-
-	For $i = 1 To $aWindowList[0][0]
-		Local $sWindowTitle = $aWindowList[$i][1]
-
-		If StringInStr($sWindowTitle, "MU GamethuVN - Season 21") And StringInStr($sWindowTitle, "Hà Nội") Then
-			writeLogFile($logFile, "Tìm thấy game window: " & $sWindowTitle)
-
-			Local $aMatch = StringRegExp($sWindowTitle, "MU GamethuVN - Season 21 \(Hà Nội - (.*?)\)", 3)
-			If UBound($aMatch) > 0 Then
-				Local $sActiveChar = $aMatch[0]
-				writeLogFile($logFile, "Character active hiện tại: " & $sActiveChar)
-
-				For $j = 0 To UBound($aCharList) - 1
-					If $aCharList[$j] = $sActiveChar Then
-						writeLogFile($logFile, "✓ Character " & $sActiveChar & " ĐÚNG (trong danh sách tài khoản)")
-						$bFoundCorrectChar = True
-						ExitLoop 2
-					EndIf
-				Next
-
-				writeLogFile($logFile, "✗ Character " & $sActiveChar & " SAI (không trong danh sách tài khoản)")
-				Return False
-			EndIf
-		EndIf
-	Next
-
-	If $bFoundCorrectChar Then
+	; Check character muc tieu dang active hay chua
+	If checkActiveWinByChar($sCharName) Then
+		writeLogFile($logFile, "✓ Character " & $sCharName & " login ĐÚNG (window active)")
 		Return True
-	Else
-		writeLogFile($logFile, "LỖI: Không tìm thấy game window active")
+	EndIf
+
+	; Dung method trong game_utils de tim character khac cung account dang active
+	Local $currentChar = $sCharName
+	Local $charNameOtherChar = checkActiveOtherChar($currentChar)
+	; $charNameOtherChar: JoyBoy|2 - > charFound: JoyBoy - numberChar: 2
+	Local $charFound = StringSplit($charNameOtherChar, "|")[1]
+	Local $numberChar = StringSplit($charNameOtherChar, "|")[2]
+
+	writeLogFile($logFile, "verifyCharacterLoaded -> charFound=" & $charFound & " | numberChar=" & $numberChar)
+
+	If $charFound <> "" Then
+		writeLogFile($logFile, "✗ Character SAI - đang active char khác cùng account: " & $charFound)
 		Return False
 	EndIf
+
+	writeLogFile($logFile, "LỖI: Không tìm thấy game window active cho character " & $sCharName)
+	Return False
 EndFunc   ;==>verifyCharacterLoaded
 
 Func handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)

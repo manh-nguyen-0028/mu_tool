@@ -237,7 +237,7 @@ Func testStep18_handleWrongCharacterFirstActiveManual()
     If Not getFirstActiveAccountData($accountConfig, $sUsername, $sPassword, $sCharName, $iServerNo, $iChannelNo) Then Return False
 
     $iRetryCount = 0
-    Return handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
+    Return handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 EndFunc
 
 Func testStep19_writeLoginReportSample()

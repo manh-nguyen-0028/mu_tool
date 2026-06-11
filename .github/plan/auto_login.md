@@ -1,7 +1,7 @@
 ﻿# Plan: Xây Dựng Tính Năng Login Game (Từ Đầu)
 
 ## TL;DR
-Xây dựng auto login game từ đầu theo 12 bước chính (có tách xử lý nhỏ theo sub-step). Trước mỗi account sẽ kiểm tra cửa sổ `MU GamethuVN - Season 21`, nếu đang tồn tại thì tắt bỏ. Khi vào `processLogin`, sẽ pre-check xem trong cùng tài khoản đã có main nào active chưa; nếu có thì coi như đã login và bỏ qua account đó. Sau đó mới mở game → login → chọn server → chọn character → kiểm tra character đúng không (qua `char_in_account.txt`) → F8 nếu sai → ghi report. Tái sử dụng hàm từ `game_utils.au3` và `common_utils.au3`.
+Xây dựng auto login game từ đầu theo 12 bước chính (có tách xử lý nhỏ theo sub-step). Trước mỗi account sẽ kiểm tra cửa sổ `MU GamethuVN - Season 21`, nếu đang tồn tại thì tắt bỏ. Khi vào `processLogin`, sẽ pre-check xem trong cùng tài khoản đã có main nào active chưa; nếu có thì coi như đã login và bỏ qua account đó. Sau đó mới mở game → login → chọn server → chọn character → kiểm tra character đúng không (qua `char_in_account.txt`) → nếu đúng thì F8 để đóng game và ghi report success, nếu sai thì F8 + retry → ghi report. Tái sử dụng hàm từ `game_utils.au3` và `common_utils.au3`.
 
 ---
 
@@ -49,7 +49,8 @@ processAutoLogin()
 ### Phase 2: Main Loop & Login Orchestration (2 hàm)
 5. `processAutoLogin()` — Loop qua active accounts, gọi processLogin() cho mỗi
 6. `processLogin(, , , )` — Orchestrate 12 bước:
-  - Pre-check: lấy danh sách char cùng account qua `getCharInAccount(charName)`, kiểm tra có main nào đang active (`WinActive`/`WinExists` theo title từ `getMainNoByChar`) hay không
+  - Pre-check: ưu tiên check trực tiếp theo char hiện tại, sau đó gọi `checkActiveOtherChar(currentChar)` từ `game_utils.au3` để tìm main khác cùng account đang active
+  - Parse kết quả từ `checkActiveOtherChar`: `charFound|numberChar` (ví dụ: `JoyBoy|2`) để quyết định skip login flow
   - Nếu có ít nhất 1 main active trong cùng account: coi như đã login, ghi log/report status `already_logged_in`, rồi skip account
    - Gọi từng step function (runGameExe → clickButtonStart → ... → writeLoginReport)
    - Handle retry logic nếu character sai
@@ -102,6 +103,7 @@ processAutoLogin()
   - `sendKeyF8()` — gửi F8 (close game)
   - `activeAndMoveWin()` — active + move window
   - `getMainNoByChar()` — lấy window title format
+  - `checkActiveOtherChar()` — tìm nhân vật khác cùng account đang active, trả về format `charFound|numberChar`
 
 - [utils/common_utils.au3](utils/common_utils.au3) — Reuse:
   - `init()` — load config
@@ -157,15 +159,18 @@ processAutoLogin()
 ### Unit Tests (Manual)
 1. ✅ `getLoginProperty("button.login.button_start_x")` → trả về số x đúng
 2. ✅ `getCharInAccount("char1")` → trả về danh sách `["char1", "char2", "char3"]` đúng
-3. ✅ `verifyCharacterLoaded("char1")` → kiểm tra character active đúng hay sai
+3. ✅ `checkActiveOtherChar("char1")` → trả về đúng format `charFound|numberChar` (ví dụ: `JoyBoy|2`)
+4. ✅ Parse `StringSplit(checkActiveOtherChar("char1"), "|")[1/2]` → lấy đúng `charFound` và `numberChar`
+5. ✅ `verifyCharacterLoaded("char1")` → kiểm tra character active đúng hay sai
+6. ✅ Trong `processLogin()`: khi `verifyCharacterLoaded(...) = True` thì phải gọi `sendKeyF8()` trước khi ghi report `success`
 
 ### Integration Tests
-4. ✅ **Success case**: Mở game → login → chọn server → chọn char ĐÚNG → report "success"
-5. ✅ **Wrong character case**: Mở game → login → chọn char SAI → verify FAIL → F8 → retry → lần 2 PASS → report "retry_success"
-6. ✅ **Timeout case**: Game không mở → ghi log "game_exe_not_found" → skip account
-7. ✅ **Wrong password case**: Invalid user/pass → ghi log error → skip account
-8. ✅ **Already logged case**: Có ít nhất 1 main cùng account đang active → skip login flow → report "already_logged_in"
-9. ✅ **Multiple accounts**: Loop 3+ account, mỗi account login thành công → report có 3+ dòng
+7. ✅ **Success case**: Mở game → login → chọn server → chọn char ĐÚNG → verify PASS → send F8 → report "success"
+8. ✅ **Wrong character case**: Mở game → login → chọn char SAI → verify FAIL → F8 → retry → lần 2 PASS → report "retry_success"
+9. ✅ **Timeout case**: Game không mở → ghi log "game_exe_not_found" → skip account
+10. ✅ **Wrong password case**: Invalid user/pass → ghi log error → skip account
+11. ✅ **Already logged case**: `checkActiveWinByChar(char hiện tại)` hoặc `checkActiveOtherChar(currentChar)` tìm thấy main active → skip login flow → report "already_logged_in"
+12. ✅ **Multiple accounts**: Loop 3+ account, mỗi account login thành công → report có 3+ dòng
 
 ---
 
@@ -173,7 +178,7 @@ processAutoLogin()
 
 ✅ **Xây dựng từ đầu** — Không tái sử dụng logic cũ, thiết kế clean theo 12 bước chính
 ✅ **Character verification qua char_in_account.txt** — So sánh danh sách, không cần image detection
-✅ **F8 logic: CHỈ khi character SAI** — Character ĐÚNG từ lần 1 → finish (không F8)
+✅ **F8 logic sau verify** — Character ĐÚNG: F8 để đóng game rồi ghi success; Character SAI: F8 + retry
 ✅ **Error handling: Skip account** — Ghi log, tiếp tục account kế tiếp (không retry vô hạn)
 ✅ **Reuse utility functions** — game_utils và common_utils functions
 
