@@ -980,6 +980,26 @@ Func activeAndMoveWin($mainName)
 	Return False
 EndFunc   ;==>activeAndMoveWin
 
+Func closeWinExact($mainName)
+	;~ writeLogFile($logFile, "Begin active and move win: " & $mainName)
+	Local $expected = $mainName
+	Local $list = WinList()
+	Local $i
+
+	For $i = 1 To $list[0][0]
+		; so sánh tuyệt đối
+		If $list[$i][0] = $expected Then
+			WinClose($list[$i][1])
+			;~ resizeGame($list[$i][1])
+			secondWait(2)
+			Return True
+		EndIf
+	Next
+
+	writeLogFile($logFile, "Không tìm thấy MU đúng title: " & $expected)
+	Return False
+EndFunc   ;==>closeWinExact
+
 Func activeAndMoveWinByChar($charName)
 	;~ writeLogFile($logFile, "Begin active and move win by char: " & $charName)
 	$mainName = getMainNoByChar($charName)

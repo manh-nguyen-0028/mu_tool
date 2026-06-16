@@ -295,7 +295,7 @@ EndFunc   ;==>processLogin
 Func closeExistingGameWindow()
 	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
 	Local $sLauncherTitle = "MU GamethuVN - Season 21"
-	Return closeWinByExactTitle($sLauncherTitle, 10)
+	Return closeWinExact($sLauncherTitle)
 EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()
