@@ -925,6 +925,37 @@ Func checkActiveWin($mainName)
 	Return $result
 EndFunc
 
+; Method: closeWinByExactTitle
+; Description: Dong cua so theo title chinh xac (khong dung prefix), cho toi da timeoutSec giay
+Func closeWinByExactTitle($gameTitle, $timeoutSec = 10)
+	If $gameTitle = "" Then
+		writeLogFile($logFile, "LỖI: gameTitle rỗng, không thể đóng cửa sổ")
+		Return False
+	EndIf
+
+	If Not WinExists($gameTitle) Then
+		writeLogFile($logFile, "Không tìm thấy cửa sổ cần đóng: " & $gameTitle)
+		Return True
+	EndIf
+
+	writeLogFile($logFile, "Thực hiện WinClose đúng title: " & $gameTitle)
+	WinClose($gameTitle)
+
+	Local $iWaitCount = 0
+	While $iWaitCount < $timeoutSec
+		If Not WinExists($gameTitle) Then
+			writeLogFile($logFile, "✓ Đã đóng cửa sổ: " & $gameTitle)
+			Return True
+		EndIf
+
+		$iWaitCount += 1
+		secondWait(1)
+	WEnd
+
+	writeLogFile($logFile, "LỖI: Không thể đóng cửa sổ " & $gameTitle & " sau " & $timeoutSec & " giây")
+	Return False
+EndFunc
+
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)

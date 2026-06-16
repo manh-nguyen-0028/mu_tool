@@ -293,50 +293,9 @@ EndFunc   ;==>processLogin
 ; ============ PHASE 3: LOGIN STEPS (9 HAM) ============
 
 Func closeExistingGameWindow()
-	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Đóng các cửa sổ MU tồn tại trước khi login")
-
-	Local $sGamePrefix = "MU GamethuVN - Season 21"
-	Local $aWindowList = WinList()
-	Local $iClosedCount = 0
-
-	For $i = 1 To $aWindowList[0][0]
-		Local $sWindowTitle = $aWindowList[$i][0]
-		Local $hWindow = $aWindowList[$i][1]
-
-		If $sWindowTitle <> "" And StringInStr($sWindowTitle, $sGamePrefix) Then
-			writeLogFile($logFile, "Thực hiện WinClose: " & $sWindowTitle)
-			WinClose($hWindow)
-			$iClosedCount += 1
-		EndIf
-	Next
-
-	If $iClosedCount = 0 Then
-		writeLogFile($logFile, "Không có cửa sổ MU nào đang mở")
-		Return True
-	EndIf
-
-	Local $iWaitCount = 0
-	While $iWaitCount < 10
-		Local $bStillExists = False
-		$aWindowList = WinList()
-		For $i = 1 To $aWindowList[0][0]
-			If $aWindowList[$i][0] <> "" And StringInStr($aWindowList[$i][0], $sGamePrefix) Then
-				$bStillExists = True
-				ExitLoop
-			EndIf
-		Next
-
-		If Not $bStillExists Then
-			writeLogFile($logFile, "✓ Đã đóng toàn bộ cửa sổ MU trước khi login")
-			Return True
-		EndIf
-
-		$iWaitCount += 1
-		secondWait(1)
-	WEnd
-
-	writeLogFile($logFile, "LỖI: Không thể đóng hết cửa sổ MU sau khi chờ 10 giây")
-	Return False
+	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
+	Local $sLauncherTitle = "MU GamethuVN - Season 21"
+	Return closeWinByExactTitle($sLauncherTitle, 10)
 EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()

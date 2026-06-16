@@ -1,7 +1,7 @@
 ﻿# Plan: Xây Dựng Tính Năng Login Game (Từ Đầu)
 
 ## TL;DR
-Xây dựng auto login game từ đầu theo 12 bước chính (có tách xử lý nhỏ theo sub-step). Trước mỗi account sẽ kiểm tra cửa sổ `MU GamethuVN - Season 21`, nếu đang tồn tại thì tắt bỏ. Khi vào `processLogin`, sẽ pre-check xem trong cùng tài khoản đã có main nào active chưa; nếu có thì coi như đã login và bỏ qua account đó. Sau đó mới mở game → login → chọn server → chọn character → kiểm tra character đúng không (qua `char_in_account.txt`) → nếu đúng thì F8 để đóng game và ghi report success, nếu sai thì F8 + retry → ghi report. Tái sử dụng hàm từ `game_utils.au3` và `common_utils.au3`.
+Xây dựng auto login game từ đầu theo 12 bước chính (có tách xử lý nhỏ theo sub-step). Trước mỗi account sẽ kiểm tra cửa sổ `MU GamethuVN - Season 21`, nếu đang tồn tại thì tắt bỏ theo title chính xác (exact match) qua hàm dùng chung trong `game_utils`. Khi vào `processLogin`, sẽ pre-check xem trong cùng tài khoản đã có main nào active chưa; nếu có thì coi như đã login và bỏ qua account đó. Sau đó mới mở game → login → chọn server → chọn character → kiểm tra character đúng không (qua `char_in_account.txt`) → nếu đúng thì minimize main và ghi report success, nếu sai thì F8 + retry → ghi report. Tái sử dụng hàm từ `game_utils.au3` và `common_utils.au3`.
 
 ---
 
@@ -162,15 +162,16 @@ processAutoLogin()
 3. ✅ `checkActiveOtherChar("char1")` → trả về đúng format `charFound|numberChar` (ví dụ: `JoyBoy|2`)
 4. ✅ Parse `StringSplit(checkActiveOtherChar("char1"), "|")[1/2]` → lấy đúng `charFound` và `numberChar`
 5. ✅ `verifyCharacterLoaded("char1")` → kiểm tra character active đúng hay sai
-6. ✅ Trong `processLogin()`: khi `verifyCharacterLoaded(...) = True` thì phải gọi `sendKeyF8()` trước khi ghi report `success`
+6. ✅ Trong `processLogin()`: khi `verifyCharacterLoaded(...) = True` thì phải gọi `minisizeMainByChar(...)` trước khi ghi report `success`
+7. ✅ `closeWinByExactTitle("MU GamethuVN - Season 21", timeout)` chỉ đóng đúng title chính xác, không đóng các title có hậu tố như `... - char`
 
 ### Integration Tests
-7. ✅ **Success case**: Mở game → login → chọn server → chọn char ĐÚNG → verify PASS → send F8 → report "success"
-8. ✅ **Wrong character case**: Mở game → login → chọn char SAI → verify FAIL → F8 → retry → lần 2 PASS → report "retry_success"
-9. ✅ **Timeout case**: Game không mở → ghi log "game_exe_not_found" → skip account
-10. ✅ **Wrong password case**: Invalid user/pass → ghi log error → skip account
-11. ✅ **Already logged case**: `checkActiveWinByChar(char hiện tại)` hoặc `checkActiveOtherChar(currentChar)` tìm thấy main active → skip login flow → report "already_logged_in"
-12. ✅ **Multiple accounts**: Loop 3+ account, mỗi account login thành công → report có 3+ dòng
+8. ✅ **Success case**: Mở game → login → chọn server → chọn char ĐÚNG → verify PASS → minimize main → report "success"
+9. ✅ **Wrong character case**: Mở game → login → chọn char SAI → verify FAIL → F8 → retry → lần 2 PASS → report "retry_success"
+10. ✅ **Timeout case**: Game không mở → ghi log "game_exe_not_found" → skip account
+11. ✅ **Wrong password case**: Invalid user/pass → ghi log error → skip account
+12. ✅ **Already logged case**: `checkActiveWinByChar(char hiện tại)` hoặc `checkActiveOtherChar(currentChar)` tìm thấy main active → skip login flow → report "already_logged_in"
+13. ✅ **Multiple accounts**: Loop 3+ account, mỗi account login thành công → report có 3+ dòng
 
 ---
 
@@ -178,7 +179,8 @@ processAutoLogin()
 
 ✅ **Xây dựng từ đầu** — Không tái sử dụng logic cũ, thiết kế clean theo 12 bước chính
 ✅ **Character verification qua char_in_account.txt** — So sánh danh sách, không cần image detection
-✅ **F8 logic sau verify** — Character ĐÚNG: F8 để đóng game rồi ghi success; Character SAI: F8 + retry
+✅ **Logic sau verify** — Character ĐÚNG: minimize main rồi ghi success; Character SAI: F8 + retry
+✅ **Close launcher theo exact title** — Dùng `closeWinByExactTitle(gameTitle, timeoutSec)` trong `game_utils` để tránh đóng nhầm cửa sổ có hậu tố char
 ✅ **Error handling: Skip account** — Ghi log, tiếp tục account kế tiếp (không retry vô hạn)
 ✅ **Reuse utility functions** — game_utils và common_utils functions
 
