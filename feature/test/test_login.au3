@@ -37,7 +37,7 @@ $logFile = $hTestLog
 ;~ testStep02_getLoginProperty("button_add_account_x")
 ;~ testStep03_getServerNumberFirstActive()
 ;~ testStep04_getCharInAccountFirstActive()
-;~ testStep05_processAutoLoginManual()
+testStep05_processAutoLoginManual()
 ;~ testStep06_processLoginFirstActiveManual()
 ;~ testStep07_runGameExeManual()
 ;~ testStep08_clickButtonStartManual()
@@ -59,6 +59,7 @@ $logFile = $hTestLog
 ;~ testCase01_getLoginProperties()
 ;~ testCase02_getCharInAccount("char1")
 ;~ testCase03_verifyCharacterWindow("char1")
+;~ testCase03b_closeWinByExactTitle()
 
 ; Integration tests (can chuan bi du lieu truoc)
 ;~ testCase04_successCase()
@@ -380,6 +381,36 @@ Func testCase03_verifyCharacterWindow($charName)
     Next
 
     writeLogFile($hTestLog, "[FAIL] Khong tim thay cua so game de verify")
+    Return False
+EndFunc
+
+Func testCase03b_closeWinByExactTitle()
+    writeLogFile($hTestLog, "[CASE-03B] closeWinByExactTitle() chi dong exact title")
+
+    Local $sExactTitle = "UNITTEST_MU_LAUNCHER_EXACT"
+    Local $sOtherTitle = $sExactTitle & " - char_demo"
+
+    Local $hExact = GUICreate($sExactTitle, 300, 120)
+    Local $hOther = GUICreate($sOtherTitle, 300, 120)
+    GUISetState(@SW_SHOW, $hExact)
+    GUISetState(@SW_SHOW, $hOther)
+    secondWait(1)
+
+    Local $bCloseResult = closeWinByExactTitle($sExactTitle, 3)
+    Local $bExactClosed = Not WinExists($sExactTitle)
+    Local $bOtherStillOpen = WinExists($sOtherTitle)
+
+    ; Cleanup cua so test con lai
+    If WinExists($sOtherTitle) Then GUIDelete($hOther)
+    If WinExists($sExactTitle) Then GUIDelete($hExact)
+
+    If $bCloseResult And $bExactClosed And $bOtherStillOpen Then
+        writeLogFile($hTestLog, "[PASS] Dong dung exact title, khong dong title co hau to")
+        Return True
+    EndIf
+
+    writeLogFile($hTestLog, "[FAIL] closeWinByExactTitle khong dung ky vong")
+    writeLogFile($hTestLog, "[INFO] bCloseResult=" & $bCloseResult & " | bExactClosed=" & $bExactClosed & " | bOtherStillOpen=" & $bOtherStillOpen)
     Return False
 EndFunc
 

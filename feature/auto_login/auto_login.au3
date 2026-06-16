@@ -221,7 +221,7 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 
 	If Not closeExistingGameWindow() Then
 		writeLoginReport($sUsername, $sCharName, "failed_close_existing_window", $iServerNo, $iChannelNo)
-		Return False
+		;~ Return False
 	EndIf
 
 	If Not runGameExe() Then
@@ -295,7 +295,7 @@ EndFunc   ;==>processLogin
 Func closeExistingGameWindow()
 	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
 	Local $sLauncherTitle = "MU GamethuVN - Season 21"
-	Return closeWinByExactTitle($sLauncherTitle, 10)
+	Return closeWinExact($sLauncherTitle)
 EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()
