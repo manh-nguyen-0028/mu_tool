@@ -401,7 +401,8 @@ Func processFastJoinAccounts($aCharJoinDevil)
 				; Move other map
 				moveOtherMap($charName)
 				; follow leader then auto plus
-				followLeadThenStartAutoPlus($charName, $onAutoPlus)
+				$timeWaitFollowLeader = _JSONGet($aCharJoinDevil[$i], "time_wait_after_follow")
+				followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
 				;~ If $needCheckAutoZ Then checkAutoZAfterFollowLead()
 				sendKeyF8()
 				writeLogFile($logFile, "Account: " & $charName & " - Fast move thanh cong")
@@ -510,7 +511,7 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 			Else
 				writeLogFile($logFile, "Char: " & $charName & " khong vao dc devil")
 				$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
-				actionWhenCantJoinDevil($isNeedFollowLeader)
+				actionWhenCantJoinDevil($jsonAccountActiveDevil[$i])
 			EndIf
 			$charInfo = $jsonAccountActiveDevil[$i]
 			Local $charName = _JSONGet($charInfo, "char_name")

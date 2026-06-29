@@ -181,7 +181,8 @@ Func sendEnterThenClickCenter()
 	Return True
 EndFunc
 
-Func actionWhenCantJoinDevil($isNeedFollowLeader)
+Func actionWhenCantJoinDevil($charInfo)
+	$isNeedFollowLeader = _JSONGet($charInfo, "is_need_follow_leader")
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendEnterThenClickCenter()
 	; Close popup event devil 239, 126
@@ -193,13 +194,13 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
-		;~ checkAutoZAfterFollowLead(True)
+		checkAutoZAfterFollowLead($charInfo, True)
 	EndIf
 	Return True
 EndFunc   ;==>actionWhenCantJoinDevil
 
 Func checkAutoZAfterFollowLead($charInfo, $needCheck = False)
-	Local $timeWaitAfterFollow = getTimeWaitAfterFollowByDevilConfig($charInfo)
+	Local $timeWaitAfterFollow = getTimeWaitAfterFollowLead($charInfo)
 
 	If $needCheck Then
 		secondWait($timeWaitAfterFollow)
@@ -211,7 +212,7 @@ Func checkAutoZAfterFollowLead($charInfo, $needCheck = False)
 	EndIf
 EndFunc   ;==>checkAutoZAfterFollowLead
 
-Func getTimeWaitAfterFollowByDevilConfig($charInfo)
+Func getTimeWaitAfterFollowLead($charInfo)
 	Local $timeWaitAfterFollow = 10
 	Local $configWait = Number(_JSONGet($charInfo, "time_wait_after_follow"))
 	If $configWait > 0 Then $timeWaitAfterFollow = $configWait
@@ -1327,13 +1328,15 @@ Func _clickServerChoice($serverNumber)
     Return True
 EndFunc   ;==>_clickServerChoice
 
-Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+Func followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
 	; Thuc hien click vao giua man hinh truoc da
 	clickCenterChar()
 	; follow leader
 	_MU_followLeader(1)
 	; start auto plus
 	If $onAutoPlus Then startAutoPlus()
+
+	secondWait($timeWaitFollowLeader)
 EndFunc
 
 Func handleIsNotMainChar($oAccountInfo)
