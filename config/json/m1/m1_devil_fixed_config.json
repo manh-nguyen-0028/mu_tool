@@ -1,0 +1,6 @@
+[
+  {"have_quest": false,"char_name":"BacThay", "max_hour_go":25,"main_char_name": "zDarkSuol","is_check_400lv": false,"have_ruong_k":true},
+  {"have_quest": false,"char_name":"GiamDocSo", "max_hour_go":25,"main_char_name": "zDarkSuol","is_check_400lv": false,"have_ruong_k":true},
+  {"have_quest": false,"char_name":"TamGiaoChu", "max_hour_go":25,"main_char_name": "QueHaTay","is_check_400lv": false,"have_ruong_k":true},
+  {"have_quest": false,"char_name":"KimTieuQuy", "max_hour_go":25,"main_char_name": "CaKiem","is_check_400lv": false,"have_ruong_k":true}
+]

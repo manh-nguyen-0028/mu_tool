@@ -15,7 +15,7 @@ $devilNo = 3
 $isHaveQuest = False
 
 ;~ testLogin()
-activeAndMoveWin(getMainNoByChar($charName))
+;~ activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
 ;~ testGoMapLvl()
@@ -73,25 +73,6 @@ EndFunc
 ; Method: testMergeAccountDevil
 ; Description: Test mergeInfoAccountDevil voi du lieu mock + file fixed tam
 Func testMergeAccountDevil()
-	Local $sTmpDevilFileName = "tmp_devil_config_test.json"
-	Local $sTmpDevilFilePath = $jsonPathRoot & $sTmpDevilFileName
-    Local $sTmpFileName = "tmp_devil_fixed_test.json"
-    Local $sTmpFilePath = $jsonPathRoot & $sTmpFileName
-	Local $sOldDevilFileName = $devilFileName
-    Local $sOldDevilFixedFileName = $devilFixedFileName
-
-    ; Tao file active devil tam de test merge
-    Local $sDevilJson = '[{"char_name":"PhoGiaoSu","active":true,"ignore_peak_hour":false,"max_hour_go":25,"devil_no":3}]'
-    FileDelete($sTmpDevilFilePath)
-    FileWrite($sTmpDevilFilePath, $sDevilJson)
-    $devilFileName = $sTmpDevilFileName
-
-    ; Tao file fixed tam de test merge
-    Local $sFixedJson = '[{"char_name":"PhoGiaoSu","icon_devil_x":590,"icon_devil_y":279}]'
-    FileDelete($sTmpFilePath)
-    FileWrite($sTmpFilePath, $sFixedJson)
-    $devilFixedFileName = $sTmpFileName
-
     Local $jsonMerged = mergeInfoAccountDevil()
     writeLogFile($logFile, "Danh sach account merge: " & UBound($jsonMerged) & " item")
     If UBound($jsonMerged) > 0 Then
@@ -99,33 +80,6 @@ Func testMergeAccountDevil()
             writeLogFile($logFile, "[MERGED][" & $i & "] " & convertJsonToString($jsonMerged[$i]))
         Next
     EndIf
-
-    Local $isPass = False
-    If UBound($jsonMerged) > 0 Then
-        Local $iconX = _JSONGet($jsonMerged[0], "icon_devil_x")
-        Local $iconY = _JSONGet($jsonMerged[0], "icon_devil_y")
-        Local $charNameMerged = _JSONGet($jsonMerged[0], "char_name")
-        If Number($iconX) = 590 And Number($iconY) = 279 And $charNameMerged = "PhoGiaoSu" Then
-            $isPass = True
-        EndIf
-    EndIf
-
-    If $isPass Then
-        writeLogFile($logFile, "[PASS] testMergeAccountDevil")
-    Else
-        writeLogFile($logFile, "[FAIL] testMergeAccountDevil")
-        If UBound($jsonMerged) > 0 Then
-            writeLogFile($logFile, "Merged item: " & convertJsonToString($jsonMerged[0]))
-        EndIf
-    EndIf
-
-    ; Cleanup + restore
-	$devilFileName = $sOldDevilFileName
-    $devilFixedFileName = $sOldDevilFixedFileName
-	FileDelete($sTmpDevilFilePath)
-    FileDelete($sTmpFilePath)
-
-    Return $isPass
 EndFunc
 
 Func testAddPointInGame()

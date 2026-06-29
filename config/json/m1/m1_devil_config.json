@@ -1,7 +1,6 @@
 [
-{"active":false,"have_ruong_k": true,"have_quest": false,"char_name":"PhoGiaoSu","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "CeII","is_check_400lv": false,"is_need_follow_leader": true},
-{"active":false,"have_ruong_k": true,"have_quest": false,"char_name":"PhoTuong","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "BuHotLe","is_check_400lv": false,"is_need_follow_leader": true},
-{"active":true,"have_ruong_k": true,"have_quest": false,"char_name":"Marcos","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": true,"main_char_name": "xxx11","is_check_400lv": false,"is_need_follow_leader": true},
-{"active":true,"have_ruong_k": true,"have_quest": false,"char_name":"PhoGiaoSu","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": false,"main_char_name": "xxx11","is_check_400lv": false,"is_need_follow_leader": true},
-{"active":true,"have_ruong_k": true,"have_quest": false,"char_name":"YaeMiko","devil_no":4,"ignore_peak_hour":false,"is_fast_join":false, "max_hour_go":25,"switch_other_main": false,"main_char_name": "Miyoko","is_check_400lv": false,"is_need_follow_leader": true}
+{"active":true,"char_name":"BacThay","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":false,"char_name":"GiamDocSo","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":true,"char_name":"TamGiaoChu","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false},
+{"active":true,"char_name":"KimTieuQuy","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": false,"on_auto_plus": false}
 ]
