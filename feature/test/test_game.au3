@@ -6,18 +6,18 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="Shakky"
+$charName="BlueDragon"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
-Local $sDevilJson = '[{"char_name":"PhoGiaoSu","active":true,"ignore_peak_hour":false,"max_hour_go":25,"devil_no":3}]'
-Local $sFixedJson = '[{"char_name":"PhoGiaoSu","icon_devil_x":590,"icon_devil_y":279}]'
+Local $sDevilJson = '[{"active":true,"char_name":"BlueDragon","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false}]'
+Local $sFixedJson = '[{"have_quest": false,"char_name":"BlueDragon", "max_hour_go":25,"main_char_name": "BlueDragon","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": true, "icon_devil_x": 109, "icon_devil_y": 165, "time_wait_after_follow": 70}]'
 
 ;~ testLogin()
-;~ activeAndMoveWin(getMainNoByChar($charName))
+activeAndMoveWin(getMainNoByChar($charName))
 
 ;~ activeAllMainActive()
 ;~ testGoMapLvl()
@@ -27,7 +27,7 @@ Local $sFixedJson = '[{"char_name":"PhoGiaoSu","icon_devil_x":590,"icon_devil_y"
 ;~ testReturnChar()
 ;~ testMoveOtherMap()
 ;~ testFollowLead($charName)
-;~ testClickDevil($charName)
+testClickDevil($charName)
 ;~ testChangeServer($charName)
 ;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
@@ -50,7 +50,7 @@ Local $sFixedJson = '[{"char_name":"PhoGiaoSu","icon_devil_x":590,"icon_devil_y"
 ;~ testSplitString()
 ;~ testChangeThenReturnChar($charName)
 ;~ testcheckLvl400($charName)
-testMergeAccountDevil()
+;~ testMergeAccountDevil()
 
 ;~ quickTest()
 
@@ -100,8 +100,9 @@ Func testClickDevil($charName)
     ; tao array $charInfo tu du lieu mock
     Local $jsonDevilJson = getJsonFromText($sDevilJson)
     Local $jsonDevilFixed = getJsonFromText($sFixedJson)
-    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)
-        
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)[0]
+    ; ket qua mergeInfoAccountDevilCommon tra ve la 1 object dictionary, co key la char_name, value la 1 object dictionary chua thong tin cua char do
+    ;~ writeLog(convertJsonToString($charInfo))
     clickIconDevil($charInfo)
     Return True
 EndFunc
@@ -139,7 +140,7 @@ Func testSearchNPC()
     Local $npcX = 0, $npcY = 0
     Local $jsonDevilJson = getJsonFromText($sDevilJson)
     Local $jsonDevilFixed = getJsonFromText($sFixedJson)
-    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)[0]
     
     If searchNpcDevil($charInfo, $npcX, $npcY) Then
         MouseMove($npcX, $npcY)
