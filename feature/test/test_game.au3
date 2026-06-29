@@ -13,6 +13,8 @@ $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
+Local $sDevilJson = '[{"char_name":"PhoGiaoSu","active":true,"ignore_peak_hour":false,"max_hour_go":25,"devil_no":3}]'
+Local $sFixedJson = '[{"char_name":"PhoGiaoSu","icon_devil_x":590,"icon_devil_y":279}]'
 
 ;~ testLogin()
 ;~ activeAndMoveWin(getMainNoByChar($charName))
@@ -94,8 +96,13 @@ Func testFollowLead($charName)
 EndFunc
 
 Func testClickDevil($charName)
-    activeAndMoveWin(getMainNoByChar($charName))    
-    clickIconDevil($charName, true, $isHaveQuest)
+    activeAndMoveWin(getMainNoByChar($charName))
+    ; tao array $charInfo tu du lieu mock
+    Local $jsonDevilJson = getJsonFromText($sDevilJson)
+    Local $jsonDevilFixed = getJsonFromText($sFixedJson)
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)
+        
+    clickIconDevil($charInfo)
     Return True
 EndFunc
 
@@ -130,7 +137,11 @@ EndFunc
 
 Func testSearchNPC()
     Local $npcX = 0, $npcY = 0
-    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+    Local $jsonDevilJson = getJsonFromText($sDevilJson)
+    Local $jsonDevilFixed = getJsonFromText($sFixedJson)
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)
+    
+    If searchNpcDevil($charInfo, $npcX, $npcY) Then
         MouseMove($npcX, $npcY)
         secondWait(1)
     EndIf
@@ -138,7 +149,13 @@ EndFunc
 Func testSearchNPCThenClick()
     secondWait(1)
     Local $npcX = 0, $npcY = 0
-    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+    Local $charInfo = ObjCreate("Scripting.Dictionary")
+    $charInfo.Item("char_name") = $charName
+    $charInfo.Item("have_ruong_k") = $checkRuongK
+    $charInfo.Item("devil_no") = $devilNo
+    $charInfo.Item("have_quest") = $isHaveQuest
+    
+    If searchNpcDevil($charInfo, $npcX, $npcY) Then
         MouseMove($npcX, $npcY)
         secondWait(1)
         ; Click into NPC devil

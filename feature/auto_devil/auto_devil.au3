@@ -315,12 +315,12 @@ Func processGoEventDevil()
 			;~ EndIf
 
 			; Bat dau click icon devil
-			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			clickIconDevil($jsonAccountActiveDevil[$i])
 			secondWait(1)
 
 			; Check and click into NPC devil
 			Local $npcX = 0, $npcY = 0
-			If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+			If searchNpcDevil($jsonAccountActiveDevil[$i], $npcX, $npcY) Then
 				MouseMove($npcX, $npcY)
 				secondWait(1)
 				; Click into NPC devil

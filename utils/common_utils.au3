@@ -510,6 +510,10 @@ Func getJsonFromFile($filePath)
 	Return $json
 EndFunc
 
+Func getJsonFromText($text)
+	Return _JSONDecode($text)
+EndFunc
+
 ; Method: getPropertyJson
 ; Description: Retrieves a property value from a JSON object.
 Func getPropertyJson($json, $propertyName)
@@ -642,6 +646,11 @@ Func mergeInfoAccountDevil()
 	EndIf
 
 	$jsonDevilFixed = getJsonFromFile($devilFixedPath)
+	
+	Return mergeInfoAccountDevilCommon($jsonAccountActiveDevil, $jsonDevilFixed)
+EndFunc
+
+Func mergeInfoAccountDevilCommon($jsonAccountActiveDevil, $jsonDevilFixed)
 	If UBound($jsonAccountActiveDevil) > 0 And UBound($jsonDevilFixed) > 0 Then
 		Return merge2Array($jsonAccountActiveDevil, $jsonDevilFixed)
 	EndIf

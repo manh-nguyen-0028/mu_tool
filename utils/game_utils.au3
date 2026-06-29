@@ -358,8 +358,16 @@ Func checkRuongK($charInfo)
 	Return $result
 EndFunc   ;==>checkRuongK
 
-Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+Func clickIconDevil($charInfo)
+	$charName = _JSONGet($charInfo, "char_name")
+	$checkRuongK = _JSONGet($charInfo, "have_ruong_k")
+	$isHaveQuest = _JSONGet($charInfo, "have_quest")
 	$mainNo = getMainNoByChar($charName)
+	$fixedCoordFirst = _JSONGet($charInfo, "fixed_coord_first")
+	$iconDevilPriorityX = _JSONGet($charInfo, "icon_devil_x")
+	$iconDevilPriorityY = _JSONGet($charInfo, "icon_devil_y")
+
+
 	activeAndMoveWinByChar($charName)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
@@ -376,14 +384,26 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	ElseIf Not $haveIp And Not $haveAddPoint Then
 		$typeCheck = 3
 	EndIf
-	clickIconDevilByCondition($typeCheck, $isHaveQuest)
+	$devilIconX = 0 
+	$devilIconY = 0
+	clickIconDevilByCondition($typeCheck, $isHaveQuest, $devilIconX, $devilIconY)
+
+	; Thay doi cach lay toa do icon devil, neu co toa do uu tien "fixed_coord_first": true thi de lay toa do fixed ("icon_devil_x" va "icon_devil_y")
+	If $fixedCoordFirst Then
+			$devilIconX = $iconDevilPriorityX
+			$devilIconY = $iconDevilPriorityY
+	EndIf
+	; Click vao icon event devil 2 lan de chac an
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($devilIconX, $devilIconY)
+	Next
 
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	secondWait(1)
 EndFunc   ;==>clickIconDevil
 
-Func clickIconDevilByCondition($type, $isHaveQuest)
+Func clickIconDevilByCondition($type, $isHaveQuest, ByRef $devilIconX, ByRef $devilIconY)
 	; 1. co ip, co ruong k, co + diem
 	; 2. co ip, co ruong k, chua + diem
 	; 3. co ip, co ruong k, co + diem
@@ -409,9 +429,6 @@ Func clickIconDevilByCondition($type, $isHaveQuest)
 		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_3")
 		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_3")
 	EndIf
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay($devilIconX, $devilIconY)
-	Next
 	Return True
 EndFunc   ;==>clickIconDevilByCondition
 
@@ -730,7 +747,12 @@ EndFunc
 
 ; Method: searchNpcDevil
 ; Description: Tìm kiếm NPC Devil, thử di chuyển và click icon devil nếu không thấy
-Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX, ByRef $npcY)
+Func searchNpcDevil($charInfo, ByRef $npcX, ByRef $npcY)
+	$charName = _JSONGet($charInfo, "char_name")
+	$checkRuongK = _JSONGet($charInfo, "have_ruong_k")
+	$isHaveQuest = _JSONGet($charInfo, "have_quest")
+	$devilNo = _JSONGet($charInfo, "devil_no")
+	
 	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
 	$result = False
 
@@ -744,7 +766,7 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX
 		;~ EndIf
 
 		If $npcSearch = 0 Then
-			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			clickIconDevil($charInfo)
 			$totalSearch = $totalSearch + 1
 		Else
 			; Truong hop thay roi thi thoat khoi vong lap
