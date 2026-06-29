@@ -23,8 +23,14 @@
       "button_start_y": 693,
       "button_login_x": 1212,
       "button_login_y": 693,
+      "button_outer_add_account_x": 0,
+      "button_outer_add_account_y": 0,
+      "button_outer_add_account_check_x": 639,
+      "button_outer_add_account_check_y": 467,
+      "button_outer_add_account_check_color": "0xFFFFFF",
+      "button_outer_add_account_check_max_retry": 10,
       "button_delete_account_x": 351,
-    		  "button_delete_account_y": 345,
+    	"button_delete_account_y": 345,
       "button_add_account_x": 0,
       "button_add_account_y": 0,
       "input_username_x": 0,
@@ -75,7 +81,9 @@
       "add_point_x": 429,
       "add_point_y": 178,
       "add_point_confirm_x": 356,
-      "add_point_confirm_y": 445
+      "add_point_confirm_y": 445,
+      "add_point_confirm_dl_x": 356,
+      "add_point_confirm_dl_y": 445
     },
     "train_in_game": {
       "button_x": 100,

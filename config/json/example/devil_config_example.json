@@ -13,6 +13,7 @@
       "is_need_follow_leader": true,
       "on_auto_plus": false,
       "need_check_auto_z": false,
+      "time_wait_after_follow": 10,
       "max_hour_go": 25
     },
     {
@@ -29,6 +30,7 @@
       "is_need_follow_leader": true,
       "on_auto_plus": false,
       "need_check_auto_z": false,
+      "time_wait_after_follow": 10,
       "max_hour_go": 25
     }
   ]

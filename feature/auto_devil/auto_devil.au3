@@ -15,7 +15,7 @@ start()
 Func start()
 	$sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+	$jsonAccountActiveDevil = mergeInfoAccountDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
 	If UBound($jsonAccountActiveDevil) > 0 Then processGoDevil()
 	FileClose($logFile)
@@ -235,7 +235,7 @@ Func getListFastMove($jsonAccountActiveDevil)
 EndFunc
 
 Func reloadArrayActive()
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+	$jsonAccountActiveDevil = mergeInfoAccountDevil()
 	writeLogFile($logFile, "So luong account active: " & UBound($jsonAccountActiveDevil))
 	Return $jsonAccountActiveDevil
 EndFunc
@@ -475,7 +475,7 @@ Func handleAfterDevilEvent($aCharJoinDevil)
 					EndIf
 
 					; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
-					checkAutoZAfterFollowLead()
+					checkAutoZAfterFollowLead($aCharJoinDevil[$i])
 				Else
 					writeLogFile($logFile, "Char: " & $charName & " - khong can follow leader => Ket thuc xu ly")
 				EndIf

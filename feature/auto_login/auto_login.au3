@@ -8,19 +8,22 @@
 
 ; ===========================================================================
 ; AUTO LOGIN GAME - XUAT PHAT TU DAU
+; PRE-CHECK 2 LOP:
+; - Truoc processLogin: neu da co main active cung tai khoan thi skip
+; - Trong processLogin: double-check lai truoc khi thuc hien Step 1
 ; 12 BUOC LOGIN:
-; 1. Mo chuong trinh theo common.game.exe_path, cho 5s va click OK popup loi theo config
-; 2. Dung ControlClick vao button Start cua launcher
-; 3. Active va move cua so launcher/game
-; 4. Click xoa account o vi tri so 2 4 lan, sau do click vao button them tai khoan
-; 5. Nhap username / password, cho 2 giay roi nhan Enter
-; 6. Click vao vi tri tai khoan dau tien
-; 7. Cho man hinh load user theo button.login.wait_load_user_sec
-; 8. Thuc hien chon server su dung returnServer($serverNumber)
-; 9. Su dung returnChar de chon nhan vat vao game
-; 10. Kiem tra xem nhan vat dang nhap co la nhan vat chinh hoac nhan vat trong tai khoan hay khong
-; 11. Neu co window cung tai khoan va character SAI -> sendKeyF8()
-; 12. Ghi update status user da login vao output/report_user_login.txt
+; 1. closeExistingGameWindow
+; 2. runGameExe
+; 3. clickButtonStart
+; 4. activeAndMoveGameWindow
+; 5. checkPopupLogin
+; 6. processLoginAccount
+; 7. waitLoadUser
+; 8. selectServer
+; 9. selectCharacter
+; 10. verifyCharacterLoaded
+; 11. handleWrongCharacter
+; 12. writeLoginReport
 ; ===========================================================================
 
 ; Global variables
@@ -30,6 +33,32 @@ Global $logFile
 Global $jAccountLoginConfig
 Global $iRetryCount = 0
 Global Const $MAX_RETRY = 1
+
+; Method: preCheckActiveMainInSameAccount
+; Description: Kiem tra trong cung tai khoan da co main nao dang active hay chua
+Func preCheckActiveMainInSameAccount($sCharName)
+	; Kiem tra nhanh main hien tai
+	If checkActiveWinByChar($sCharName) Then
+		writeLogFile($logFile, "Đã có main active: " & $sCharName)
+		Return True
+	EndIf
+
+	; Dung method trong game_utils de tim main khac cung account dang active
+	Local $currentChar = $sCharName
+	Local $charNameOtherChar = checkActiveOtherChar($currentChar)
+	; $charNameOtherChar: JoyBoy|2 - > charFound: JoyBoy - numberChar: 2
+	Local $charFound = StringSplit($charNameOtherChar, "|")[1]
+	Local $numberChar = StringSplit($charNameOtherChar, "|")[2]
+
+	writeLogFile($logFile, "preCheckActiveMainInSameAccount -> charFound=" & $charFound & " | numberChar=" & $numberChar)
+
+	If $charFound <> "" Then
+		writeLogFile($logFile, "Đã có main active trong cùng account: " & $charFound)
+		Return True
+	EndIf
+
+	Return False
+EndFunc   ;==>preCheckActiveMainInSameAccount
 
 ; ============ PHASE 1: HELPER FUNCTIONS (4 HAM) ============
 
@@ -125,6 +154,16 @@ Func processAutoLogin()
 	If UBound($jAccountLoginConfig) = 0 Then
 		writeLogFile($logFile, "LỖI: Không có account nào để login")
 		Return False
+	Else
+		writeLogFile($logFile, "Tổng account trong config: " & UBound($jAccountLoginConfig))
+		; in ra username va charname, trang thai active cua tung account
+		For $i = 0 To UBound($jAccountLoginConfig) - 1
+			Local $accountConfig = $jAccountLoginConfig[$i]
+			Local $sUsername = getPropertyJson($accountConfig, "username")
+			Local $sCharName = getPropertyJson($accountConfig, "char_name")
+			Local $bActive = getPropertyJson($accountConfig, "active")
+			writeLogFile($logFile, "Account " & ($i + 1) & ": username=" & $sUsername & ", char_name=" & $sCharName & ", active=" & $bActive)
+		Next
 	EndIf
 
 	writeLogFile($logFile, "Tổng account: " & UBound($jAccountLoginConfig))
@@ -148,6 +187,14 @@ Func processAutoLogin()
 		writeLogFile($logFile, "")
 		writeLogFile($logFile, "--- XỬ LÝ ACCOUNT " & ($i + 1) & ": " & $sCharName & " ---")
 
+		; Pre-check truoc khi goi processLogin: neu da co main active cung tai khoan thi bo qua
+		If preCheckActiveMainInSameAccount($sCharName) Then
+			writeLogFile($logFile, "Account " & $sCharName & " đã có main active, bỏ qua login")
+			writeLoginReport($sUsername, $sCharName, "already_logged_in", $iServerNo, getChannelNumber($accountConfig))
+			$iSuccess += 1
+			ContinueLoop
+		EndIf
+
 		$iRetryCount = 0
 		Local $bLoginSuccess = processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 
@@ -170,59 +217,70 @@ EndFunc   ;==>processAutoLogin
 ; Description: Orchestrate 12 steps login
 Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 	writeLogFile($logFile, ">>> processLogin(" & $sCharName & ", server=" & $iServerNo & ")")
+	Local $iChannelNo = getChannelNumber($accountConfig)
+
+	If Not closeExistingGameWindow() Then
+		writeLoginReport($sUsername, $sCharName, "failed_close_existing_window", $iServerNo, $iChannelNo)
+		;~ Return False
+	EndIf
 
 	If Not runGameExe() Then
-		writeLoginReport($sUsername, $sCharName, "failed_game_not_open", $iServerNo, getChannelNumber($accountConfig))
+		writeLoginReport($sUsername, $sCharName, "failed_game_not_open", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
 	If Not clickButtonStart() Then
-		writeLoginReport($sUsername, $sCharName, "failed_button_start", $iServerNo, getChannelNumber($accountConfig))
-		Return False
-	EndIf
-	
-	If Not activeAndMoveWin("MU GamethuVN - Season 21") Then
-		writeLoginReport($sUsername, $sCharName, "failed_window_active", $iServerNo, getChannelNumber($accountConfig))
+		writeLoginReport($sUsername, $sCharName, "failed_button_start", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
-	If Not clickAddAccount() Then
-		writeLoginReport($sUsername, $sCharName, "failed_add_account", $iServerNo, getChannelNumber($accountConfig))
+	If Not activeAndMoveGameWindow() Then
+		writeLoginReport($sUsername, $sCharName, "failed_window_active", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
-	If Not inputCredentials($sUsername, $sPassword) Then
-		writeLoginReport($sUsername, $sCharName, "failed_input_credentials", $iServerNo, getChannelNumber($accountConfig))
+	If Not checkPopupLogin() Then
+		writeLoginReport($sUsername, $sCharName, "failed_check_popup_login", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
-	If Not confirmLogin() Then
-		writeLoginReport($sUsername, $sCharName, "failed_confirm_login", $iServerNo, getChannelNumber($accountConfig))
+	If Not processLoginAccount($sUsername, $sPassword) Then
+		Switch @error
+			Case 1
+				writeLoginReport($sUsername, $sCharName, "failed_add_account", $iServerNo, $iChannelNo)
+			Case 2
+				writeLoginReport($sUsername, $sCharName, "failed_input_credentials", $iServerNo, $iChannelNo)
+			Case 3
+				writeLoginReport($sUsername, $sCharName, "failed_confirm_login", $iServerNo, $iChannelNo)
+			Case Else
+				writeLoginReport($sUsername, $sCharName, "failed_process_login", $iServerNo, $iChannelNo)
+		EndSwitch
 		Return False
 	EndIf
 
 	waitLoadUser()
 
 	If Not selectServer($iServerNo) Then
-		writeLoginReport($sUsername, $sCharName, "failed_select_server", $iServerNo, getChannelNumber($accountConfig))
+		writeLoginReport($sUsername, $sCharName, "failed_select_server", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
 	If Not selectCharacter($sCharName) Then
-		writeLoginReport($sUsername, $sCharName, "failed_select_character", $iServerNo, getChannelNumber($accountConfig))
+		writeLoginReport($sUsername, $sCharName, "failed_select_character", $iServerNo, $iChannelNo)
 		Return False
 	EndIf
 
-	Local $iChannelNo = getChannelNumber($accountConfig)
 	Local $bCharVerified = verifyCharacterLoaded($sCharName)
 
 	If $bCharVerified Then
 		writeLogFile($logFile, "✓ Character " & $sCharName & " login ĐÚNG")
+		writeLogFile($logFile, "Character đúng -> thực hiện minisize main theo flow")
+		minisizeMainByChar($sCharName)
 		writeLoginReport($sUsername, $sCharName, "success", $iServerNo, $iChannelNo)
 		Return True
 	Else
 		writeLogFile($logFile, "✗ Character SAI - Cần F8 và retry")
-		If Not handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo) Then
+		If Not handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig) Then
 			writeLoginReport($sUsername, $sCharName, "failed", $iServerNo, $iChannelNo)
 			Return False
 		Else
@@ -232,10 +290,16 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 	EndIf
 EndFunc   ;==>processLogin
 
-; ============ PHASE 3: LOGIN STEPS (6 HAM) ============
+; ============ PHASE 3: LOGIN STEPS (9 HAM) ============
+
+Func closeExistingGameWindow()
+	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
+	Local $sLauncherTitle = "MU GamethuVN - Season 21"
+	Return closeWinExact($sLauncherTitle)
+EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()
-	writeLogFile($logFile, "Step 1: runGameExe() - Mở game")
+	writeLogFile($logFile, "Step 2: runGameExe() - Mở game")
 
 	Local $sGameExePath = getProperty("common.game.exe_path")
 	If $sGameExePath = "" Then
@@ -248,7 +312,8 @@ Func runGameExe()
 		Return False
 	EndIf
 
-	Local $iPID = Run('"' & $sGameExePath & '"')
+	Local $sDir = StringRegExpReplace($sGameExePath, "\\[^\\]+$", "")
+	Local $iPID = Run('"' & $sGameExePath & '"', $sDir)
 	If $iPID = 0 Then
 		writeLogFile($logFile, "LỖI: Không thể mở game exe: " & $sGameExePath)
 		Return False
@@ -257,8 +322,8 @@ Func runGameExe()
 	WinWait("MU GamethuVN")
 	WinActivate("MU GamethuVN")
 
-	writeLogFile($logFile, "Chờ 5 giây trước khi xử lý popup lỗi")
-	secondWait(5)
+	writeLogFile($logFile, "Chờ 3 giây trước khi xử lý popup lỗi")
+	secondWait(3)
 
 	Local $iPopupErrorOkX = getLoginProperty("popup_error_ok_x")
 	Local $iPopupErrorOkY = getLoginProperty("popup_error_ok_y")
@@ -278,12 +343,12 @@ Func runGameExe()
 	EndIf
 
 	writeLogFile($logFile, "✓ Đã mở game exe, PID: " & $iPID)
-	secondWait(1)
+	secondWait(5)
 	Return True
 EndFunc   ;==>runGameExe
 
 Func clickButtonStart()
-	writeLogFile($logFile, "Step 2: clickButtonStart() - ControlClick button Start")
+	writeLogFile($logFile, "Step 3: clickButtonStart() - ControlClick button Start")
 
 	Local $sLauncherTitle = "[TITLE:MU GamethuVN - Season 21; CLASS:#32770]"
 	Local $sLauncherControl = "[CLASS:Button; INSTANCE:2]"
@@ -295,13 +360,120 @@ Func clickButtonStart()
 	EndIf
 
 	writeLogFile($logFile, "Đã ControlClick button Start thành công")
-
-	secondWait(10)
+	
 	Return True
 EndFunc   ;==>clickButtonStart
 
+Func activeAndMoveGameWindow()
+	writeLogFile($logFile, "Step 4: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
+	secondWait(2)
+	Local $iElapsedSec = 0
+	Local $bActive = False
+	While $iElapsedSec < 10 And Not $bActive
+		$bActive = activeAndMoveWin("MU GamethuVN - Season 21")
+		If Not $bActive Then
+			writeLogFile($logFile, "Chưa active được window, thử lại sau 1s... (elapsed=" & $iElapsedSec & "s)")
+			secondWait(1)
+			$iElapsedSec += 1
+		EndIf
+	WEnd
+
+	If Not $bActive Then
+		writeLogFile($logFile, "LỖI: Không active/move được launcher window sau " & $iElapsedSec & " giây")
+		Return False
+	Else
+		secondWait(10)
+	EndIf
+
+	Local $iOuterAddAccountX = getLoginProperty("button_outer_add_account_x")
+	Local $iOuterAddAccountY = getLoginProperty("button_outer_add_account_y")
+
+	If $iOuterAddAccountX = Default Or $iOuterAddAccountX = "" Or $iOuterAddAccountY = Default Or $iOuterAddAccountY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy button_outer_add_account_x/y hoặc button_add_account_x/y")
+		Return False
+	EndIf
+
+	$iOuterAddAccountX = Number($iOuterAddAccountX)
+	$iOuterAddAccountY = Number($iOuterAddAccountY)
+
+	writeLogFile($logFile, "Click button thêm tài khoản phía ngoài tại X=" & $iOuterAddAccountX & ", Y=" & $iOuterAddAccountY)
+	_MU_MouseClick_Delay($iOuterAddAccountX, $iOuterAddAccountY)
+	secondWait(1)
+
+	Return True
+EndFunc   ;==>activeAndMoveGameWindow
+
+Func checkPopupLogin()
+	writeLogFile($logFile, "Step 5: checkPopupLogin() - Check pixel popup login")
+
+	Local $iCheckPixelX = getLoginProperty("button_outer_add_account_check_x")
+	Local $iCheckPixelY = getLoginProperty("button_outer_add_account_check_y")
+	Local $sCheckPixelColor = getLoginProperty("button_outer_add_account_check_color")
+	Local $iCheckPixelMaxRetry = getLoginProperty("button_outer_add_account_check_max_retry")
+
+	If $iCheckPixelX = Default Or $iCheckPixelX = "" Or $iCheckPixelY = Default Or $iCheckPixelY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy button_outer_add_account_check_x/y")
+		Return False
+	EndIf
+
+	If $sCheckPixelColor = "" Then
+		$sCheckPixelColor = "0xFFFFFF"
+	EndIf
+
+	If $iCheckPixelMaxRetry = "" Or Number($iCheckPixelMaxRetry) <= 0 Then
+		$iCheckPixelMaxRetry = 10
+	EndIf
+
+	$iCheckPixelX = Number($iCheckPixelX)
+	$iCheckPixelY = Number($iCheckPixelY)
+	$iCheckPixelMaxRetry = Number($iCheckPixelMaxRetry)
+	Local $iExpectedColor = Number($sCheckPixelColor)
+
+	Local $bCheckAddAccount = False
+	Local $iCheckCount = 0
+	While Not $bCheckAddAccount And $iCheckCount < $iCheckPixelMaxRetry
+		If PixelGetColor($iCheckPixelX, $iCheckPixelY) = $iExpectedColor Then
+			$bCheckAddAccount = True
+		Else
+			$iCheckCount += 1
+			If $iCheckCount < $iCheckPixelMaxRetry Then
+				writeLogFile($logFile, "Chua xac nhan duoc mau tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & ", thu lai sau 1s... (lan=" & $iCheckCount & "/" & $iCheckPixelMaxRetry & ")")
+				secondWait(1)
+			EndIf
+		EndIf
+	WEnd
+
+	If Not $bCheckAddAccount Then
+		writeLogFile($logFile, "LỖI: Pixel check tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & " khong phai mau " & $sCheckPixelColor & " sau " & $iCheckPixelMaxRetry & " lan")
+		Return False
+	EndIf
+
+	writeLogFile($logFile, "✓ Pixel check tai X=" & $iCheckPixelX & ", Y=" & $iCheckPixelY & " la " & $sCheckPixelColor & ", Step 5 thanh cong")
+	secondWait(1)
+
+	Return True
+EndFunc   ;==>checkPopupLogin
+
+Func processLoginAccount($sUsername, $sPassword)
+	writeLogFile($logFile, "Step 6: processLoginAccount() - clickAddAccount -> inputCredentials -> confirmLogin")
+
+	If Not clickAddAccount() Then
+		Return SetError(1, 0, False)
+	EndIf
+
+	If Not inputCredentials($sUsername, $sPassword) Then
+		Return SetError(2, 0, False)
+	EndIf
+
+	If Not confirmLogin() Then
+		Return SetError(3, 0, False)
+	EndIf
+
+	Return True
+EndFunc   ;==>processLoginAccount
+
 Func clickAddAccount()
-	writeLogFile($logFile, "Step 4: clickAddAccount() - Xoa account vi tri 2 roi them account")
+	writeLogFile($logFile, "Step 6.1: clickAddAccount() - Xoa account vi tri 2 roi them account")
 
 	Local $iDeleteAccountX = getLoginProperty("button_delete_account_x")
 	Local $iDeleteAccountY = getLoginProperty("button_delete_account_y")
@@ -323,11 +495,13 @@ Func clickAddAccount()
 	$iDeleteAccountY = Number($iDeleteAccountY)
 	$iAddAccountX = Number($iAddAccountX)
 	$iAddAccountY = Number($iAddAccountY)
-
+	
 	For $i = 1 To 4
 		writeLogFile($logFile, "Click xoa account lan " & $i & " tai X=" & $iDeleteAccountX & ", Y=" & $iDeleteAccountY)
 		_MU_MouseClick_Delay($iDeleteAccountX, $iDeleteAccountY)
 		secondWait(1)
+		sendKeyEnter()
+		secondWait(2)
 	Next
 
 	writeLogFile($logFile, "Click Add Account tại X=" & $iAddAccountX & ", Y=" & $iAddAccountY)
@@ -338,7 +512,7 @@ Func clickAddAccount()
 EndFunc   ;==>clickAddAccount
 
 Func inputCredentials($sUsername, $sPassword)
-	writeLogFile($logFile, "Step 5: inputCredentials() - Nhập username và password, chờ rồi Enter")
+	writeLogFile($logFile, "Step 6.2: inputCredentials() - Nhập username và password, chờ rồi Enter")
 
 	Local $iUsernameX = getLoginProperty("input_username_x")
 	Local $iUsernameY = getLoginProperty("input_username_y")
@@ -383,11 +557,12 @@ Func inputCredentials($sUsername, $sPassword)
 
 	sendKeyEnter()
 	
+	secondWait(3)
 	Return True
 EndFunc   ;==>inputCredentials
 
 Func confirmLogin()
-	writeLogFile($logFile, "Step 6: confirmLogin() - Click first account")
+	writeLogFile($logFile, "Step 6.3: confirmLogin() - Click first account")
 
 	Local $iConfirmX = getLoginProperty("first_account_x")
 	Local $iConfirmY = getLoginProperty("first_account_y")
@@ -402,8 +577,11 @@ Func confirmLogin()
 
 	writeLogFile($logFile, "Click first account tại X=" & $iConfirmX & ", Y=" & $iConfirmY)
 	_MU_MouseClick_Delay($iConfirmX, $iConfirmY)
-	secondWait(2)
+	secondWait(5)
 
+	; Thuc hien send key Enter de vao game
+	sendKeyEnter()
+	secondWait(5)
 	Return True
 EndFunc   ;==>confirmLogin
 
@@ -460,55 +638,35 @@ Func selectCharacter($sCharName)
 	EndIf
 EndFunc   ;==>selectCharacter
 
-Func verifyCharacterLoaded($sCharName)
+Func verifyCharacterLoaded(ByRef $sCharName)
 	writeLogFile($logFile, "Step 10: verifyCharacterLoaded(" & $sCharName & ")")
 
-	Local $aCharList = getCharInAccount($sCharName)
-
-	If UBound($aCharList) = 0 Then
-		writeLogFile($logFile, "CẢNH BÁO: Không tìm thấy danh sách character cùng tài khoản")
-		Return False
-	EndIf
-
-	writeLogFile($logFile, "Danh sách character cùng tài khoản: " & _ArrayToString($aCharList, ", "))
-
-	Local $aWindowList = WinList()
-	Local $bFoundCorrectChar = False
-
-	For $i = 1 To $aWindowList[0][0]
-		Local $sWindowTitle = $aWindowList[$i][1]
-
-		If StringInStr($sWindowTitle, "MU GamethuVN - Season 21") And StringInStr($sWindowTitle, "Hà Nội") Then
-			writeLogFile($logFile, "Tìm thấy game window: " & $sWindowTitle)
-
-			Local $aMatch = StringRegExp($sWindowTitle, "MU GamethuVN - Season 21 \(Hà Nội - (.*?)\)", 3)
-			If UBound($aMatch) > 0 Then
-				Local $sActiveChar = $aMatch[0]
-				writeLogFile($logFile, "Character active hiện tại: " & $sActiveChar)
-
-				For $j = 0 To UBound($aCharList) - 1
-					If $aCharList[$j] = $sActiveChar Then
-						writeLogFile($logFile, "✓ Character " & $sActiveChar & " ĐÚNG (trong danh sách tài khoản)")
-						$bFoundCorrectChar = True
-						ExitLoop 2
-					EndIf
-				Next
-
-				writeLogFile($logFile, "✗ Character " & $sActiveChar & " SAI (không trong danh sách tài khoản)")
-				Return False
-			EndIf
-		EndIf
-	Next
-
-	If $bFoundCorrectChar Then
+	; Check character muc tieu dang active hay chua
+	If checkActiveWinByChar($sCharName) Then
+		writeLogFile($logFile, "✓ Character " & $sCharName & " login ĐÚNG (window active)")
 		Return True
-	Else
-		writeLogFile($logFile, "LỖI: Không tìm thấy game window active")
-		Return False
 	EndIf
+
+	; Dung method trong game_utils de tim character khac cung account dang active
+	Local $currentChar = $sCharName
+	Local $charNameOtherChar = checkActiveOtherChar($currentChar)
+	; $charNameOtherChar: JoyBoy|2 - > charFound: JoyBoy - numberChar: 2
+	Local $charFound = StringSplit($charNameOtherChar, "|")[1]
+	Local $numberChar = StringSplit($charNameOtherChar, "|")[2]
+
+	writeLogFile($logFile, "verifyCharacterLoaded -> charFound=" & $charFound & " | numberChar=" & $numberChar)
+
+	If $charFound <> "" Then
+		writeLogFile($logFile, "✓ Character hợp lệ trong cùng account (active char khác): " & $charFound)
+		$sCharName = $charFound
+		Return True
+	EndIf
+
+	writeLogFile($logFile, "LỖI: Không tìm thấy game window active cho character " & $sCharName)
+	Return False
 EndFunc   ;==>verifyCharacterLoaded
 
-Func handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
+Func handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 	writeLogFile($logFile, "Step 11: handleWrongCharacter() - Xử lý character sai")
 
 	If $iRetryCount >= $MAX_RETRY Then
@@ -524,7 +682,7 @@ Func handleWrongCharacter($sUsername, $sPassword, $sCharName, $iServerNo)
 	secondWait(3)
 
 	writeLogFile($logFile, "Retry login lần " & $iRetryCount)
-	Local $bRetrySuccess = processLogin($sUsername, $sPassword, $sCharName, $iServerNo, "")
+	Local $bRetrySuccess = processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig)
 
 	Return $bRetrySuccess
 EndFunc   ;==>handleWrongCharacter

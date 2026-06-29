@@ -198,16 +198,25 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	Return True
 EndFunc   ;==>actionWhenCantJoinDevil
 
-Func checkAutoZAfterFollowLead($needCheck = False)
+Func checkAutoZAfterFollowLead($charInfo, $needCheck = False)
+	Local $timeWaitAfterFollow = getTimeWaitAfterFollowByDevilConfig($charInfo)
+
 	If $needCheck Then
-		secondWait(10)
+		secondWait($timeWaitAfterFollow)
 		$countWaitAutoHome = 0
 		While Not checkActiveAutoHome() And $countWaitAutoHome < 2
-			secondWait(10)
+			secondWait($timeWaitAfterFollow)
 			$countWaitAutoHome += 1
 		WEnd
 	EndIf
 EndFunc   ;==>checkAutoZAfterFollowLead
+
+Func getTimeWaitAfterFollowByDevilConfig($charInfo)
+	Local $timeWaitAfterFollow = 10
+	Local $configWait = Number(_JSONGet($charInfo, "time_wait_after_follow"))
+	If $configWait > 0 Then $timeWaitAfterFollow = $configWait
+	Return $timeWaitAfterFollow
+EndFunc   ;==>getTimeWaitAfterFollowByDevilConfig
 
 Func clickEventIcon()
 	secondWait(3)
@@ -271,17 +280,7 @@ Func checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
 Func checkOpenPopupDevil()
-	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
-	If $npcSearch = 0 Then
-		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
-		Return False
-	Else
-		; Truong hop thay roi thi thoat khoi vong lap
-		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
-		$npcX = $npcSearch[0]
-		$npcY = $npcSearch[1]
-		Return True
-	EndIf 
+	Return checkColorPopUpDevil()
 EndFunc   ;==>checkOpenPopupDevil
 
 Func searchNvpNotActiveAutoZ()
@@ -289,10 +288,10 @@ Func searchNvpNotActiveAutoZ()
 	secondWait(5)
 	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\nvp_not_active_auto_z.bmp"
-	$x = 0
-	$y = 0
-	$x1 = 800
-	$y1 = 600
+	$x = _JSONGet($jsonPositionConfig, "common.screen_800_600.x")
+	$y = _JSONGet($jsonPositionConfig, "common.screen_800_600.y")
+	$x1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.x1")
+	$y1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.y1")
 	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
@@ -358,28 +357,6 @@ Func checkRuongK($charInfo)
 	EndIf
 	Return $result
 EndFunc   ;==>checkRuongK
-
-Func getArrayActiveDevil()
-	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-	Local $jsonAccountActiveDevil[0]
-	For $i = 0 To UBound($jsonDevilConfig) - 1
-		; active win and check ruong K
-;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
-		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
-		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
-		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
-		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil And $maxHourGo >= @HOUR Then
-			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
-				writeLog("Peak hour can't go devil. Wait to 23h")
-			Else
-				ReDim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
-				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
-			EndIf
-		EndIf
-	Next
-	Return $jsonAccountActiveDevil
-EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
@@ -856,7 +833,7 @@ Func checkOpenDevil()
 
 	$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 
-	_ArrayDisplay($checkOpenDevil)
+	;~ _ArrayDisplay($checkOpenDevil)
 	Return True
 EndFunc   ;==>checkOpenDevil
 
@@ -865,7 +842,7 @@ Func resizeGame($GAME_TITLE)
 ;~ Local $GAME_TITLE = getMainNoByChar($charName)
 
 	; === Đợi game mở ===
-	WinWait($GAME_TITLE)
+	WinWait($GAME_TITLE, "", 3)
 	$hWnd = WinGetHandle($GAME_TITLE)
 	If @error Or $hWnd = "" Then
 		;~ MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
@@ -925,6 +902,37 @@ Func checkActiveWin($mainName)
 	Return $result
 EndFunc
 
+; Method: closeWinByExactTitle
+; Description: Dong cua so theo title chinh xac (khong dung prefix), cho toi da timeoutSec giay
+Func closeWinByExactTitle($gameTitle, $timeoutSec = 10)
+	If $gameTitle = "" Then
+		writeLogFile($logFile, "LỖI: gameTitle rỗng, không thể đóng cửa sổ")
+		Return False
+	EndIf
+
+	If Not WinExists($gameTitle) Then
+		writeLogFile($logFile, "Không tìm thấy cửa sổ cần đóng: " & $gameTitle)
+		Return True
+	EndIf
+
+	writeLogFile($logFile, "Thực hiện WinClose đúng title: " & $gameTitle)
+	WinClose($gameTitle)
+
+	Local $iWaitCount = 0
+	While $iWaitCount < $timeoutSec
+		If Not WinExists($gameTitle) Then
+			writeLogFile($logFile, "✓ Đã đóng cửa sổ: " & $gameTitle)
+			Return True
+		EndIf
+
+		$iWaitCount += 1
+		secondWait(1)
+	WEnd
+
+	writeLogFile($logFile, "LỖI: Không thể đóng cửa sổ " & $gameTitle & " sau " & $timeoutSec & " giây")
+	Return False
+EndFunc
+
 ; Method: activeAndMoveWin
 ; Description: Activates and moves a specified window to the top-left corner of the screen.
 Func activeAndMoveWin($mainName)
@@ -948,6 +956,26 @@ Func activeAndMoveWin($mainName)
 	writeLogFile($logFile, "Không tìm thấy MU đúng title: " & $expected)
 	Return False
 EndFunc   ;==>activeAndMoveWin
+
+Func closeWinExact($mainName)
+	;~ writeLogFile($logFile, "Begin active and move win: " & $mainName)
+	Local $expected = $mainName
+	Local $list = WinList()
+	Local $i
+
+	For $i = 1 To $list[0][0]
+		; so sánh tuyệt đối
+		If $list[$i][0] = $expected Then
+			WinClose($list[$i][1])
+			;~ resizeGame($list[$i][1])
+			secondWait(2)
+			Return True
+		EndIf
+	Next
+
+	writeLogFile($logFile, "Không tìm thấy MU đúng title: " & $expected)
+	Return False
+EndFunc   ;==>closeWinExact
 
 Func activeAndMoveWinByChar($charName)
 	;~ writeLogFile($logFile, "Begin active and move win by char: " & $charName)

@@ -19,7 +19,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
+Global $devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName
 Global $aCharInAccount
 
@@ -35,8 +35,6 @@ Global Const $WM_LBUTTONUP = 0x0202
 Global $className = "MuTool"
 
 init()
-
-mergeInfoAccountRs()
 
 ; Method: init
 ; Description: Initializes the script by loading JSON configurations and reading character data from a text file.
@@ -55,6 +53,8 @@ Func init()
 				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
 			ElseIf "devil" == $type Then
 				$devilFileName = $value
+			ElseIf "devil_fixed" == $type Then
+				$devilFixedFileName = $value
 			ElseIf "reset" == $type Then
 				$accountRsFileName = $value
 			ElseIf "reset_info_fixed" == $type Then
@@ -599,6 +599,29 @@ Func getOtherChar($currentChar)
 	Return $result
 EndFunc
 
+Func getArrayActiveDevil()
+	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
+	Local $jsonAccountActiveDevil[0]
+	For $i = 0 To UBound($jsonDevilConfig) - 1
+		; active win and check ruong K
+;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
+		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
+		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
+		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
+		; 19/07: add check $maxHourGo >= @HOUR
+		If $activeDevil And $maxHourGo >= @HOUR Then
+			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
+				writeLog("Peak hour can't go devil. Wait to 23h")
+			Else
+				ReDim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
+				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
+			EndIf
+		EndIf
+	Next
+
+	Return $jsonAccountActiveDevil
+EndFunc   ;==>getArrayActiveDevil
+
 Func mergeInfoAccountRs()
 	$aRsConfig = getJsonFromFile($jsonPathRoot & $accountRsFileName)
 	$aRsUpdateInfo = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
@@ -606,6 +629,24 @@ Func mergeInfoAccountRs()
 	$firstMerge = merge2Array($aRsConfig, $aRsUpdateInfo)
 	;~ Return merge2Array($firstMerge, $aRsFixed)
 	Return $firstMerge
+EndFunc
+
+Func mergeInfoAccountDevil()
+	$jsonAccountActiveDevil = getArrayActiveDevil()
+	If $devilFixedFileName == "" Then Return $jsonAccountActiveDevil
+
+	$devilFixedPath = $jsonPathRoot & $devilFixedFileName
+	If Not FileExists($devilFixedPath) Then
+		writeLogFile($logFile, "Khong tim thay file devil fixed config: " & $devilFixedPath)
+		Return $jsonAccountActiveDevil
+	EndIf
+
+	$jsonDevilFixed = getJsonFromFile($devilFixedPath)
+	If UBound($jsonAccountActiveDevil) > 0 And UBound($jsonDevilFixed) > 0 Then
+		Return merge2Array($jsonAccountActiveDevil, $jsonDevilFixed)
+	EndIf
+
+	Return $jsonAccountActiveDevil
 EndFunc
 
 Func merge2Array($firstJson, $secondJson)
