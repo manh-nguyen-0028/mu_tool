@@ -198,8 +198,8 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	Return True
 EndFunc   ;==>actionWhenCantJoinDevil
 
-Func checkAutoZAfterFollowLead($needCheck = False)
-	Local $timeWaitAfterFollow = getTimeWaitAfterFollowByDevilConfig()
+Func checkAutoZAfterFollowLead($charInfo, $needCheck = False)
+	Local $timeWaitAfterFollow = getTimeWaitAfterFollowByDevilConfig($charInfo)
 
 	If $needCheck Then
 		secondWait($timeWaitAfterFollow)
@@ -211,20 +211,10 @@ Func checkAutoZAfterFollowLead($needCheck = False)
 	EndIf
 EndFunc   ;==>checkAutoZAfterFollowLead
 
-Func getTimeWaitAfterFollowByDevilConfig()
+Func getTimeWaitAfterFollowByDevilConfig($charInfo)
 	Local $timeWaitAfterFollow = 10
-	Local $jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-
-	If IsArray($jsonDevilConfig) And UBound($jsonDevilConfig) > 0 Then
-		For $i = 0 To UBound($jsonDevilConfig) - 1
-			Local $configWait = Number(_JSONGet($jsonDevilConfig[$i], "time_wait_after_follow"))
-			If $configWait > 0 Then
-				$timeWaitAfterFollow = $configWait
-				If _JSONGet($jsonDevilConfig[$i], "active") Then ExitLoop
-			EndIf
-		Next
-	EndIf
-
+	Local $configWait = Number(_JSONGet($charInfo, "time_wait_after_follow"))
+	If $configWait > 0 Then $timeWaitAfterFollow = $configWait
 	Return $timeWaitAfterFollow
 EndFunc   ;==>getTimeWaitAfterFollowByDevilConfig
 
@@ -367,28 +357,6 @@ Func checkRuongK($charInfo)
 	EndIf
 	Return $result
 EndFunc   ;==>checkRuongK
-
-Func getArrayActiveDevil()
-	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-	Local $jsonAccountActiveDevil[0]
-	For $i = 0 To UBound($jsonDevilConfig) - 1
-		; active win and check ruong K
-;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
-		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
-		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
-		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
-		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil And $maxHourGo >= @HOUR Then
-			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
-				writeLog("Peak hour can't go devil. Wait to 23h")
-			Else
-				ReDim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
-				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
-			EndIf
-		EndIf
-	Next
-	Return $jsonAccountActiveDevil
-EndFunc   ;==>getArrayActiveDevil
 
 Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	$mainNo = getMainNoByChar($charName)
