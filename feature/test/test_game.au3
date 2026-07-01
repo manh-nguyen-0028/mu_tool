@@ -511,6 +511,21 @@ Func testStopAutoPlus()
     Return True
 EndFunc
 
+Func testFollowLeadThenStartAutoPlus()
+    Local $sFastJoinConfig = '{"active":true,"char_name":"GiamDocSo","devil_no":4,"ignore_peak_hour":true,"is_fast_join":true,"switch_other_main":false,"is_need_follow_leader":true,"need_check_auto_z":true,"have_quest":false,"max_hour_go":25,"main_char_name":"BoDeToSu","is_check_400lv":false,"have_ruong_k":true,"fixed_coord_first":false,"icon_devil_x":100,"icon_devil_y":100,"time_wait_after_follow":70}'
+    Local $oFastJoinConfig = getJsonFromText($sFastJoinConfig)
+
+    Local $charNameTest = _JSONGet($oFastJoinConfig, "char_name")
+    Local $timeWaitFollowLeader = Number(_JSONGet($oFastJoinConfig, "time_wait_after_follow"))
+    ; on_auto_plus khong co trong json mau => fallback sang need_check_auto_z de bat auto plus khi can
+    Local $onAutoPlus = _JSONGet($oFastJoinConfig, "on_auto_plus")
+    If $onAutoPlus = "" Or $onAutoPlus = Default Then $onAutoPlus = _JSONGet($oFastJoinConfig, "need_check_auto_z")
+
+    activeAndMoveWin(getMainNoByChar($charNameTest))
+    followLeadThenStartAutoPlus($charNameTest, $onAutoPlus, $timeWaitFollowLeader)
+    Return True
+EndFunc
+
 Func testSwitchSvInGame()
     ;~ $oAccountInfo = getAccountInfoByChar($charName)
     Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
@@ -578,3 +593,4 @@ Func testSendKeyEsc()
 	sendKeyEsc()
 	secondWait(1)
 EndFunc   ;==>sendKeyEsc
+

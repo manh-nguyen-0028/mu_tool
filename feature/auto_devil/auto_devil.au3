@@ -392,6 +392,7 @@ Func processFastJoinAccounts($aCharJoinDevil)
 		Local $mainNo = getMainNoByChar($charName)
 		$fastMove = _JSONGet($aCharJoinDevil[$i], "is_fast_join")
 		$onAutoPlus = _JSONGet($aCharJoinDevil[$i], "on_auto_plus")
+		$switchOtherMain = _JSONGet($aCharJoinDevil[$i], "switch_other_main")
 
 		If $fastMove Then
 			writeLogFile($logFile, "Account: " & $charName & " - Fast move ")
@@ -403,11 +404,15 @@ Func processFastJoinAccounts($aCharJoinDevil)
 				; follow leader then auto plus
 				$timeWaitFollowLeader = _JSONGet($aCharJoinDevil[$i], "time_wait_after_follow")
 				followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
-				;~ If $needCheckAutoZ Then checkAutoZAfterFollowLead()
-				sendKeyF8()
-				writeLogFile($logFile, "Account: " & $charName & " - Fast move thanh cong")
+				; truong hop khong can swith sang other main thi thoi khong can phai cho $timeWaitFollowLeader
+				If $switchOtherMain Then
+					writeLogFile($logFile, "Account: " & $charName & " - Fast move => switch sang main chinh => cho " & $timeWaitFollowLeader & " giay")
+					secondWait($timeWaitFollowLeader)
+				EndIf
+				minisizeMain($mainNo)
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move success")
 			Else
-				writeLogFile($logFile, "Account: " & $charName & " - Fast move that bai vi khong active duoc main nao")
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move fail => khong tim thay cua so win")
 			EndIf
 		EndIf
 	Next

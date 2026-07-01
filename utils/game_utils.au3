@@ -30,12 +30,12 @@ EndFunc   ;==>_MU_followLeader_ControlClick
 
 Func _MU_followLeader($position)
 	; khi can follow lead thi bam 2 lan cho chac an
-	For $i = 0 To 1 Step +1
+	;~ For $i = 0 To 1 Step +1
 		$position_x = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_x")
 		$position_y = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_y")
 		writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 		mouseClickDelayShift($position_x, $position_y)
-	Next
+	;~ Next
 
 	secondWait(1)
 EndFunc   ;==>_MU_followLeader
@@ -175,7 +175,7 @@ Func handleBeforeReset()
 EndFunc
 
 Func sendEnterThenClickCenter()
-	sendKeyEnter()
+	;~ sendKeyEnter()
 	sendKeyEnter()
 	clickCenterChar()
 	Return True
@@ -565,7 +565,6 @@ Func clickOtherChar2($charName)
 EndFunc   ;==>clickOtherChar2
 
 Func moveOtherMap($charName)
-	clickCenterChar()
 	; Thuc hien get mainNo cua charName
 	$mainNo = getMainNoByChar($charName)
 	; Thuc hien active va move win
@@ -576,8 +575,8 @@ Func moveOtherMap($charName)
 	EndIf
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
-		secondWait(1)
 		writeLogFile($logFile, "Bat dau chuyen map khac")
+		sendEnterThenClickCenter()
 		sendKeyM()
 		secondWait(1)
 		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
@@ -1329,14 +1328,13 @@ Func _clickServerChoice($serverNumber)
 EndFunc   ;==>_clickServerChoice
 
 Func followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
+	writeLogFile($logFile, "Bat dau follow leader va start auto plus !" & " - Char: " & $charName & " - onAutoPlus: " & $onAutoPlus & " - timeWaitFollowLeader: " & $timeWaitFollowLeader)
 	; Thuc hien click vao giua man hinh truoc da
 	clickCenterChar()
 	; follow leader
 	_MU_followLeader(1)
 	; start auto plus
 	If $onAutoPlus Then startAutoPlus()
-
-	secondWait($timeWaitFollowLeader)
 EndFunc
 
 Func handleIsNotMainChar($oAccountInfo)
