@@ -34,6 +34,9 @@ Global $jAccountLoginConfig
 Global $iRetryCount = 0
 Global Const $MAX_RETRY = 1
 
+;~ closeExistingGameWindow()
+;~ minuteWait(5)
+
 ; Method: preCheckActiveMainInSameAccount
 ; Description: Kiem tra trong cung tai khoan da co main nao dang active hay chua
 Func preCheckActiveMainInSameAccount($sCharName)
@@ -297,8 +300,8 @@ EndFunc   ;==>processLogin
 Func closeExistingGameWindow()
 	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
 	; Thuc hien 2 cong viec: 1. Close window voi $titleGameMain
-	closeWinExact($titleGameMain)
-	;~ closeByTitleAndClass($titleGameMain, "SDL_app")
+	;~ closeWinExact($titleGameMain)
+	closeByTitleAndClass($titleGameMain, "SDL_app")
 	secondWait(1)
 	; 2. Close window process co title = $titleGameMain va class = $titleGameMain
 	$class = "#32770"
@@ -306,6 +309,7 @@ Func closeExistingGameWindow()
 	closeByTitleAndClass($titleGameMain, "#32770")
 	secondWait(1)
 	closeByTitleAndClass($titleGameMain, "#32770")
+	Return True
 EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()
@@ -362,14 +366,16 @@ EndFunc   ;==>runGameExe
 Func clickButtonStart()
 	writeLogFile($logFile, "Step 3: clickButtonStart() - ControlClick button Start")
 
-	Local $sLauncherTitle = "[TITLE:MU GamethuVN - Season 21; CLASS:#32770]"
-	Local $sLauncherControl = "[CLASS:Button; INSTANCE:2]"
-	Local $iControlClickResult = ControlClick($sLauncherTitle, "", $sLauncherControl)
+	;~ Local $sLauncherTitle = "[TITLE:MU GamethuVN - Season 21; CLASS:#32770]"
+	;~ Local $sLauncherControl = "[CLASS:Button; INSTANCE:2]"
+	;~ Local $iControlClickResult = ControlClick($sLauncherTitle, "", $sLauncherControl)
 
-	If $iControlClickResult = 0 Then
-		writeLogFile($logFile, "LỖI: ControlClick button Start thất bại với title=" & $sLauncherTitle & " control=" & $sLauncherControl)
-		Return False
-	EndIf
+	;~ If $iControlClickResult = 0 Then
+	;~ 	writeLogFile($logFile, "LỖI: ControlClick button Start thất bại với title=" & $sLauncherTitle & " control=" & $sLauncherControl)
+	;~ 	Return False
+	;~ EndIf
+
+	sendKeyEnter()
 
 	writeLogFile($logFile, "Đã ControlClick button Start thành công")
 	
