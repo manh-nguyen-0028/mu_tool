@@ -1,0 +1,22 @@
+[
+	{"active":false,"type":"reset","char_name":"RunThenDie","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": false},
+	{"active":true,"type":"reset","char_name":"IIIlllIIll","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": true},
+	{"active":false,"type":"reset","char_name":"Maisy","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": true},
+	{"active":false,"type":"reset","char_name":"GiamDocHN","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": true},
+	{"active":false,"type":"reset","char_name":"DacVuAoDen","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": true},
+	{"active":false,"type":"reset","char_name":"SoonGoKu","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": false},
+	{"active":false,"type":"reset","char_name":"DaiGiaoChu","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":8,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": false},
+	{"active":true,"type":"reset","char_name":"RunOrDie","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": false},
+	{"active":true,"type":"reset","char_name":"Salah","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"position_leader":1, "active_move_rs": false, "active_end_key": true},
+	{"active":false,"type":"reset","char_name":"lIiiIiiIl","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"TronVo1","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":true,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"Mina","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":true,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BlackWolf","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":24,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"BelousSkye","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":6,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"Girlss","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":6,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"CuuBiThu","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":24,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":false,"type":"reset","char_name":"lIIiIIiIli","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":false,"type":"reset","char_name":"BeerHalida","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"HamCaMap","type_rs":0,"lvl_move":400,"reset_online":true,"hour_per_reset":0,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false},
+	{"active":true,"type":"reset","char_name":"Lesux","type_rs":1,"lvl_move":400,"reset_online":true,"hour_per_reset":4,"is_buff":false,"position_leader":1, "active_move_rs": false,"active_end_key": false}
+]
