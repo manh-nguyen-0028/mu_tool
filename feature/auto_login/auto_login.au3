@@ -299,8 +299,12 @@ Func closeExistingGameWindow()
 	; Thuc hien 2 cong viec: 1. Close window voi $titleGameMain
 	closeWinExact($titleGameMain)
 	;~ closeByTitleAndClass($titleGameMain, "SDL_app")
-	
+	secondWait(1)
 	; 2. Close window process co title = $titleGameMain va class = $titleGameMain
+	$class = "#32770"
+	;~ closeByClass($class)
+	closeByTitleAndClass($titleGameMain, "#32770")
+	secondWait(1)
 	closeByTitleAndClass($titleGameMain, "#32770")
 EndFunc   ;==>closeExistingGameWindow
 
@@ -344,6 +348,8 @@ Func runGameExe()
 		$iPopupErrorOkY = Number($iPopupErrorOkY)
 		writeLogFile($logFile, "Click OK popup lỗi tại X=" & $iPopupErrorOkX & ", Y=" & $iPopupErrorOkY)
 		_MU_MouseClick_Delay($iPopupErrorOkX, $iPopupErrorOkY)
+		secondWait(1)
+		sendKeyEnter()
 	Else
 		writeLogFile($logFile, "CẢNH BÁO: Không tìm thấy tọa độ popup_error_ok_x/y (hoặc button.dong_y.x/y), bỏ qua click popup")
 	EndIf

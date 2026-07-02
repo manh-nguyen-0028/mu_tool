@@ -891,3 +891,17 @@ Func closeByTitleAndClass($title, $class)
 		EndIf
 	EndIf
 EndFunc   ;==>closeWinExact
+
+Func closeByClass($class)
+	writeLogFile($logFile, "closeByClass: " & $class)
+	Local $aWinList = WinList()
+
+	For $i = 1 To $aWinList[0][0]
+		Local $hWnd = $aWinList[$i][1]
+
+		If WinGetClassList($hWnd) = $class Then
+			Local $iPID = WinGetProcess($hWnd)
+			If $iPID Then ProcessClose($iPID)
+		EndIf
+	Next
+EndFunc
