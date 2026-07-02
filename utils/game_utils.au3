@@ -30,12 +30,12 @@ EndFunc   ;==>_MU_followLeader_ControlClick
 
 Func _MU_followLeader($position)
 	; khi can follow lead thi bam 2 lan cho chac an
-	For $i = 0 To 1 Step +1
+	;~ For $i = 0 To 1 Step +1
 		$position_x = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_x")
 		$position_y = _JSONGet($jsonPositionConfig, "button.follow_leader.position_" & $position & "_y")
 		writeLog("_MU_followLeader with position: " & $position & " x:" & $position_x & " y:" & $position_y)
 		mouseClickDelayShift($position_x, $position_y)
-	Next
+	;~ Next
 
 	secondWait(1)
 EndFunc   ;==>_MU_followLeader
@@ -175,13 +175,14 @@ Func handleBeforeReset()
 EndFunc
 
 Func sendEnterThenClickCenter()
-	sendKeyEnter()
+	;~ sendKeyEnter()
 	sendKeyEnter()
 	clickCenterChar()
 	Return True
 EndFunc
 
-Func actionWhenCantJoinDevil($isNeedFollowLeader)
+Func actionWhenCantJoinDevil($charInfo)
+	$isNeedFollowLeader = _JSONGet($charInfo, "is_need_follow_leader")
 	; Thuc hien send Enter 1 lan de loai bo dialog
 	sendEnterThenClickCenter()
 	; Close popup event devil 239, 126
@@ -193,21 +194,30 @@ Func actionWhenCantJoinDevil($isNeedFollowLeader)
 	; Thuc hien follow leader
 	If $isNeedFollowLeader Then
 		_MU_followLeader(1)
-		;~ checkAutoZAfterFollowLead(True)
+		checkAutoZAfterFollowLead($charInfo, True)
 	EndIf
 	Return True
 EndFunc   ;==>actionWhenCantJoinDevil
 
-Func checkAutoZAfterFollowLead($needCheck = False)
+Func checkAutoZAfterFollowLead($charInfo, $needCheck = False)
+	Local $timeWaitAfterFollow = getTimeWaitAfterFollowLead($charInfo)
+
 	If $needCheck Then
-		secondWait(10)
+		secondWait($timeWaitAfterFollow)
 		$countWaitAutoHome = 0
 		While Not checkActiveAutoHome() And $countWaitAutoHome < 2
-			secondWait(10)
+			secondWait($timeWaitAfterFollow)
 			$countWaitAutoHome += 1
 		WEnd
 	EndIf
 EndFunc   ;==>checkAutoZAfterFollowLead
+
+Func getTimeWaitAfterFollowLead($charInfo)
+	Local $timeWaitAfterFollow = 10
+	Local $configWait = Number(_JSONGet($charInfo, "time_wait_after_follow"))
+	If $configWait > 0 Then $timeWaitAfterFollow = $configWait
+	Return $timeWaitAfterFollow
+EndFunc   ;==>getTimeWaitAfterFollowByDevilConfig
 
 Func clickEventIcon()
 	secondWait(3)
@@ -271,17 +281,7 @@ Func checkActiveAutoHomeCommon($pathImage,$imageTolerance, $x, $y, $x1, $y1)
 EndFunc
 
 Func checkOpenPopupDevil()
-	$npcSearch = PixelSearch(0, 0, 250, 460, 0x9A3C00, 4)
-	If $npcSearch = 0 Then
-		;~ clickIconDevil($charName, $checkRuongK, $isHaveQuest)
-		Return False
-	Else
-		; Truong hop thay roi thi thoat khoi vong lap
-		writeLogFile($logFile, "checkColorPopUpDevil tai vi tri : " & $npcSearch[0] & "-" & $npcSearch[1])
-		$npcX = $npcSearch[0]
-		$npcY = $npcSearch[1]
-		Return True
-	EndIf 
+	Return checkColorPopUpDevil()
 EndFunc   ;==>checkOpenPopupDevil
 
 Func searchNvpNotActiveAutoZ()
@@ -289,10 +289,10 @@ Func searchNvpNotActiveAutoZ()
 	secondWait(5)
 	; Thuc hien check auto home
 	$pathImage = $imagePathRoot & "common" & "\nvp_not_active_auto_z.bmp"
-	$x = 0
-	$y = 0
-	$x1 = 800
-	$y1 = 600
+	$x = _JSONGet($jsonPositionConfig, "common.screen_800_600.x")
+	$y = _JSONGet($jsonPositionConfig, "common.screen_800_600.y")
+	$x1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.x1")
+	$y1 = _JSONGet($jsonPositionConfig, "common.screen_800_600.y1")
 	$imageTolerance = _JSONGet($jsonPositionConfig, "common.image_search.tolerance")
 	If $imageTolerance = "" Or Number($imageTolerance) == 0 Then $imageTolerance = 50
 
@@ -359,30 +359,16 @@ Func checkRuongK($charInfo)
 	Return $result
 EndFunc   ;==>checkRuongK
 
-Func getArrayActiveDevil()
-	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
-	Local $jsonAccountActiveDevil[0]
-	For $i = 0 To UBound($jsonDevilConfig) - 1
-		; active win and check ruong K
-;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
-		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
-		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
-		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
-		; 19/07: add check $maxHourGo >= @HOUR
-		If $activeDevil And $maxHourGo >= @HOUR Then
-			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
-				writeLog("Peak hour can't go devil. Wait to 23h")
-			Else
-				ReDim $jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) + 1]
-				$jsonAccountActiveDevil[UBound($jsonAccountActiveDevil) - 1] = $jsonDevilConfig[$i]
-			EndIf
-		EndIf
-	Next
-	Return $jsonAccountActiveDevil
-EndFunc   ;==>getArrayActiveDevil
-
-Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+Func clickIconDevil($charInfo)
+	$charName = _JSONGet($charInfo, "char_name")
+	$checkRuongK = _JSONGet($charInfo, "have_ruong_k")
+	$isHaveQuest = _JSONGet($charInfo, "have_quest")
 	$mainNo = getMainNoByChar($charName)
+	$fixedCoordFirst = _JSONGet($charInfo, "fixed_coord_first")
+	$iconDevilPriorityX = _JSONGet($charInfo, "icon_devil_x")
+	$iconDevilPriorityY = _JSONGet($charInfo, "icon_devil_y")
+
+
 	activeAndMoveWinByChar($charName)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
 	$haveIp = True
@@ -399,14 +385,26 @@ Func clickIconDevil($charName, $checkRuongK, $isHaveQuest)
 	ElseIf Not $haveIp And Not $haveAddPoint Then
 		$typeCheck = 3
 	EndIf
-	clickIconDevilByCondition($typeCheck, $isHaveQuest)
+	$devilIconX = 0 
+	$devilIconY = 0
+	clickIconDevilByCondition($typeCheck, $isHaveQuest, $devilIconX, $devilIconY)
+
+	; Thay doi cach lay toa do icon devil, neu co toa do uu tien "fixed_coord_first": true thi de lay toa do fixed ("icon_devil_x" va "icon_devil_y")
+	If $fixedCoordFirst Then
+			$devilIconX = $iconDevilPriorityX
+			$devilIconY = $iconDevilPriorityY
+	EndIf
+	; Click vao icon event devil 2 lan de chac an
+	For $i = 0 To 1 Step +1
+		_MU_MouseClick_Delay($devilIconX, $devilIconY)
+	Next
 
 	; Nhap enter de vao devil
 	sendKeyEnter()
 	secondWait(1)
 EndFunc   ;==>clickIconDevil
 
-Func clickIconDevilByCondition($type, $isHaveQuest)
+Func clickIconDevilByCondition($type, $isHaveQuest, ByRef $devilIconX, ByRef $devilIconY)
 	; 1. co ip, co ruong k, co + diem
 	; 2. co ip, co ruong k, chua + diem
 	; 3. co ip, co ruong k, co + diem
@@ -432,9 +430,6 @@ Func clickIconDevilByCondition($type, $isHaveQuest)
 		$devilIconX = _JSONGet($jsonPositionConfig, "button.event_devil_icon.x_3")
 		$devilIconY = _JSONGet($jsonPositionConfig, "button.event_devil_icon.y_3")
 	EndIf
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay($devilIconX, $devilIconY)
-	Next
 	Return True
 EndFunc   ;==>clickIconDevilByCondition
 
@@ -570,7 +565,6 @@ Func clickOtherChar2($charName)
 EndFunc   ;==>clickOtherChar2
 
 Func moveOtherMap($charName)
-	clickCenterChar()
 	; Thuc hien get mainNo cua charName
 	$mainNo = getMainNoByChar($charName)
 	; Thuc hien active va move win
@@ -581,8 +575,8 @@ Func moveOtherMap($charName)
 	EndIf
 	; Chi nhung truong hop duoc active moi thuc hien move map
 	If $activeWin Then
-		secondWait(1)
 		writeLogFile($logFile, "Bat dau chuyen map khac")
+		sendEnterThenClickCenter()
 		sendKeyM()
 		secondWait(1)
 		$moveOtherMapX = _JSONGet($jsonPositionConfig, "button.move.other_map_x")
@@ -753,7 +747,12 @@ EndFunc
 
 ; Method: searchNpcDevil
 ; Description: Tìm kiếm NPC Devil, thử di chuyển và click icon devil nếu không thấy
-Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX, ByRef $npcY)
+Func searchNpcDevil($charInfo, ByRef $npcX, ByRef $npcY)
+	$charName = _JSONGet($charInfo, "char_name")
+	$checkRuongK = _JSONGet($charInfo, "have_ruong_k")
+	$isHaveQuest = _JSONGet($charInfo, "have_quest")
+	$devilNo = _JSONGet($charInfo, "devil_no")
+	
 	writeLogFile($logFile, "Start method: searchNpcDevil " & " - devilNo" & $devilNo)
 	$result = False
 
@@ -767,7 +766,7 @@ Func searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, ByRef $npcX
 		;~ EndIf
 
 		If $npcSearch = 0 Then
-			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			clickIconDevil($charInfo)
 			$totalSearch = $totalSearch + 1
 		Else
 			; Truong hop thay roi thi thoat khoi vong lap
@@ -856,7 +855,7 @@ Func checkOpenDevil()
 
 	$checkOpenDevil = checkPixelColor($devil_open_x, $devil_open_y, $devil_open_color)
 
-	_ArrayDisplay($checkOpenDevil)
+	;~ _ArrayDisplay($checkOpenDevil)
 	Return True
 EndFunc   ;==>checkOpenDevil
 
@@ -865,7 +864,7 @@ Func resizeGame($GAME_TITLE)
 ;~ Local $GAME_TITLE = getMainNoByChar($charName)
 
 	; === Đợi game mở ===
-	WinWait($GAME_TITLE)
+	WinWait($GAME_TITLE, "", 3)
 	$hWnd = WinGetHandle($GAME_TITLE)
 	If @error Or $hWnd = "" Then
 		;~ MsgBox(16, "Lỗi", "Không tìm thấy cửa sổ: " & $GAME_TITLE)
@@ -1328,7 +1327,8 @@ Func _clickServerChoice($serverNumber)
     Return True
 EndFunc   ;==>_clickServerChoice
 
-Func followLeadThenStartAutoPlus($charName, $onAutoPlus)
+Func followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
+	writeLogFile($logFile, "Bat dau follow leader va start auto plus !" & " - Char: " & $charName & " - onAutoPlus: " & $onAutoPlus & " - timeWaitFollowLeader: " & $timeWaitFollowLeader)
 	; Thuc hien click vao giua man hinh truoc da
 	clickCenterChar()
 	; follow leader

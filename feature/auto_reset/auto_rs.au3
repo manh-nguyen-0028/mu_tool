@@ -474,7 +474,8 @@ Func clickButtonAddPoint()
 	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_x"), getProperty("button.bang_c.add_point_y"))
 	; Click vao button xac nhan cong diem
 	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_x"), getProperty("button.bang_c.add_point_confirm_y"))
-
+	; Click vao button xac nhan cong diem
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_dl_x"), getProperty("button.bang_c.add_point_confirm_dl_y"))
 	secondWait(1)
 EndFunc   ;==>clickButtonAddPoint
 

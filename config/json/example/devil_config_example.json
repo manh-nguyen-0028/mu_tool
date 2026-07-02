@@ -1,34 +1,6 @@
 [
-    {
-      "active": false,
-      "have_ruong_k": true,
-      "have_quest": false,
-      "char_name": "TruongThon",
-      "devil_no": 5,
-      "is_fast_join": true,
-      "ignore_peak_hour": true,
-      "switch_other_main": true,
-      "main_char_name": "GameX",
-      "is_check_400lv": true,
-      "is_need_follow_leader": true,
-      "on_auto_plus": false,
-      "need_check_auto_z": false,
-      "max_hour_go": 25
-    },
-    {
-      "active": false,
-      "have_ruong_k": true,
-      "have_quest": false,
-      "char_name": "DavidRyan",
-      "devil_no": 5,
-      "is_fast_join": false,
-      "ignore_peak_hour": false,
-      "switch_other_main": true,
-      "main_char_name": "GameX",
-      "is_check_400lv": true,
-      "is_need_follow_leader": true,
-      "on_auto_plus": false,
-      "need_check_auto_z": false,
-      "max_hour_go": 25
-    }
-  ]
+{"active":true,"char_name":"BacThay","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":false,"char_name":"GiamDocSo","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":true,"char_name":"TamGiaoChu","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false},
+{"active":true,"char_name":"KimTieuQuy","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": false,"on_auto_plus": false}
+]

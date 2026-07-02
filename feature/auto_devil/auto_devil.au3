@@ -15,7 +15,7 @@ start()
 Func start()
 	$sFilePath = $outputPathRoot & "File_Log_AutoDevil_.txt"
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+	$jsonAccountActiveDevil = mergeInfoAccountDevil()
 	writeLogFile($logFile, "Account active devil: " & UBound($jsonAccountActiveDevil))
 	If UBound($jsonAccountActiveDevil) > 0 Then processGoDevil()
 	FileClose($logFile)
@@ -235,7 +235,7 @@ Func getListFastMove($jsonAccountActiveDevil)
 EndFunc
 
 Func reloadArrayActive()
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+	$jsonAccountActiveDevil = mergeInfoAccountDevil()
 	writeLogFile($logFile, "So luong account active: " & UBound($jsonAccountActiveDevil))
 	Return $jsonAccountActiveDevil
 EndFunc
@@ -315,12 +315,12 @@ Func processGoEventDevil()
 			;~ EndIf
 
 			; Bat dau click icon devil
-			clickIconDevil($charName, $checkRuongK, $isHaveQuest)
+			clickIconDevil($jsonAccountActiveDevil[$i])
 			secondWait(1)
 
 			; Check and click into NPC devil
 			Local $npcX = 0, $npcY = 0
-			If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+			If searchNpcDevil($jsonAccountActiveDevil[$i], $npcX, $npcY) Then
 				MouseMove($npcX, $npcY)
 				secondWait(1)
 				; Click into NPC devil
@@ -392,6 +392,7 @@ Func processFastJoinAccounts($aCharJoinDevil)
 		Local $mainNo = getMainNoByChar($charName)
 		$fastMove = _JSONGet($aCharJoinDevil[$i], "is_fast_join")
 		$onAutoPlus = _JSONGet($aCharJoinDevil[$i], "on_auto_plus")
+		$switchOtherMain = _JSONGet($aCharJoinDevil[$i], "switch_other_main")
 
 		If $fastMove Then
 			writeLogFile($logFile, "Account: " & $charName & " - Fast move ")
@@ -401,12 +402,17 @@ Func processFastJoinAccounts($aCharJoinDevil)
 				; Move other map
 				moveOtherMap($charName)
 				; follow leader then auto plus
-				followLeadThenStartAutoPlus($charName, $onAutoPlus)
-				;~ If $needCheckAutoZ Then checkAutoZAfterFollowLead()
-				sendKeyF8()
-				writeLogFile($logFile, "Account: " & $charName & " - Fast move thanh cong")
+				$timeWaitFollowLeader = _JSONGet($aCharJoinDevil[$i], "time_wait_after_follow")
+				followLeadThenStartAutoPlus($charName, $onAutoPlus, $timeWaitFollowLeader)
+				; truong hop khong can swith sang other main thi thoi khong can phai cho $timeWaitFollowLeader
+				If $switchOtherMain Then
+					writeLogFile($logFile, "Account: " & $charName & " - Fast move => switch sang main chinh => cho " & $timeWaitFollowLeader & " giay")
+					secondWait($timeWaitFollowLeader)
+				EndIf
+				minisizeMain($mainNo)
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move success")
 			Else
-				writeLogFile($logFile, "Account: " & $charName & " - Fast move that bai vi khong active duoc main nao")
+				writeLogFile($logFile, "Account: " & $charName & " - Fast move fail => khong tim thay cua so win")
 			EndIf
 		EndIf
 	Next
@@ -475,7 +481,7 @@ Func handleAfterDevilEvent($aCharJoinDevil)
 					EndIf
 
 					; Them xu ly check xem co active auto_home hay chua. Neu chua co thi doi them 10s
-					checkAutoZAfterFollowLead()
+					checkAutoZAfterFollowLead($aCharJoinDevil[$i])
 				Else
 					writeLogFile($logFile, "Char: " & $charName & " - khong can follow leader => Ket thuc xu ly")
 				EndIf
@@ -510,7 +516,7 @@ Func checkAccountsInDevil($jsonAccountActiveDevil)
 			Else
 				writeLogFile($logFile, "Char: " & $charName & " khong vao dc devil")
 				$sCharNotJoinDevil = $sCharNotJoinDevil & $charName & @CRLF
-				actionWhenCantJoinDevil($isNeedFollowLeader)
+				actionWhenCantJoinDevil($jsonAccountActiveDevil[$i])
 			EndIf
 			$charInfo = $jsonAccountActiveDevil[$i]
 			Local $charName = _JSONGet($charInfo, "char_name")

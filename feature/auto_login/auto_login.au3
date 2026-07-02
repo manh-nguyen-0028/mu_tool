@@ -221,7 +221,7 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 
 	If Not closeExistingGameWindow() Then
 		writeLoginReport($sUsername, $sCharName, "failed_close_existing_window", $iServerNo, $iChannelNo)
-		Return False
+		;~ Return False
 	EndIf
 
 	If Not runGameExe() Then

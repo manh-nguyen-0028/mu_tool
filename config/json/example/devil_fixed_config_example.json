@@ -1,0 +1,4 @@
+[
+  {"have_quest": false,"char_name":"GauTruc","max_hour_go":25,"main_char_name": "Lowkey","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": true, "icon_devil_x": 100, "icon_devil_y": 100, "time_wait_after_follow": 10},
+  {"have_quest": false,"char_name":"GauTruc","max_hour_go":25,"main_char_name": "Lowkey","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": false, "icon_devil_x": 100, "icon_devil_y": 100, "time_wait_after_follow": 10}
+]

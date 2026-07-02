@@ -6,13 +6,15 @@
 ;~ #include "../auto_reset/withdraw_rs.au3"
 #RequireAdmin
 
-$charName="Shakky"
+$charName="BlueDragon"
 allAccount()
 
 $mainNo = getMainNoByChar($charName)
 $checkRuongK = True
 $devilNo = 3
 $isHaveQuest = False
+Local $sDevilJson = '[{"active":true,"char_name":"BlueDragon","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false}]'
+Local $sFixedJson = '[{"have_quest": false,"char_name":"BlueDragon", "max_hour_go":25,"main_char_name": "BlueDragon","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": true, "icon_devil_x": 109, "icon_devil_y": 165, "time_wait_after_follow": 70}]'
 
 ;~ testLogin()
 activeAndMoveWin(getMainNoByChar($charName))
@@ -25,13 +27,13 @@ activeAndMoveWin(getMainNoByChar($charName))
 ;~ testReturnChar()
 ;~ testMoveOtherMap()
 ;~ testFollowLead($charName)
-;~ testClickDevil($charName)
+testClickDevil($charName)
 ;~ testChangeServer($charName)
 ;~ testAddPointInGame()
 ;~ testGoToSportArena($charName)
 ;~ testGoToSportLoren()
 ;~ testSearchNPC()
-testSearchNPCThenClick()
+;~ testSearchNPCThenClick()
 ;~ testCheckColorPopUpDevil()
 ;~ testCheckOpenDevil()
 ;~ testCheckSwithCharButton()
@@ -48,6 +50,7 @@ testSearchNPCThenClick()
 ;~ testSplitString()
 ;~ testChangeThenReturnChar($charName)
 ;~ testcheckLvl400($charName)
+;~ testMergeAccountDevil()
 
 ;~ quickTest()
 
@@ -69,6 +72,18 @@ Func quickTest()
     EndIf
 EndFunc
 
+; Method: testMergeAccountDevil
+; Description: Test mergeInfoAccountDevil voi du lieu mock + file fixed tam
+Func testMergeAccountDevil()
+    Local $jsonMerged = mergeInfoAccountDevil()
+    writeLogFile($logFile, "Danh sach account merge: " & UBound($jsonMerged) & " item")
+    If UBound($jsonMerged) > 0 Then
+        For $i = 0 To UBound($jsonMerged) - 1
+            writeLogFile($logFile, "[MERGED][" & $i & "] " & convertJsonToString($jsonMerged[$i]))
+        Next
+    EndIf
+EndFunc
+
 Func testAddPointInGame()
     addPointInGame()
     Return True
@@ -81,8 +96,14 @@ Func testFollowLead($charName)
 EndFunc
 
 Func testClickDevil($charName)
-    activeAndMoveWin(getMainNoByChar($charName))    
-    clickIconDevil($charName, true, $isHaveQuest)
+    activeAndMoveWin(getMainNoByChar($charName))
+    ; tao array $charInfo tu du lieu mock
+    Local $jsonDevilJson = getJsonFromText($sDevilJson)
+    Local $jsonDevilFixed = getJsonFromText($sFixedJson)
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)[0]
+    ; ket qua mergeInfoAccountDevilCommon tra ve la 1 object dictionary, co key la char_name, value la 1 object dictionary chua thong tin cua char do
+    ;~ writeLog(convertJsonToString($charInfo))
+    clickIconDevil($charInfo)
     Return True
 EndFunc
 
@@ -117,7 +138,11 @@ EndFunc
 
 Func testSearchNPC()
     Local $npcX = 0, $npcY = 0
-    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+    Local $jsonDevilJson = getJsonFromText($sDevilJson)
+    Local $jsonDevilFixed = getJsonFromText($sFixedJson)
+    Local $charInfo = mergeInfoAccountDevilCommon($jsonDevilJson, $jsonDevilFixed)[0]
+    
+    If searchNpcDevil($charInfo, $npcX, $npcY) Then
         MouseMove($npcX, $npcY)
         secondWait(1)
     EndIf
@@ -125,7 +150,13 @@ EndFunc
 Func testSearchNPCThenClick()
     secondWait(1)
     Local $npcX = 0, $npcY = 0
-    If searchNpcDevil($charName, $checkRuongK, $devilNo, $isHaveQuest, $npcX, $npcY) Then
+    Local $charInfo = ObjCreate("Scripting.Dictionary")
+    $charInfo.Item("char_name") = $charName
+    $charInfo.Item("have_ruong_k") = $checkRuongK
+    $charInfo.Item("devil_no") = $devilNo
+    $charInfo.Item("have_quest") = $isHaveQuest
+    
+    If searchNpcDevil($charInfo, $npcX, $npcY) Then
         MouseMove($npcX, $npcY)
         secondWait(1)
         ; Click into NPC devil
@@ -480,6 +511,21 @@ Func testStopAutoPlus()
     Return True
 EndFunc
 
+Func testFollowLeadThenStartAutoPlus()
+    Local $sFastJoinConfig = '{"active":true,"char_name":"GiamDocSo","devil_no":4,"ignore_peak_hour":true,"is_fast_join":true,"switch_other_main":false,"is_need_follow_leader":true,"need_check_auto_z":true,"have_quest":false,"max_hour_go":25,"main_char_name":"BoDeToSu","is_check_400lv":false,"have_ruong_k":true,"fixed_coord_first":false,"icon_devil_x":100,"icon_devil_y":100,"time_wait_after_follow":70}'
+    Local $oFastJoinConfig = getJsonFromText($sFastJoinConfig)
+
+    Local $charNameTest = _JSONGet($oFastJoinConfig, "char_name")
+    Local $timeWaitFollowLeader = Number(_JSONGet($oFastJoinConfig, "time_wait_after_follow"))
+    ; on_auto_plus khong co trong json mau => fallback sang need_check_auto_z de bat auto plus khi can
+    Local $onAutoPlus = _JSONGet($oFastJoinConfig, "on_auto_plus")
+    If $onAutoPlus = "" Or $onAutoPlus = Default Then $onAutoPlus = _JSONGet($oFastJoinConfig, "need_check_auto_z")
+
+    activeAndMoveWin(getMainNoByChar($charNameTest))
+    followLeadThenStartAutoPlus($charNameTest, $onAutoPlus, $timeWaitFollowLeader)
+    Return True
+EndFunc
+
 Func testSwitchSvInGame()
     ;~ $oAccountInfo = getAccountInfoByChar($charName)
     Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
@@ -547,3 +593,4 @@ Func testSendKeyEsc()
 	sendKeyEsc()
 	secondWait(1)
 EndFunc   ;==>sendKeyEsc
+

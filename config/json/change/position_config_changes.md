@@ -62,3 +62,6 @@ Ghi lại các thay đổi tọa độ trong `position_config.json` / `m1_positi
 - Thêm: `common.login.button_delete_account_y` = 345 — Key mới cho tọa độ Y nút xóa account
 - **Used by:** `clickAddAccount()` trong `feature/auto_login/auto_login.au3`
 - **Feature:** `feature/auto_login/auto_login.au3`
+
+[2026/06/22] - So sánh main → update/v1.22
+- Xóa: common.auto.time_wait_after_follow = 10 — Chuyển cấu hình thời gian chờ sau follow sang devil config để đúng domain của feature Devil
