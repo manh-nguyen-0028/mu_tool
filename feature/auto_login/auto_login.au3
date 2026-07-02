@@ -288,14 +288,24 @@ Func processLogin($sUsername, $sPassword, $sCharName, $iServerNo, $accountConfig
 			Return True
 		EndIf
 	EndIf
+
+	secondWait(5)
 EndFunc   ;==>processLogin
 
 ; ============ PHASE 3: LOGIN STEPS (9 HAM) ============
 
 Func closeExistingGameWindow()
 	writeLogFile($logFile, "Step 1: closeExistingGameWindow() - Dùng hàm dùng chung từ game_utils")
-	Local $sLauncherTitle = "MU GamethuVN - Season 21"
-	Return closeWinExact($sLauncherTitle)
+	; Thuc hien 2 cong viec: 1. Close window voi $titleGameMain
+	closeWinExact($titleGameMain)
+	;~ closeByTitleAndClass($titleGameMain, "SDL_app")
+	secondWait(1)
+	; 2. Close window process co title = $titleGameMain va class = $titleGameMain
+	$class = "#32770"
+	;~ closeByClass($class)
+	closeByTitleAndClass($titleGameMain, "#32770")
+	secondWait(1)
+	closeByTitleAndClass($titleGameMain, "#32770")
 EndFunc   ;==>closeExistingGameWindow
 
 Func runGameExe()
@@ -338,6 +348,8 @@ Func runGameExe()
 		$iPopupErrorOkY = Number($iPopupErrorOkY)
 		writeLogFile($logFile, "Click OK popup lỗi tại X=" & $iPopupErrorOkX & ", Y=" & $iPopupErrorOkY)
 		_MU_MouseClick_Delay($iPopupErrorOkX, $iPopupErrorOkY)
+		secondWait(1)
+		sendKeyEnter()
 	Else
 		writeLogFile($logFile, "CẢNH BÁO: Không tìm thấy tọa độ popup_error_ok_x/y (hoặc button.dong_y.x/y), bỏ qua click popup")
 	EndIf
@@ -366,11 +378,11 @@ EndFunc   ;==>clickButtonStart
 
 Func activeAndMoveGameWindow()
 	writeLogFile($logFile, "Step 4: activeAndMoveGameWindow() - Active/move window + click add account phía ngoài")
-	secondWait(2)
+	secondWait(5)
 	Local $iElapsedSec = 0
 	Local $bActive = False
 	While $iElapsedSec < 10 And Not $bActive
-		$bActive = activeAndMoveWin("MU GamethuVN - Season 21")
+		$bActive = activeAndMoveWin($titleGameMain)
 		If Not $bActive Then
 			writeLogFile($logFile, "Chưa active được window, thử lại sau 1s... (elapsed=" & $iElapsedSec & "s)")
 			secondWait(1)
@@ -385,6 +397,32 @@ Func activeAndMoveGameWindow()
 		secondWait(10)
 	EndIf
 
+	; Thuc hien check color xem man nay da duoc active hay chua
+	;703, 558
+	;0xFFFFFF
+	; "color_screen_load_game": "0xFFFFFF",
+    ;~   "position_screen_load_game_x": 703,
+    ;~   "position_screen_load_game_y": 558,
+
+	Local $positionLoadGameX = getLoginProperty("position_screen_load_game_x")
+	Local $positionLoadGameY = getLoginProperty("position_screen_load_game_y")
+	Local $colorLoadGame = getLoginProperty("color_screen_load_game")
+
+	If $positionLoadGameX = Default Or $positionLoadGameX = "" Or $positionLoadGameY = Default Or $positionLoadGameY = "" Then
+		writeLogFile($logFile, "LỖI: Không tìm thấy positionLoadGameY _x/y")
+		Return False
+	EndIf
+
+	If $colorLoadGame = "" Then
+		$colorLoadGame = "0xFFFFFF"
+	EndIf
+
+	$checkLoadGameSuccess = checkPixelColor($positionLoadGameX, $positionLoadGameY, $colorLoadGame)
+	If Not $checkLoadGameSuccess Then
+		writeLogFile($logFile, "LỖI: Pixel check tai X=" & $positionLoadGameX & ", Y=" & $positionLoadGameY & " khong phai mau " & $colorLoadGame)
+		secondWait(5)
+	EndIf
+
 	Local $iOuterAddAccountX = getLoginProperty("button_outer_add_account_x")
 	Local $iOuterAddAccountY = getLoginProperty("button_outer_add_account_y")
 
@@ -393,6 +431,11 @@ Func activeAndMoveGameWindow()
 		Return False
 	EndIf
 
+	; active 1 lan nua de tranh truong hop window bi overlay boi popup
+	activeAndMoveWin($titleGameMain)
+
+	; Thuc hien check color xem man nay da duoc active hay chua, tranh truong hop click nham vao popup
+	; TODO
 	$iOuterAddAccountX = Number($iOuterAddAccountX)
 	$iOuterAddAccountY = Number($iOuterAddAccountY)
 
