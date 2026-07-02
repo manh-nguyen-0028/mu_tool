@@ -881,3 +881,13 @@ Func updateLastTimeRs($charName, $lastTimeRs)
 		EndIf
 	Next
 EndFunc
+
+Func closeByTitleAndClass($title, $class)
+	Local $sLauncherTitle = "[TITLE:" & $title & "; CLASS:" & $class & "]"
+	If WinExists($sLauncherTitle) Then
+		Local $iPID = WinGetProcess($sLauncherTitle)
+		If $iPID Then
+			ProcessClose($iPID)
+		EndIf
+	EndIf
+EndFunc   ;==>closeWinExact

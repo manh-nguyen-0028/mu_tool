@@ -367,7 +367,7 @@ Func clickIconDevil($charInfo)
 	$fixedCoordFirst = _JSONGet($charInfo, "fixed_coord_first")
 	$iconDevilPriorityX = _JSONGet($charInfo, "icon_devil_x")
 	$iconDevilPriorityY = _JSONGet($charInfo, "icon_devil_y")
-
+	$isFastJoin = _JSONGet($charInfo, "is_fast_join")
 
 	activeAndMoveWinByChar($charName)
 	writeLogFile($logFile, "Click event devil. Check ruong K: " & $checkRuongK)
@@ -394,10 +394,14 @@ Func clickIconDevil($charInfo)
 			$devilIconX = $iconDevilPriorityX
 			$devilIconY = $iconDevilPriorityY
 	EndIf
-	; Click vao icon event devil 2 lan de chac an
-	For $i = 0 To 1 Step +1
-		_MU_MouseClick_Delay($devilIconX, $devilIconY)
-	Next
+
+	; Trong truong hop fast join thi can thuc hien Enter them 1 lan de loai bo popup event devil
+	If $isFastJoin Then
+		sendEnterThenClickCenter()
+	EndIf
+
+	; Click vao icon event
+	_MU_MouseClick_Delay($devilIconX, $devilIconY)
 
 	; Nhap enter de vao devil
 	sendKeyEnter()
@@ -988,8 +992,11 @@ Func closeWinExact($mainName)
 	For $i = 1 To $list[0][0]
 		; so sánh tuyệt đối
 		If $list[$i][0] = $expected Then
-			WinClose($list[$i][1])
-			;~ resizeGame($list[$i][1])
+			 Local $hWnd = $list[$i][1]
+        	Local $iPID = WinGetProcess($hWnd)
+        	;~ ConsoleWrite($iPID & @CRLF)
+			;~ WinClose($list[$i][1])
+			writeLogFile($logFile, "Đã đóng cửa sổ: " & $expected)
 			secondWait(2)
 			Return True
 		EndIf
