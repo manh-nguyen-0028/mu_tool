@@ -1,0 +1,5 @@
+[
+{"active":true,"char_name":"TrumGauCho","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":true,"char_name":"GameShow","devil_no":4,"ignore_peak_hour":false,"is_fast_join":true, "switch_other_main": false,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":true,"char_name":"LaoToBoDe","devil_no":5,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true}
+]

@@ -1,0 +1,5 @@
+[
+  {"have_quest": false,"char_name":"GameShow","max_hour_go":25,"main_char_name": "KangKuKot","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": false, "icon_devil_x": 100, "icon_devil_y": 100, "time_wait_after_follow": 70},
+  {"have_quest": false,"char_name":"TrumGauCho","max_hour_go":25,"main_char_name": "DarkLight","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": false, "icon_devil_x": 100, "icon_devil_y": 100, "time_wait_after_follow": 70},
+  {"have_quest": false,"char_name":"LaoToBoDe","max_hour_go":25,"main_char_name": "GauBacCuc","is_check_400lv": false,"have_ruong_k":true, "fixed_coord_first": false, "icon_devil_x": 100, "icon_devil_y": 100, "time_wait_after_follow": 70}
+]
