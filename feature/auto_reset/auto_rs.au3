@@ -99,6 +99,7 @@ Func startAutoRs()
 
 EndFunc   ;==>startAutoRs
 
+; tiến trình reset normal
 Func reset($jAccountInfo)
 	$charName = getPropertyJson($jAccountInfo, "char_name")
 	$resetOnline = getPropertyJson($jAccountInfo, "reset_online")
@@ -110,18 +111,8 @@ Func reset($jAccountInfo)
 		; Truong hop main hien tai khong duoc active, active main khac
 		If Not $activeMain Then $activeMain = switchOtherChar($charName)
 		If $activeMain Then
-			; Thuc hien minize main
 			minisizeMain($mainNo)
-			; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
-			$minuteCheck = Number(@MIN)
-			If $minuteCheck > 52 Then
-				$minuteWait = (60 - $minuteCheck) + 8
-				minuteWait($minuteWait)
-			ElseIf $minuteCheck < 8 Then
-				; Wait 1 min
-				$minuteWait = 8 - $minuteCheck
-				minuteWait($minuteWait)
-			EndIf
+			timeWaitBeforeReset()
 			processReset($jAccountInfo)
 		EndIf
 	Else
@@ -129,6 +120,19 @@ Func reset($jAccountInfo)
 	EndIf
 	writeLogFile($logFile, "End handle reset with account: " & getPropertyJson($jAccountInfo, "char_name"))
 EndFunc   ;==>reset
+
+Func timeWaitBeforeReset()
+	; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
+	$minuteCheck = Number(@MIN)
+	If $minuteCheck > 52 Then
+		$minuteWait = (60 - $minuteCheck) + 8
+		minuteWait($minuteWait)
+	ElseIf $minuteCheck < 8 Then
+		; Wait 1 min
+		$minuteWait = 8 - $minuteCheck
+		minuteWait($minuteWait)
+	EndIf
+EndFunc
 
 Func withDrawRs($jAccountInfo)
 	writeLogMethodStart("processWithDrawReset", @ScriptLineNumber, $jAccountInfo)
@@ -517,7 +521,13 @@ Func processReset($jAccountInfo)
 	$timeInNight = $oAccountInfo.Item("time_in_night")
 	$timeRs = $oAccountInfo.Item("time_rs")
 
-	writeLogFile($logFile, "Begin handle process reset with account: " & $charName)
+	; In ra vai thong tin quan trong de debug
+	writeLogFile($logFile, "Thong tin quan trong de debug processReset($jAccountInfo): ")
+	writeLogFile($logFile, "charName: " & $charName)
+	writeLogFile($logFile, "resetOnline: " & $resetOnline)
+	writeLogFile($logFile, "timeInNight: " & $timeInNight)
+	writeLogFile($logFile, "timeRs: " & $timeRs)
+
 	$checkTimeInNight = checkTimeInNight($timeRs, $timeInNight)
 	$isLoginSuccess = login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password"))
 	If $isLoginSuccess Then
@@ -908,26 +918,45 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	$mainNo = getMainNoByChar($charName)
 	$trainInGame = $oAccountInfo.Item("isTrainInGame")
 	; 3.1. Check xem cua so enter co ton tai khong
-	firstActionAfterRs()
+	; vi da train in game nen khong can lam cac hanh dong nay nua
+	;~ firstActionAfterRs()
 	minisizeMain($mainNo)
 	; 5. Doi 2phut de cho len lvl > 20
-	minuteWait(1)
+	minuteWait(2)
 
 	; 6. Active main
 	activeAndMoveWin($mainNo)
 	; 7. Go map lvl
-	If $resetInDay <= 3 Then
-		writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
-		goMapLvl()
-	Else
-		goMapArena($rsCount)
-	EndIf
+	;~ If $resetInDay <= 3 Then
+	;~ 	writeLogFile($logFile, "So lan rs trong ngay: " & $resetInDay)
+	;~ 	goMapLvl()
+	;~ Else
+	;~ 	goMapArena($rsCount)
+	;~ EndIf
+	; 24.08 => ko can vao map lvl nua thi exp qua thap
+	goMapArena($rsCount)
 
 	; doi 1 phut de di chuyen da nhe
-	minuteWait(1)
+	
 	; 8. Check lvl 400 trong game
 	;~ checkLvl400WhenRs($rsCount, $charName, 2)
-	checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
+	;~ checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
+	; manhnt: 24/08/2026 khong can check lvl tren web nua ma chi can vao arena tam do 6 phut la du roi
+	; thuc hien check active auto home de biet bi chet khong de thuc hien vao lai arena, so lan thuc hien toi da la 5 lan
+	$timeCheckArena = 0
+	While $timeCheckArena < 5
+		minuteWait(1)
+		$timeCheckArena += 1
+		writeLogFile($logFile, "Thuc hien check active auto home lan thu: " & $timeCheckArena)
+		; Thuc hien check active auto home
+		If Not checkActiveAutoHome() Then
+			writeLogFile($logFile, "Auto Home not active !")
+			goMapArena($rsCount)
+		Else
+			writeLogFile($logFile, "Auto Home active !")
+		EndIf
+		minisizeMain($mainNo)
+	WEnd
 	
 	; Thuc hien chuyen map neu khong tim thay lvl 400
 	moveOtherMap($charName)
@@ -935,24 +964,27 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	; Thuc hien add 1 lan point nua cho het
 	addPointInGame()
 
+	; Thuc hien bat tat lai auto home plus
+	_ProcessRs_RestartAutoPlus()
+
 	; 9. Follow leader
-	$positionLeader = $oAccountInfo.Item("positionLeader")
-	If Not IsNumber($positionLeader) Then $positionLeader = 1
+	;~ $positionLeader = $oAccountInfo.Item("positionLeader")
+	;~ If Not IsNumber($positionLeader) Then $positionLeader = 1
 
-	_MU_followLeader($positionLeader)
+	;~ _MU_followLeader($positionLeader)
 
-	; Truong hop can train in game thi thực hiện active button train in game
-	If $oAccountInfo.Item("onAutoPlus") Then 
-		startAutoPlus()
-		secondWait(1)
-		If $oAccountInfo.Item("switchServer") Then switchSvInGame($oAccountInfo)
-	EndIf
+	;~ ; Truong hop can train in game thi thực hiện active button train in game
+	;~ If $oAccountInfo.Item("onAutoPlus") Then 
+	;~ 	startAutoPlus()
+	;~ 	secondWait(1)
+	;~ 	If $oAccountInfo.Item("switchServer") Then switchSvInGame($oAccountInfo)
+	;~ EndIf
 
 	; 10. Truong hop khong phai la main_char moi can phai doi 1 phut de di chuyen
-	If Not $oAccountInfo.Item("isMainCharacter") Then 
-		minuteWait(1)
-		handleIsNotMainChar($oAccountInfo)
-	EndIf
+	;~ If Not $oAccountInfo.Item("isMainCharacter") Then 
+	;~ 	minuteWait(1)
+	;~ 	handleIsNotMainChar($oAccountInfo)
+	;~ EndIf
 
 	writeLogMethodEnd("processResetNomal", @ScriptLineNumber)
 EndFunc
@@ -995,13 +1027,6 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		goMapArena($rsCount)
 		minuteWait(1)
 		$lvlCheckInWeb = checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
-		;~ $lvlCheckInWeb = checkLvl400WhenRs($rsCount, $charName, 1)
-		;~ While $lvlCheckInWeb < $lvlStopCheck And $timeCheck <= 5
-		;~ 	writeLogFile($logFile, "Lvl tren web: " & $lvlCheckInWeb & " - Lvl stop check: " & $lvlStopCheck)
-		;~ 	$lvlCheckInWeb = checkLvlInWebByChangeChar($sSession, $rsCount, $charName, 400, 2)
-		;~ 	$timeCheck += 1
-		;~ 	minuteWait(1)
-		;~ WEnd
 
 		If $lvlCheckInWeb < $lvlStopCheck Then
 			writeLogFile($logFile, "Khong du lvl de reset ! Thuc hien chuyen map ! Follow leader !")
