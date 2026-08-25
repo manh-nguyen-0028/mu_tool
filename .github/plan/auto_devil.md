@@ -1,7 +1,7 @@
-# Plan: Auto Devil Event (auto_devil.au3)
+# Plan: Auto Devil Auto Plus Event (auto_devil_auto_plus.au3)
 
 ## TL;DR
-Tự động tham gia sự kiện Quỷ Vương (Devil Square) trong game MU Online. Tính giờ chờ → active cửa sổ game → kiểm tra 400 lvl → click icon Devil → tìm NPC → chọn Devil Square → chờ hết event → xử lý sau event (follow leader, chuyển map, switch main). Chạy while loop liên tục, tự tính thời gian event tiếp theo.
+Feature mới dành riêng nhóm account devil có `type = auto_plus`. Luồng xử lý rút gọn: tính giờ event lùi 5 phút (riêng 23h -> 23h55) → active/switch rồi minisize account → xử lý fast join (move + follow, có chờ 2 phút khi cần follow) → xử lý nhóm còn lại tại mốc phút 26/50 (move map + start/stop auto plus) → chuyển về main chính nếu được phép. Chạy while loop liên tục.
 
 ---
 
@@ -11,18 +11,16 @@ Tự động tham gia sự kiện Quỷ Vương (Devil Square) trong game MU Onl
 ```
 start()
 ├─ Mở log file
-├─ getArrayActiveDevil()                    [Load config, lọc active: true]
+├─ mergeInfoAccountDevil("auto_plus")      [Lọc type = auto_plus sau merge]
 └─ processGoDevil()                         [While loop chính]
    └─ checkThenGoDevilEvent()
       ├─ calculateNextDevilEventTime()      [Tính giờ event tiếp theo]
       ├─ Nếu chưa tới giờ (diffTime > 0):
       │  ├─ Check auto_rs.exe → Exit nếu có [Tránh xung đột với auto reset]
       │  ├─ Sleep() đến giờ event
-      │  ├─ processGoEventDevil()           [Vào event cho tất cả account]
-      │  ├─ checkAccountsInDevil()          [Kiểm tra ai đã vào thành công]
-      │  ├─ processFastJoinAccounts()       [Xử lý account fast join: move + follow]
-      │  ├─ switchToMainChar()              [Chuyển về main char]
-      │  └─ sleep26Min()                    [Chờ hết event → xử lý sau event]
+      │  ├─ processGoEventDevil()           [Flow rút gọn active/switch + minisize]
+      │  ├─ processFastJoinAccounts()       [Fast join: move + follow, chờ 2 phút nếu cần]
+      │  └─ processRemainAccounts()         [Nhóm còn lại: mốc 26/50 -> move + start/stop auto plus]
       └─ Nếu đã qua giờ (diffTime <= 0):
          └─ waitToNextMinutes(58)           [Chờ ~1h đến event tiếp]
 ```
@@ -30,13 +28,13 @@ start()
 ### Lịch Event Devil
 ```
 calculateNextDevilEventTime($currentHour, $currentMin)
-├─ 00h-02h → chờ đến 03h00
-├─ 03h-05h → chờ đến 06h00
-├─ 06h-10h, 12h-19h → chờ đến giờ kế tiếp (mỗi giờ 1 event)
+├─ 00h-02h → chờ đến 02h55
+├─ 03h-05h → chờ đến 05h55
+├─ 06h-10h, 12h-19h → chờ đến xx:55
 ├─ 11h, 20h-22h → event mỗi 30 phút
-│  ├─ Phút < 30 → chờ đến xx:30
-│  └─ Phút >= 30 → chờ đến (xx+1):00
-└─ 23h → chờ đến 00h00 ngày kế tiếp
+│  ├─ Mốc :30 → chạy lúc :25
+│  └─ Mốc :00 giờ kế tiếp → chạy lúc :55 của giờ hiện tại
+└─ 23h → chờ đến 23h55
 ```
 
 ### processGoEventDevil() — Vào Event
@@ -44,71 +42,43 @@ calculateNextDevilEventTime($currentHour, $currentMin)
 processGoEventDevil()
 ├─ reloadArrayActive()                [Load lại config mới nhất]
 ├─ validateAmountDevil()              [Kiểm tra có account active không]
-├─ getListFastMove()                  [Lọc account có is_fast_join = true]
 └─ For each account active:
-   ├─ Kiểm tra thời gian hợp lệ (phút 0-5 hoặc 30-35)
    ├─ activeAndMoveWin() / switchOtherChar()  [Active cửa sổ game]
-   ├─ check400LvlImage()                      [Kiểm tra đủ 400 lvl]
-   ├─ clickIconDevil()                        [Click icon Devil trên UI]
-   ├─ searchNpcDevil()                        [Tìm NPC Devil bằng image search]
-   ├─ Nếu tìm thấy NPC:
-   │  ├─ clickToNpcDevil()                    [Click vào NPC]
-   │  ├─ checkColorPopUpDevil()               [Kiểm tra popup chọn Devil]
-   │  ├─ actionGoDevilSuccess()               [Chọn Devil No + bật Auto Z]
-   │  └─ actionGoDevilFail()                  [Follow leader nếu cần]
    └─ minisizeMainByChar()                    [Ẩn cửa sổ]
-```
-
-### Xử Lý Sau Event
-```
-sleep26Min($aCharJoinDevil)
-├─ Tính thời gian chờ đến phút 21 hoặc 51 (sau event ~26 phút)
-├─ Sleep() chờ hết event
-├─ Nếu giờ 20/21/22/11 (giờ cao điểm):
-│  └─ For each char: handelWhenFinshDevilEvent() → minisize
-└─ Nếu giờ khác:
-   ├─ handleAfterDevilEvent()
-   │  └─ For each char:
-   │     ├─ isFastMove → skip (đã xử lý ở processFastJoinAccounts)
-   │     ├─ charNotJoinDevil → skip
-   │     ├─ Không cần follow leader → skip
-   │     └─ Cần follow leader:
-   │        ├─ activeAndMoveWin() / switchOtherChar()
-   │        ├─ handelWhenFinshDevilEvent()   [Xử lý UI sau event]
-   │        ├─ moveOtherMap()                [Chuyển map]
-   │        ├─ _MU_followLeader(1)           [Follow leader]
-   │        ├─ checkRuongK()                 [Kiểm tra rương K]
-   │        └─ checkAutoZAfterFollowLead()   [Kiểm tra Auto Z]
-   └─ switchToMainChar()                     [Chuyển về main char]
-```
-
-### checkAccountsInDevil() — Kiểm Tra Kết Quả
-```
-checkAccountsInDevil($jsonAccountActiveDevil)
-└─ For each account:
-   ├─ activeAndMoveWin() / switchOtherChar()
-   ├─ checkActiveAutoHome()
-   │  ├─ True → đã vào Devil thành công → thêm vào $aCharJoinDevil
-   │  └─ False → không vào được → actionWhenCantJoinDevil()
-   └─ switchToMainCharItem() nếu switch_other_main = true
 ```
 
 ### processFastJoinAccounts() — Xử Lý Fast Join
 ```
-processFastJoinAccounts($aCharJoinDevil)
-├─ Chờ đến phút 6 hoặc 36 (sau khi event bắt đầu ~6 phút)
-└─ For each char có is_fast_join = true:
+processFastJoinAccounts($jsonAccountActiveDevil)
+├─ Lọc danh sách is_fast_join = true
+└─ For each fast join:
    ├─ activeAndMoveWin() / switchOtherChar()
-   ├─ moveOtherMap()                    [Chuyển map khỏi Devil]
-   ├─ followLeadThenStartAutoPlus()     [Follow leader + bật auto plus]
-   └─ sendKeyF8()                       [Ẩn cửa sổ]
+   ├─ Nếu cần follow leader → chờ 2 phút
+   ├─ moveOtherMap()
+   ├─ Nếu cần follow leader → _MU_followLeader(1)
+   └─ minisizeMainByChar()
+└─ switchToMainChar($fastJoinAccounts)       [Loop lại để về main chính nếu cho phép]
+```
+
+### processRemainAccounts() — Nhóm Còn Lại
+```
+processRemainAccounts($jsonAccountActiveDevil)
+├─ Lọc danh sách không fast join
+├─ Chờ tới phút 26 hoặc 50
+└─ For each account còn lại:
+   ├─ activeAndMoveWin() / switchOtherChar()
+   ├─ moveOtherMap()
+   ├─ startAutoPlus()
+   ├─ stopAutoPlus()
+   └─ minisizeMainByChar()
+└─ switchToMainChar($remainAccounts)     [Loop lại để về main chính nếu cho phép]
 ```
 
 ---
 
 ## Config Format
 
-### devil_config.json
+### devil_config.json + devil_fixed_config.json
 ```json
 [
   {
@@ -125,7 +95,8 @@ processFastJoinAccounts($aCharJoinDevil)
     "is_need_follow_leader": true,  // Có cần follow leader sau event không
     "on_auto_plus": false,          // Có bật auto plus sau event không
     "need_check_auto_z": false,     // Có cần kiểm tra Auto Z không
-    "max_hour_go": 25               // Số giờ tối đa tham gia Devil
+      "max_hour_go": 25,              // Số giờ tối đa tham gia Devil
+      "type": "auto_plus"            // Bắt buộc cho feature mới auto_devil_auto_plus
   }
 ]
 ```
@@ -134,23 +105,21 @@ processFastJoinAccounts($aCharJoinDevil)
 
 ## Hàm Chi Tiết
 
-### Orchestration (auto_devil.au3)
+### Orchestration (auto_devil_auto_plus.au3)
 | Hàm | Mô tả |
 |------|--------|
 | `start()` | Entry point: mở log → load config → processGoDevil() |
 | `processGoDevil()` | While loop: reset log mỗi 10 lần → checkThenGoDevilEvent() |
 | `checkThenGoDevilEvent()` | Tính giờ event → sleep → vào event → check kết quả → xử lý sau event |
 | `calculateNextDevilEventTime()` | Tính giờ/phút event tiếp theo dựa trên giờ hiện tại |
-| `validateAmountDevil()` | Kiểm tra có account active không |
 | `getListFastMove()` | Lọc account có is_fast_join = true |
 | `reloadArrayActive()` | Load lại config mới nhất |
-| `processGoEventDevil()` | Loop qua các account → vào event Devil |
-| `actionGoDevilSuccess()` | Chọn Devil No + bật Auto Z |
-| `actionGoDevilFail()` | Follow leader khi không tìm thấy popup |
-| `checkAccountsInDevil()` | Kiểm tra account nào đã vào Devil thành công |
-| `processFastJoinAccounts()` | Xử lý account fast join: chờ 6 phút → move + follow |
-| `sleep26Min()` | Chờ hết event (~26 phút) → xử lý sau event |
-| `handleAfterDevilEvent()` | Xử lý sau event: follow leader, move map, check rương K |
+| `processGoEventDevil()` | Loop qua account type auto_plus: active/switch + minisize |
+| `getFastJoinAccounts()` | Lọc account có is_fast_join = true |
+| `getRemainAccounts()` | Lọc account không fast join |
+| `processFastJoinAccounts()` | Move + follow (nếu cần), chờ 2 phút khi follow, rồi switch main |
+| `waitToMinute26Or50()` | Chờ đến mốc phút 26 hoặc 50 |
+| `processRemainAccounts()` | Mốc 26/50: move map + start/stop auto plus, rồi switch main |
 
 ### Game Utils (game_utils.au3) — Devil Functions
 | Hàm | Mô tả |
@@ -202,8 +171,10 @@ auto_devil.au3
 ## Relevant Files
 
 ### Implementation
-- [feature/auto_devil/auto_devil.au3](feature/auto_devil/auto_devil.au3) — File chính (~510 dòng)
-- [utils/game_utils.au3](utils/game_utils.au3) — Các hàm Devil trong game_utils
+- [feature/auto_devil/auto_devil_auto_plus.au3](feature/auto_devil/auto_devil_auto_plus.au3) — File feature mới cho type auto_plus
+- [feature/auto_devil/auto_devil.au3](feature/auto_devil/auto_devil.au3) — Flow cũ, giữ nguyên để không ảnh hưởng
+- [utils/common_utils.au3](utils/common_utils.au3) — Bổ sung lọc dữ liệu theo type
+- [utils/game_utils.au3](utils/game_utils.au3) — Các hàm game dùng lại
 
 ### Config
 - [config/json/example/devil_config_example.json](config/json/example/devil_config_example.json) — Mẫu config Devil
@@ -221,10 +192,9 @@ auto_devil.au3
 
 ## Lưu Ý Quan Trọng
 
-1. **Xung đột với auto_rs**: Kiểm tra `ProcessExists("auto_rs.exe")` → Exit nếu có, tránh 2 tool cùng điều khiển game
-2. **Thời gian hợp lệ**: Chỉ vào Devil trong phút 0-5 hoặc 30-35, ngoài khoảng này → ExitLoop
-3. **Fast join**: Account `is_fast_join = true` vào Devil chỉ 6 phút rồi ra, move map + follow leader → bỏ qua xử lý sau event
-4. **Giờ cao điểm (20/21/22/11)**: Không follow leader, chỉ `handelWhenFinshDevilEvent()` + minisize
-5. **Log rotation**: Reset file log mỗi 10 lần loop để tránh file quá lớn
-6. **Image search**: Dùng `_ImageSearch` để tìm NPC Devil, kiểm tra 400 lvl, kiểm tra popup — phụ thuộc vào resolution game
-7. **Switch main**: Sau event, chuyển về `main_char_name` nếu `switch_other_main = true`
+1. **Xung đột với auto_rs**: Kiểm tra `ProcessExists("auto_rs.exe")` → Exit nếu có.
+2. **Lọc type bắt buộc**: Chỉ lấy record `type = auto_plus` (record thiếu `type` bị loại).
+3. **Mốc giờ**: Lùi 5 phút trong `calculateNextDevilEventTime()`, riêng 23h luôn chờ 23h55.
+4. **Fast join**: Nếu có follow leader thì chờ 2 phút trước khi move/follow.
+5. **Nhóm còn lại**: Chỉ xử lý ở phút 26 hoặc 50 với move map + start/stop auto plus.
+6. **Switch main**: Sau từng nhóm xử lý xong thì loop lại để chuyển về main chính nếu `switch_other_main = true`.

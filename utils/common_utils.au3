@@ -603,15 +603,21 @@ Func getOtherChar($currentChar)
 	Return $result
 EndFunc
 
-Func getArrayActiveDevil()
+Func getArrayActiveDevil($typeFilter = "")
 	$jsonDevilConfig = getJsonFromFile($jsonPathRoot & $devilFileName)
 	Local $jsonAccountActiveDevil[0]
 	For $i = 0 To UBound($jsonDevilConfig) - 1
 		; active win and check ruong K
 ;~ writeLog(_JSONGet($jsonDevilConfig[$i], "char_name"))
 		$activeDevil = _JSONGet($jsonDevilConfig[$i], "active")
+		$accountType = _JSONGet($jsonDevilConfig[$i], "type")
 		$ignorePeakHour = _JSONGet($jsonDevilConfig[$i], "ignore_peak_hour")
 		$maxHourGo = _JSONGet($jsonDevilConfig[$i], "max_hour_go")
+
+		; Optional pre-filter by type when field exists in source config.
+		If $typeFilter <> "" And $accountType <> Default And $accountType <> "" And $accountType <> $typeFilter Then
+			ContinueLoop
+		EndIf
 		; 19/07: add check $maxHourGo >= @HOUR
 		If $activeDevil And $maxHourGo >= @HOUR Then
 			If $ignorePeakHour And @HOUR >= 20 And @HOUR <= 22 Then
@@ -635,8 +641,8 @@ Func mergeInfoAccountRs()
 	Return $firstMerge
 EndFunc
 
-Func mergeInfoAccountDevil()
-	$jsonAccountActiveDevil = getArrayActiveDevil()
+Func mergeInfoAccountDevil($typeFilter = "")
+	$jsonAccountActiveDevil = getArrayActiveDevil($typeFilter)
 	If $devilFixedFileName == "" Then Return $jsonAccountActiveDevil
 
 	$devilFixedPath = $jsonPathRoot & $devilFixedFileName
@@ -646,8 +652,28 @@ Func mergeInfoAccountDevil()
 	EndIf
 
 	$jsonDevilFixed = getJsonFromFile($devilFixedPath)
-	
-	Return mergeInfoAccountDevilCommon($jsonAccountActiveDevil, $jsonDevilFixed)
+	Local $merged = mergeInfoAccountDevilCommon($jsonAccountActiveDevil, $jsonDevilFixed)
+
+	If $typeFilter <> "" Then
+		Return filterDevilAccountsByType($merged, $typeFilter)
+	EndIf
+
+	Return $merged
+EndFunc
+
+Func filterDevilAccountsByType($jsonAccountDevil, $typeFilter)
+	If $typeFilter == "" Then Return $jsonAccountDevil
+
+	Local $result[0]
+	For $i = 0 To UBound($jsonAccountDevil) - 1
+		Local $itemType = _JSONGet($jsonAccountDevil[$i], "type")
+		If $itemType == $typeFilter Then
+			ReDim $result[UBound($result) + 1]
+			$result[UBound($result) - 1] = $jsonAccountDevil[$i]
+		EndIf
+	Next
+
+	Return $result
 EndFunc
 
 Func mergeInfoAccountDevilCommon($jsonAccountActiveDevil, $jsonDevilFixed)
