@@ -233,6 +233,21 @@ Func waitToNextMinutes($nextMin)
 	Sleep($diffTime)
 EndFunc
 
+; Method: waitToMinute
+; Description: Cho den m0c phut truyen vao (gio hien tai neu chua toi, nguoc lai gio ke tiep).
+Func waitToMinute($targetMin, $targetSec = 10)
+	Local $targetHour = @HOUR
+	If @MIN >= $targetMin Then
+		$targetHour = @HOUR + 1
+		If $targetHour >= 24 Then $targetHour = 0
+	EndIf
+
+	Local $targetTime = createTimeToTicks($targetHour, $targetMin, $targetSec)
+	Local $diffWait = diffTime(getCurrentTime(), $targetTime)
+	writeLogFile($logFile, "waitToMinute den " & $targetHour & ":" & $targetMin & " - cho: " & timeToText($diffWait))
+	If $diffWait > 0 Then Sleep($diffWait)
+EndFunc
+
 ; Method: waitToNextTime
 ; Description: Pauses execution until the next specified time.
 Func waitToNextTime($hourPlus, $minPlus, $secPlus)
@@ -979,4 +994,14 @@ Func isValidPreEventSlot($hour, $min)
 	EndIf
 
 	Return False
+EndFunc
+
+Func waitToMinuteMinOrMax($minTime,$maxTime)
+	If @MIN < $minTime Then
+		waitToMinute($minTime)
+	ElseIf @MIN < $maxTime Then
+		waitToMinute($maxTime)
+	Else
+		waitToMinute($minTime)
+	EndIf
 EndFunc

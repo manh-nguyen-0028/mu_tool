@@ -59,8 +59,17 @@ Func checkThenGoDevilEvent()
 
 		Local $jsonAccountActive = processGoEventDevil()
 		If UBound($jsonAccountActive) == 0 Then Return
-
-		processFastJoinAccounts($jsonAccountActive)
+		; Chờ 7 phut sau do thuc hien chuyen sang main chinh
+		waitToMinuteMinOrMax(2,32)
+		writeLogFile($logFile, "Waited 7 minutes before proceeding to main flow")
+		; Chi thuc hien voi nhung nhan vat ko phải fastJoin
+		$charRemainNotFastJoin = getRemainAccounts($jsonAccountActive)
+		switchToMainChar($charRemainNotFastJoin)
+		; Thuc hien cho them 6 phut de thuc hien fast join
+		waitToMinuteMinOrMax(7,37)
+		writeLogFile($logFile, "Waited until minute 7 or 37 before processing fast join accounts")
+		processFastJoinAccounts($jsonAccountActive);
+		; Thuc hien hanh dong con lai cho nhung nhan vat khong phai fast join ( cho toi phut 26 hoac den khi het event)
 		processRemainAccounts($jsonAccountActive)
 	Else
 		; getTimeWaitNextEvent() da tinh moc ke tiep, chi cho 5 phut roi tinh lai.
@@ -202,34 +211,13 @@ Func processFastJoinAccounts($jsonAccountActiveDevil)
 	switchToMainChar($fastJoinAccounts)
 EndFunc
 
-; Method: waitToMinute26Or50
-; Description: Chờ đến mốc phút 26 hoặc 50.
-Func waitToMinute26Or50()
-	Local $targetHour = @HOUR
-	Local $targetMin = 26
-
-	If @MIN < 26 Then
-		$targetMin = 26
-	ElseIf @MIN < 50 Then
-		$targetMin = 50
-	Else
-		$targetHour = @HOUR + 1
-		If $targetHour >= 24 Then $targetHour = 0
-		$targetMin = 26
-	EndIf
-
-	Local $targetTime = createTimeToTicks($targetHour, $targetMin, 10)
-	Local $diffWait = diffTime(getCurrentTime(), $targetTime)
-	If $diffWait > 0 Then Sleep($diffWait)
-EndFunc
-
 ; Method: processRemainAccounts
 ; Description: Đợi mốc 26/50 rồi move map + start/stop auto plus cho nhóm còn lại.
 Func processRemainAccounts($jsonAccountActiveDevil)
 	Local $remainAccounts = getRemainAccounts($jsonAccountActiveDevil)
 	If UBound($remainAccounts) == 0 Then Return
 
-	waitToMinute26Or50()
+	waitToMinuteMinOrMax(22,52)
 
 	For $i = 0 To UBound($remainAccounts) - 1
 		Local $charName = _JSONGet($remainAccounts[$i], "char_name")
