@@ -1,6 +1,6 @@
 [
-{"active":true,"char_name":"BacThay","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
-{"active":false,"char_name":"GiamDocSo","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
-{"active":true,"char_name":"TamGiaoChu","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false},
-{"active":true,"char_name":"KimTieuQuy","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": false,"on_auto_plus": false}
+{"active":true,"type":"auto_plus","char_name":"BacThay","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":false,"type":"auto_plus","char_name":"GiamDocSo","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"need_check_auto_z": true},
+{"active":true,"type":"auto_plus","char_name":"TamGiaoChu","devil_no":2,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": true,"on_auto_plus": false},
+{"active":true,"type":"auto_plus","char_name":"KimTieuQuy","devil_no":3,"ignore_peak_hour":false,"is_fast_join":false, "switch_other_main": true,"is_need_follow_leader": false,"on_auto_plus": false}
 ]

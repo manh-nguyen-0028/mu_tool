@@ -332,23 +332,15 @@ Func processResetWebAutoPlus($jAccountInfo)
 			secondWait(1)
 			addPointInGame()
 			secondWait(1)
-			_ProcessRs_RestartAutoPlus()
+			startStopAutoPlus()
 		Else
-			_ProcessRs_RestartAutoPlus()
+			startStopAutoPlus()
 		EndIf
 
 		sendKeyF8()
 	EndIf
 	writeLogMethodEnd("processResetWebAutoPlus", @ScriptLineNumber, $jAccountInfo)
 EndFunc   ;==>processResetWebAutoPlus
-
-Func _ProcessRs_RestartAutoPlus()
-	secondWait(1)
-	stopAutoPlus()
-	secondWait(2)
-	startAutoPlus()
-	secondWait(1)
-EndFunc   ;==>_ProcessRs_RestartAutoPlus
 
 Func extractAccountInfo($jAccountInfo)
 	Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
@@ -965,7 +957,7 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	addPointInGame()
 
 	; Thuc hien bat tat lai auto home plus
-	_ProcessRs_RestartAutoPlus()
+	startStopAutoPlus()
 
 	; 9. Follow leader
 	;~ $positionLeader = $oAccountInfo.Item("positionLeader")

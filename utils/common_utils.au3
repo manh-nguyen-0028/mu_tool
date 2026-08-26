@@ -939,3 +939,44 @@ Func closeByClass($class)
 		EndIf
 	Next
 EndFunc
+
+; Function: getTimeWaitNextEvent
+; Description: Tính mốc event tiếp theo và lùi trước 5 phút. Riêng giờ 23h thì chờ 23h55.
+Func getTimeWaitNextEvent($currentHour = @HOUR, $currentMin = @MIN)
+	Local $result[2]
+
+	; Tim moc hop le tiep theo (bao gom ca thoi diem hien tai neu trung moc).
+	For $offset = 0 To 1440
+		Local $totalMin = $currentMin + $offset
+		Local $hour = Mod($currentHour + Int($totalMin / 60), 24)
+		Local $min = Mod($totalMin, 60)
+
+		If isValidPreEventSlot($hour, $min) Then
+			$result[0] = $hour
+			$result[1] = $min
+			writeLogFile($logFile, "Next hour: " & $hour & " - Next min: " & $min)
+			Return $result
+		EndIf
+	Next
+
+	; Fallback de tranh loi bat ngo.
+	$result[0] = 23
+	$result[1] = 55
+	Return $result
+EndFunc   ;==>getTimeWaitNextEvent
+
+; Method: isValidPreEventSlot
+; Description: Xac dinh moc vao event da lui 5 phut.
+Func isValidPreEventSlot($hour, $min)
+	If $min == 55 Then
+		; 02:55, 05:55, 06:55..23:55 (bao gom case 23h -> 23:55)
+		If $hour == 2 Or $hour == 5 Or ($hour >= 6 And $hour <= 23) Then Return True
+	EndIf
+
+	If $min == 25 Then
+		; Moc :25 cua cac khung event 30 phut.
+		If $hour == 11 Or ($hour >= 19 And $hour <= 22) Then Return True
+	EndIf
+
+	Return False
+EndFunc

@@ -568,7 +568,7 @@ Func clickOtherChar2($charName)
 	clickOtherCharCommon($swithCharIconX, $swithCharIconY, $charName)
 EndFunc   ;==>clickOtherChar2
 
-Func moveOtherMap($charName)
+Func moveOtherMap($charName, $startAutoPlus = False)
 	; Thuc hien get mainNo cua charName
 	$mainNo = getMainNoByChar($charName)
 	; Thuc hien active va move win
@@ -592,6 +592,9 @@ Func moveOtherMap($charName)
 
 		writeLogFile($logFile, "Da chuyen map khac voi toa do: " & $moveOtherMapX & " - " & $moveOtherMapY)
 		secondWait(5)
+
+		; Truong hop $startAutoPlus = True thi thuc hien startAutoPlus()
+		If $startAutoPlus Then startAutoPlus()
 	Else
 		writeLogFile($logFile, "Khong the chuyen map khac")
 	EndIf
@@ -1141,22 +1144,6 @@ Func checkActiveParentMain($charName)
 	Return $result
 EndFunc   ;==>checkActiveParentMain
 
-Func stopAutoPlus()
-	$stopAutoPlusX = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_x")
-	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
-	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
-
-	Return True
-EndFunc
-
-Func startAutoPlus()
-	; 1. Click vao button train in game
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
-	; 2. Click vao button bat dau train
-	secondWait(2)
-	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
-EndFunc
-
 ; Method: startAutoPlusWithReset
 ; Description: Mo Auto Plus, tick checkbox reset, click Start
 Func startAutoPlusWithReset()
@@ -1357,4 +1344,29 @@ Func handleIsNotMainChar($oAccountInfo)
 		minisizeMain($mainNoMinisize)
 		writeLogFile($logFile, "mainNoMinisize: " & $mainNoMinisize)
 	EndIf
+EndFunc
+
+Func startStopAutoPlus()
+	secondWait(1)
+	stopAutoPlus()
+	secondWait(2)
+	startAutoPlus()
+	secondWait(1)
+EndFunc
+
+Func stopAutoPlus()
+	$stopAutoPlusX = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_x")
+	$stopAutoPlusY = _JSONGet($jsonPositionConfig, "button.train_in_game.button_stop_y")
+	_MU_MouseClick_Delay($stopAutoPlusX, $stopAutoPlusY)
+
+	Return True
+EndFunc
+
+Func startAutoPlus()
+	; 1. Click vao button train in game
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
+	; 2. Click vao button bat dau train
+	secondWait(2)
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
+	secondWait(1)
 EndFunc
