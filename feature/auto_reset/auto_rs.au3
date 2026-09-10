@@ -112,7 +112,7 @@ Func reset($jAccountInfo)
 		If Not $activeMain Then $activeMain = switchOtherChar($charName)
 		If $activeMain Then
 			minisizeMain($mainNo)
-			timeWaitBeforeReset()
+			;~ timeWaitBeforeReset()
 			processReset($jAccountInfo)
 		EndIf
 	Else
@@ -417,10 +417,10 @@ Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff)
 			_JSONSet($currentRs, $jItem, "rs")
 			_JSONSet($resetInDay, $jItem, "time_rs")
 			$sTimeReset = getTimeReset($sLogReset, 0)
-			If $sTimeReset = 0 Or $currentLvl <> 1 Or $currentRs == $rsCount Then
-				$sTimeReset = getTimeNow()
-				writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
-			EndIf
+			;~ If $sTimeReset = 0 Or $currentLvl <> 1 Or $currentRs == $rsCount Then
+			;~ 	$sTimeReset = getTimeNow()
+			;~ 	writeLogFile($logFile, "Khong tim thay last time reset, set thanh thoi gian hien tai: " & $sTimeReset)
+			;~ EndIf
 			_JSONSet($sTimeReset, $jItem, "last_time_reset")
 			$jsonRsGame[$i] = $jItem
 			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
@@ -940,6 +940,8 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 		minuteWait(1)
 		$timeCheckArena += 1
 		writeLogFile($logFile, "Thuc hien check active auto home lan thu: " & $timeCheckArena)
+		; Thuc hien active main truoc
+		activeAndMoveWin($mainNo)
 		; Thuc hien check active auto home
 		If Not checkActiveAutoHome() Then
 			writeLogFile($logFile, "Auto Home not active !")
