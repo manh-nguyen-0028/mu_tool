@@ -5,8 +5,8 @@
 
 Global $timeStartProcess = 0, $sFilePath
 
-;~ start()
-testgetTimeWaitNextEvent()
+start()
+;~ testgetTimeWaitNextEvent()
 
 ; Method: start
 ; Description: Entry point cho flow auto devil type=auto_plus.

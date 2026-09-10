@@ -661,7 +661,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 		secondWait(2)
 	EndIf
 	; Click radio rs vip
-	_WD_ExecuteScript($sSession, "$(""input[name='rstype']"")[" & $oAccountInfo.Item("typeRs") & "].click()")
+	;~ _WD_ExecuteScript($sSession, "$(""input[name='rstype']"")[" & $oAccountInfo.Item("typeRs") & "].click()")
+	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & $oAccountInfo.Item("typeRs"))
+	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"")")
+	_WD_ExecuteScript($sSession, "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"").click()")
 	; Thuc hien lay captcha va submit
 	solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
 	
