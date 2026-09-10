@@ -440,6 +440,10 @@ Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount
 	; Thuc hien lap lai viec add point 2 lan de tranh truong hop do lag ma chua kip add point thi het gio
 	addPointInGame()
 	secondWait(1)
+	; Sau khi add point xong, thuc hien stop start auto plus
+	startStopAutoPlus()
+	secondWait(1)
+	; isTrainInGame = true => thuc hien vao arena 5 lan de len lvl nhanh hon, = false => khong vao arena
 	If Not $oAccountInfo.Item("isTrainInGame") Then
 		processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	Else
@@ -910,7 +914,6 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	$mainNo = getMainNoByChar($charName)
 	$trainInGame = $oAccountInfo.Item("isTrainInGame")
 	; 3.1. Check xem cua so enter co ton tai khong
-	; vi da train in game nen khong can lam cac hanh dong nay nua
 	;~ firstActionAfterRs()
 	minisizeMain($mainNo)
 	; 5. Doi 2phut de cho len lvl > 20
@@ -940,6 +943,8 @@ Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 		minuteWait(1)
 		$timeCheckArena += 1
 		writeLogFile($logFile, "Thuc hien check active auto home lan thu: " & $timeCheckArena)
+		; Thuc hien active main truoc
+		activeAndMoveWin($mainNo)
 		; Thuc hien check active auto home
 		If Not checkActiveAutoHome() Then
 			writeLogFile($logFile, "Auto Home not active !")
@@ -991,11 +996,11 @@ Func activeTrainInGame($oAccountInfo)
 	;~ 	writeLogFile($logFile, "Auto Home Plus da duoc active ! Tiep tuc xu ly train in game !")
 	;~ EndIf
 	; Thuc hien stop auto home plus truoc da
-	stopAutoPlus()
-	secondWait(2)
-	; Thien hien active auto home plus
-	startAutoPlus()
-	secondWait(2)
+	;~ stopAutoPlus()
+	;~ secondWait(2)
+	;~ ; Thien hien active auto home plus
+	;~ startAutoPlus()
+	;~ secondWait(2)
 	; 3. Thuc hien doi server trong game nhe
 	switchSvInGame($oAccountInfo)
 
