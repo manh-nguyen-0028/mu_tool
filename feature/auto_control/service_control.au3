@@ -31,6 +31,7 @@ Func start()
 			startAutoBuff()
 		EndIf
 		$timeLoop = _JSONGet($jsonPositionConfig, "common.auto.time_loop_auto_rs")
+		writeLog("Time loop for auto reset: " & $timeLoop)
 		If (Number($timeLoop) = 0 Or Number($timeLoop) == 60) Then
 			waitToNextHourMinutes(1, 38, 00)
 		Else

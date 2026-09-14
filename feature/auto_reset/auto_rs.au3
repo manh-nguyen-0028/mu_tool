@@ -97,7 +97,7 @@ Func startAutoRs()
 		_WD_Shutdown()
 	EndIf
 
-EndFunc   ;==>startAutoRs
+EndFunc
 
 ; tiến trình reset normal
 Func reset($jAccountInfo)
@@ -119,7 +119,7 @@ Func reset($jAccountInfo)
 		processReset($jAccountInfo)
 	EndIf
 	writeLogFile($logFile, "End handle reset with account: " & getPropertyJson($jAccountInfo, "char_name"))
-EndFunc   ;==>reset
+EndFunc
 
 Func timeWaitBeforeReset()
 	; Neu dang o phut thut > 52 hoac < 8 thi thuc hien doi cho den khi o phut > 8
@@ -240,7 +240,7 @@ Func withDrawRs($jAccountInfo)
 		Return False
 	EndIf
 	writeLogMethodEnd("processWithDrawReset", @ScriptLineNumber, $jAccountInfo)
-EndFunc   ;==>withDrawRs
+EndFunc
 
 ; Method: getWithdrawTimeRs
 ; Description: Lay gia tri time_rs tu trang web/bank/reset_in_out.shtml sau khi rut reset
@@ -268,7 +268,7 @@ Func getWithdrawTimeRs($sSession, $charName)
 	writeLogFile($logFile, "time_rs tu trang withdraw: " & $timeRs)
 	writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
 	Return $timeRs
-EndFunc   ;==>getWithdrawTimeRs
+EndFunc
 
 ; Method: resetWebAutoPlus
 ; Description: Reset qua web sau do chay lvl voi auto plus. Xu ly giong reset() voi Not $resetOnline
@@ -292,7 +292,7 @@ Func resetWebAutoPlus($jAccountInfo)
 		processResetWebAutoPlus($jAccountInfo)
 	EndIf
 	writeLogFile($logFile, "End handle resetWebAutoPlus with account: " & $charName)
-EndFunc   ;==>resetWebAutoPlus
+EndFunc
 
 ; Method: processResetWebAutoPlus
 ; Description: Thuc hien reset tren web, sau do quay lai game stop + start auto_plus roi an game
@@ -326,7 +326,8 @@ Func processResetWebAutoPlus($jAccountInfo)
 			; Reset tren web
 			resetInWeb($sSession, $oAccountInfo)
 			; Cap nhat thong tin reset
-			_ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"))
+			$lvlAfterRs = 0
+			_ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"), $lvlAfterRs)
 			; Quay lai game va thuc hien stop + start auto_plus
 			returnChar($mainNo)
 			secondWait(1)
@@ -340,7 +341,7 @@ Func processResetWebAutoPlus($jAccountInfo)
 		sendKeyF8()
 	EndIf
 	writeLogMethodEnd("processResetWebAutoPlus", @ScriptLineNumber, $jAccountInfo)
-EndFunc   ;==>processResetWebAutoPlus
+EndFunc
 
 Func extractAccountInfo($jAccountInfo)
 	Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
@@ -368,13 +369,13 @@ Func extractAccountInfo($jAccountInfo)
 	$oAccountInfo.Item("postionMoveY") = getPropertyJson($jAccountInfo, "postion_move_y")
 
 	Return $oAccountInfo
-EndFunc   ;==>extractAccountInfo
+EndFunc
 
 Func updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
 	writeLogFile($logFile, "Chua den thoi gian reset.")
 	writeLogFile($logFile, "Thoi gian gan nhat co the reset: " & $nextTimeRs)
 	updateLastTimeRs($charName, $lastTimeRs)
-EndFunc   ;==>updateResetTimeIfNotReached
+EndFunc
 
 Func calculateRequiredLevelForReset($rsCount)
 	$lvlCanRs = 400
@@ -382,8 +383,9 @@ Func calculateRequiredLevelForReset($rsCount)
 		$lvlCanRs = 200 + ($rsCount * 5)
 		If $lvlCanRs > 400 Then $lvlCanRs = 400
 	EndIf
+	writeLogFile($logFile, "Rs hien tai: " & $rsCount & ", level can de reset: " & $lvlCanRs)
 	Return $lvlCanRs
-EndFunc   ;==>calculateRequiredLevelForReset
+EndFunc
 
 ; Method: _ProcessRs_PrepareGameBeforeReset
 ; Description: Chuan bi game truoc khi reset (active cua so, xu ly thong bao, doi server)
@@ -399,20 +401,21 @@ Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 	Else
 		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
 	EndIf
-EndFunc   ;==>_ProcessRs_PrepareGameBeforeReset
+EndFunc
 
 ; Method: _ProcessRs_UpdateAccountInfo
 ; Description: Cap nhat thong tin reset vao file JSON config sau khi reset. Tra ve so lan reset trong ngay
-Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff)
+Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff, ByRef $lvlAfterRs)
 	$jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	Local $resetInDay = 0
+	$currentLvl = 0
 	For $i = 0 To UBound($jsonRsGame) - 1
 		$charNameTmp = getPropertyJson($jsonRsGame[$i], "char_name")
 		If $charNameTmp == $charName Then
 			$sLogReset = getLogReset($sSession, $charName)
 			$resetInDay = getRsInDay($sLogReset)
 			$currentRs = getCurrentReset($sLogReset)
-			$currentLvl = getCurrentlvl($sLogReset)
+			$lvlAfterRs = getCurrentlvl($sLogReset)
 			Local $jItem = $jsonRsGame[$i]
 			_JSONSet($currentRs, $jItem, "rs")
 			_JSONSet($resetInDay, $jItem, "time_rs")
@@ -428,7 +431,7 @@ Func _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $isBuff)
 		EndIf
 	Next
 	Return $resetInDay
-EndFunc   ;==>_ProcessRs_UpdateAccountInfo
+EndFunc
 
 ; Method: _ProcessRs_ReturnGameAfterReset
 ; Description: Quay lai game sau khi reset va xu ly cac buoc tiep theo (chon server, chon nhan vat, train)
@@ -451,7 +454,7 @@ Func _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount
 		activeTrainInGame($oAccountInfo)
 	EndIf
 	minisizeMain($mainNo)
-EndFunc   ;==>_ProcessRs_ReturnGameAfterReset
+EndFunc
 
 Func addPointInGame()
 	writeLogFile($logFile, "Thuc hien cong diem trong game !")
@@ -466,7 +469,7 @@ Func addPointInGame()
 
 	; send key c de tat bang c 
 	sendKeyC()
-EndFunc   ;==>addPointInGame
+EndFunc
 
 Func clickButtonAddPoint() 
 	writeLogFile($logFile, "Thuc hien click vao button cong diem !")
@@ -477,7 +480,7 @@ Func clickButtonAddPoint()
 	; Click vao button xac nhan cong diem
 	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_dl_x"), getProperty("button.bang_c.add_point_confirm_dl_y"))
 	secondWait(1)
-EndFunc   ;==>clickButtonAddPoint
+EndFunc
 
 ; Method: _ProcessRs_HandleNotEnoughLevel
 ; Description: Xu ly truong hop chua du level de reset
@@ -492,7 +495,7 @@ Func _ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, 
 	EndIf
 	writeLogFile($logFile, "Chua du lvl de reset => Ket thuc xu ly reset !")
 	updateLastTimeRs($charName, getTimeNow())
-EndFunc   ;==>_ProcessRs_HandleNotEnoughLevel
+EndFunc
 
 ; Method: _ProcessRs_CheckTimeToReset
 ; Description: Kiem tra thoi gian co the reset sau khi login. Tra ve True neu co the reset, False neu chua den thoi gian
@@ -503,11 +506,12 @@ Func _ProcessRs_CheckTimeToReset($jAccountInfo, $checkTimeInNight, $timeNow, $la
 	EndIf
 	writeLogFile($logFile, "Khong o trong khoang thoi gian dem => Tiep tuc kiem tra thoi gian reset ! Thoi gian hien tai: " & $timeNow & " - Thoi gian co the reset: " & $nextTimeRs)
 	If ($timeNow < $nextTimeRs) Then
+		writeLogFile($logFile, "Chua den thoi gian reset => Bo qua viec reset !")
 		updateResetTimeIfNotReached($jAccountInfo, $lastTimeRs, $nextTimeRs, $charName)
 		Return False
 	EndIf
 	Return True
-EndFunc   ;==>_ProcessRs_CheckTimeToReset
+EndFunc
 
 Func processReset($jAccountInfo)
 	writeLogMethodStart("processReset", @ScriptLineNumber, $jAccountInfo)
@@ -546,7 +550,8 @@ Func processReset($jAccountInfo)
 				Return
 			EndIf
 			resetInWeb($sSession, $oAccountInfo)
-			$resetInDay = _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"))
+			$lvlAfterRs = 0
+			$resetInDay = _ProcessRs_UpdateAccountInfo($sSession, $charName, $rsCount, $oAccountInfo.Item("isBuff"), $lvlAfterRs)
 			If Not $resetOnline Then _ProcessRs_ReturnGameAfterReset($sSession, $oAccountInfo, $mainNo, $rsCount, $resetInDay)
 		Else
 			_ProcessRs_HandleNotEnoughLevel($oAccountInfo, $nLvl, $lvlCanRs, $rsCount, $charName, $resetOnline)
@@ -555,7 +560,7 @@ Func processReset($jAccountInfo)
 		If Not $resetOnline Then minisizeMain($mainNo)
 	EndIf
 	writeLogMethodEnd("processReset", @ScriptLineNumber, $jAccountInfo)
-EndFunc   ;==>processReset
+EndFunc
 
 Func isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlStopCheck)
 	; 5.1 Truong hop ma khong thay tang lvl thi thuc hien di chuyen bang web
@@ -573,7 +578,7 @@ Func isMovableUnderLevel20($sSession, $charName, $lvlCheckInWeb, $rsCount, $lvlS
 	Else
 		writeLogFile($logFile, "Lvl van tang theo dung quy trinh! Lvl hien tai: " & $lvlCheckInWeb)
 	EndIf
-EndFunc   ;==>isMovableUnderLevel20
+EndFunc
 
 #cs
 	Tim sport de luyen lvl len 20
@@ -584,7 +589,7 @@ Func goToSportLvl1()
 	; 533, 338
 	_MU_MouseClick_Delay(getProperty("button.loren_sport1.x"), getProperty("button.loren_sport1.y"))
 	secondWait(1)
-EndFunc   ;==>goToSportLvl1
+EndFunc
 
 Func checkLvlInWeb($rsCount, $charName, $lvlStopCheck, $timeDelay)
 	writeLogFile($logFile, "Bat dau check lvl tren web !" & " - Lvl stop check: " & $lvlStopCheck)
@@ -705,7 +710,7 @@ Func checkLvl400WhenRs($rsCount, $charName, $timeDelay)
 	writeLogFile($logFile, "Ket thuc check lvl tren web ! Lvl hien tai: " & $nLvl)
 
 	Return $nLvl
-EndFunc   ;==>checkLvlInWeb
+EndFunc
 
 ; Viet function check lvl tren web. Can phai thuc hien thay doi nhan vat tam thoi de cap nhat lvl
 Func checkLvlInWebByChangeChar($sSession, $rsCount, $charName, $lvlStopCheck, $timeDelay)
@@ -746,7 +751,7 @@ Func checkLvlInWebByChangeChar($sSession, $rsCount, $charName, $lvlStopCheck, $t
 
 	writeLogFile($logFile, "Ket thuc check lvl tren web by change char! Lvl hien tai: " & $nLvl)
 	Return $nLvl
-EndFunc   ;==>checkLvlInWebByChangeChar
+EndFunc
 
 ; Method: _ValidRs_IsInvalidLastTime
 ; Description: Kiem tra thoi gian reset co hop le khong. Tra ve True neu khong hop le (can bo qua)
@@ -759,7 +764,7 @@ Func _ValidRs_IsInvalidLastTime($jAccount)
 		Return True
 	EndIf
 	Return False
-EndFunc   ;==>_ValidRs_IsInvalidLastTime
+EndFunc
 
 ; Method: _ValidRs_IsNotTimeToReset
 ; Description: Kiem tra da den gio reset chua. Tra ve True neu chua den gio (can bo qua)
@@ -782,7 +787,7 @@ Func _ValidRs_IsNotTimeToReset($jAccount)
 		Return True
 	EndIf
 	Return False
-EndFunc   ;==>_ValidRs_IsNotTimeToReset
+EndFunc
 
 ; Method: _ValidRs_IsMaxResetReached
 ; Description: Kiem tra da dat so reset toi da chua (>= 2000 hoac >= max_rs). Tra ve True neu da dat (can bo qua)
@@ -798,7 +803,7 @@ Func _ValidRs_IsMaxResetReached($jAccount)
 		Return True
 	EndIf
 	Return False
-EndFunc   ;==>_ValidRs_IsMaxResetReached
+EndFunc
 
 ; Method: _ValidRs_IsTypeRsTimeNotReached
 ; Description: Kiem tra dieu kien thoi gian theo type RS (Zen=0 / VIP=1 / PO=2). Tra ve True neu chua du thoi gian (can bo qua)
@@ -832,7 +837,7 @@ Func _ValidRs_IsTypeRsTimeNotReached($jAccount, $timeWaitRsVip, $timeWaitRsZenRs
 		Return True
 	EndIf
 	Return False
-EndFunc   ;==>_ValidRs_IsTypeRsTimeNotReached
+EndFunc
 
 ; Method: _ValidRs_IsDailyLimitExceeded
 ; Description: Kiem tra da vuot qua so lan reset duoc phep trong ngay chua. Tra ve True neu da vuot (can bo qua)
@@ -847,7 +852,7 @@ Func _ValidRs_IsDailyLimitExceeded($jAccount)
 	EndIf
 	writeLogFile($logFile, "Time limit = " & $limit & " - Time rs = " & $timeRs & " - Last time rs = " & $lastTimeRs & "Date check = " & $sDateCheck)
 	Return False
-EndFunc   ;==>_ValidRs_IsDailyLimitExceeded
+EndFunc
 
 ; Method: _ValidRs_AdjustTypeRsIfOverDailyLimit
 ; Description: Neu vuot qua gioi han RS VIP/PO trong ngay va hourPerRs = 0 thi chuyen type_rs ve 0 (Zen)
@@ -862,7 +867,7 @@ Func _ValidRs_AdjustTypeRsIfOverDailyLimit(ByRef $jAccount, $maxRsVip, $maxRsPo)
 		_JSONSet($typeRs, $jAccount, "type_rs")
 		writeLogFile($logFile, "Thong tin tai khoan sau khi thay doi type rs: " & convertJsonToString($jAccount))
 	EndIf
-EndFunc   ;==>_ValidRs_AdjustTypeRsIfOverDailyLimit
+EndFunc
 
 Func validAccountRs($aAccountActiveRs)
 	writeLogMethodStart("validAccountRs", @ScriptLineNumber, $aAccountActiveRs)
@@ -895,7 +900,7 @@ Func validAccountRs($aAccountActiveRs)
 	Next
 
 	Return $aAccValidate
-EndFunc   ;==>validAccountRs
+EndFunc
 
 Func firstActionAfterRs()
 	; Thuc hien send key home
@@ -906,7 +911,7 @@ Func firstActionAfterRs()
 	goToSportLvl1()
 	; Send 1 lan key tab nua de tat ban do
 	sendKeyTab()
-EndFunc   ;==>firstActionAfterRs
+EndFunc
 
 Func processResetNomal($sSession, $oAccountInfo, $rsCount, $resetInDay)
 	writeLogMethodStart("processResetNomal", @ScriptLineNumber)
@@ -1052,4 +1057,4 @@ Func actionNextResetNotEnoughLevel($oAccountInfo, $rsCount, $lvlStopCheck)
 		writeLogFile($logFile, "Main khong active ! Ket thuc xu ly !")
 	EndIf
 	Return True
-EndFunc   ;==>actionNextResetNotEnoughLevel
+EndFunc

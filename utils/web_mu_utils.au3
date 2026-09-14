@@ -645,6 +645,19 @@ Func checkAutoZEnable($sSession, $charName)
 	EndIf
 EndFunc   ;==>checkAutoZEnable
 
+; Method: checkResetFail
+; Description: Kiểm tra thẻ div#index_content_hidden có phần tử con (vd: script báo lỗi captcha) hay không => Reset chưa thành công
+Func checkResetFail($sSession)
+	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@id='index_content_hidden']/*")
+	If @error Then
+		writeLogFile($logFile, "checkResetFail: index_content_hidden rỗng => Reset thành công")
+		Return False
+	Else
+		writeLogFile($logFile, "checkResetFail: index_content_hidden có phần tử con => Reset chưa thành công")
+		Return True
+	EndIf
+EndFunc   ;==>checkResetFail
+
 Func resetInWeb($sSession, $oAccountInfo)
 	$charName = $oAccountInfo.Item("charName")
 	$resetOnline = $oAccountInfo.Item("resetOnline")
@@ -665,10 +678,18 @@ Func resetInWeb($sSession, $oAccountInfo)
 	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & $oAccountInfo.Item("typeRs"))
 	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"")")
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"").click()")
-	; Thuc hien lay captcha va submit
-	solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
-	
-	checkCaptchaThenSubmit($sSession)
+
+	; Thuc hien lay captcha va submit, neu rs chua thanh cong (index_content_hidden co phan tu con) thi thuc hien lai
+	Local $iMaxRetry = 2
+	For $i = 1 To $iMaxRetry
+		solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
+		checkCaptchaThenSubmit($sSession)
+		secondWait(3)
+		If Not checkResetFail($sSession) Then
+			ExitLoop
+		EndIf
+		writeLogFile($logFile, "resetInWeb: Reset chưa thành công, thực hiện lại lần thứ " & $i)
+	Next
 
 	; close diaglog confirm
 	closeDiaglogConfim($sSession)
