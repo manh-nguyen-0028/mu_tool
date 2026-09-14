@@ -242,34 +242,6 @@ Func withDrawRs($jAccountInfo)
 	writeLogMethodEnd("processWithDrawReset", @ScriptLineNumber, $jAccountInfo)
 EndFunc
 
-; Method: getWithdrawTimeRs
-; Description: Lay gia tri time_rs tu trang web/bank/reset_in_out.shtml sau khi rut reset
-; Tra ve so luot event da nhan (vi du: "2/5" -> 2), tra ve -1 neu khong tim thay
-Func getWithdrawTimeRs($sSession, $charName)
-	writeLogMethodStart("getWithdrawTimeRs", @ScriptLineNumber, $charName)
-	navigateUrl($sSession, combineUrl("web/bank/reset_in_out.shtml"))
-	secondWait(3)
-	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[contains(@class,'alert alert-warning')]")
-	If @error Then
-		writeLogFile($logFile, "Khong tim thay element alert-warning tren trang reset_in_out")
-		writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
-		Return -1
-	EndIf
-	Local $sText = _WD_ElementAction($sSession, $sElement, 'text')
-	writeLogFile($logFile, "Alert warning text: " & $sText)
-	; Text co dang: "Hom nay, ban da nhan 2/5 luot event..." -> lay so truoc dau "/"
-	Local $aResult = StringRegExp($sText, "(\d+)/", 1)
-	If @error Then
-		writeLogFile($logFile, "Khong the trich xuat time_rs tu text: " & $sText)
-		writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
-		Return -1
-	EndIf
-	Local $timeRs = Number($aResult[0])
-	writeLogFile($logFile, "time_rs tu trang withdraw: " & $timeRs)
-	writeLogMethodEnd("getWithdrawTimeRs", @ScriptLineNumber, $charName)
-	Return $timeRs
-EndFunc
-
 ; Method: resetWebAutoPlus
 ; Description: Reset qua web sau do chay lvl voi auto plus. Xu ly giong reset() voi Not $resetOnline
 Func resetWebAutoPlus($jAccountInfo)
@@ -400,6 +372,7 @@ Func _ProcessRs_PrepareGameBeforeReset($resetOnline, $mainNo, $charName)
 		EndIf
 	Else
 		writeLogFile($logFile, "Kiem tra Auto Z tren web truoc khi reset ! => Bo o phien ban nay")
+		Return True
 	EndIf
 EndFunc
 

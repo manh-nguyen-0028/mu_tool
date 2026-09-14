@@ -34,6 +34,18 @@ Func checkThenCloseEdge()
 	checkThenCloseProcess("msedge.exe")
 EndFunc   ;==>checkThenCloseEdge
 
+Func startChromeSession()
+	checkThenCloseChrome()
+	Return SetupChrome()
+EndFunc   ;==>startChromeSession
+
+Func closeChromeSession($sSession)
+	If $sSession Then
+		_WD_DeleteSession($sSession)
+	EndIf
+	_WD_Shutdown()
+EndFunc   ;==>closeChromeSession
+
 Func checkThenCloseProcess($chromeProcessName)
 
 	; Kiểm tra xem có tiến trình đang chạy không
@@ -610,6 +622,30 @@ Func moveToPostionInWeb($sSession, $charNameWeb, $x, $y)
 		Return checkAutoZEnable($sSession, $charNameWeb)
 	EndIf
 EndFunc   ;==>moveToPostionInWeb
+
+Func getWithdrawTimeRs($sSession, $charName = "")
+	writeLogFile($logFile, "getWithdrawTimeRs with charName: " & $charName)
+	navigateUrl($sSession, combineUrl("web/bank/reset_in_out.shtml"))
+	secondWait(3)
+
+	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[contains(@class,'alert alert-warning')]")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay element alert-warning tren trang reset_in_out")
+		Return -1
+	EndIf
+
+	Local $sText = _WD_ElementAction($sSession, $sElement, 'text')
+	writeLogFile($logFile, "Alert warning text: " & $sText)
+	Local $aResult = StringRegExp($sText, "(\d+)/", 1)
+	If @error Then
+		writeLogFile($logFile, "Khong the trich xuat time_rs tu text: " & $sText)
+		Return -1
+	EndIf
+
+	Local $timeRs = Number($aResult[0])
+	writeLogFile($logFile, "time_rs tu trang withdraw: " & $timeRs)
+	Return $timeRs
+EndFunc   ;==>getWithdrawTimeRs
 
 Func logoutAndCloseChromeDriver($sSession)
 	logout($sSession)
