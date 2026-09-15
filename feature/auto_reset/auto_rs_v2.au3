@@ -174,6 +174,7 @@ Func processResetV2($jAccountInfo)
 		addPointInGameV2()
         secondWait(2)
         startAutoPlus()
+		minisizeMain($mainNo)
 
 		Local $goArena = $oAccountInfo.Item("goArena")
 		If $goArena Then
@@ -195,6 +196,7 @@ Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)
 	minuteWait(2)
 	activeAndMoveWin($mainNo)
 	goMapArena($rsCount)
+	minisizeMain($mainNo)
 
 	For $i = 1 To $arenaLoopCount
 		minuteWait(1)
@@ -202,6 +204,7 @@ Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)
 		If Not checkActiveAutoHome() Then
 			writeLogFile($logFile, "Lan " & $i & " auto home khong active, vao lai arena")
 			goMapArena($rsCount)
+			minisizeMain($mainNo)
 		Else
 			writeLogFile($logFile, "Lan " & $i & " auto home active")
 		EndIf

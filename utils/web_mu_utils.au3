@@ -3,6 +3,7 @@
 #include <MsgBoxConstants.au3>
 #include "../include/_ImageSearch_UDF.au3"
 #include <AutoItConstants.au3>
+#include <Crypt.au3>
 #include "../include/json_utils.au3"
 #include <Array.au3>
 #include "common_utils.au3"
@@ -25,6 +26,9 @@ Global $sTitleLogoutSuccess = "/ Đăng nhập"
 Global $sTitleLogoutSuccess_EN = "/ Sign In"
 
 Local $sApiKey = "ai0xvvkw3hcoyzbgwdu5tmqdaqyjlkjs" ; Key của azcaptcha
+Global $g_azComErrNumber = 0
+Global $g_azComErrDescription = ""
+Global $g_oAzComErrHandler = ObjEvent("AutoIt.Error", "_azComErrHandler")
 
 Func checkThenCloseChrome()
 	checkThenCloseProcess("chrome.exe")
@@ -269,7 +273,7 @@ EndFunc   ;==>solveImageCaptchaAz
 ; Description: Upload file captcha den AzCaptcha in.php (method=post)
 Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 	writeLogFile($logFile, "_azSubmitImageCaptcha($sApiKey, $sImagePath): " & $sImagePath)
-    Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+	Local $oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
     If @error Then Return SetError(1, 0, "")
 
     Local $hFile = FileOpen($sImagePath, 16) ; binary
@@ -329,21 +333,22 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 
 		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
 		$oHttp.SetRequestHeader("Content-Type", "multipart/form-data; boundary=" & $sBoundary)
-		$oHttp.SetRequestHeader("Content-Length", BinaryLen($bBody))
+		$oHttp.SetRequestHeader("Expect", "")
 		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
 
-		$oHttp.Send($bBody)
-		$iErrorCode = @error
+		$g_azComErrNumber = 0
+		$g_azComErrDescription = ""
+		$iErrorCode = _azSafeSend($oHttp, $bBody)
 		If $iErrorCode = 0 Then ExitLoop
 
 		$iExtErrorCode = @extended
-		writeLogFile($logFile, "AzCaptcha in.php Send failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & $iExtErrorCode)
+		writeLogFile($logFile, "AzCaptcha in.php Send failed! try=" & $iTry & " err=" & $iErrorCode & " ext=" & $iExtErrorCode & " com=0x" & Hex($g_azComErrNumber, 8) & " " & $g_azComErrDescription)
 		If $iTry < 3 Then secondWait(1)
 	Next
 
 	If $iErrorCode <> 0 Then
-		writeLogFile($logFile, "AzCaptcha in.php request failed after retries!")
-		Return SetError(4, 0, "")
+		writeLogFile($logFile, "AzCaptcha multipart request failed after retries, fallback to base64.")
+		Return _azSubmitImageCaptchaBase64($sApiKey, $bFile)
 	EndIf
 
     Local $sResp = $oHttp.ResponseText
@@ -360,6 +365,124 @@ Func _azSubmitImageCaptcha($sApiKey, $sImagePath)
 
     Return SetError(4, 0, "")
 EndFunc   ;==>_azSubmitImageCaptcha
+
+; Method: _azSubmitImageCaptchaBase64
+; Description: Fallback upload captcha theo method=base64 de tranh loi Send(binary multipart)
+Func _azSubmitImageCaptchaBase64($sApiKey, $bFile)
+	Local $oHttp, $iTry, $iErr, $sResp
+	Local $sB64 = _azBinaryToBase64($bFile)
+	If @error Or $sB64 = "" Then
+		writeLogFile($logFile, "AzCaptcha base64 encode that bai!")
+		Return SetError(4, 0, "")
+	EndIf
+
+	$sB64 = StringReplace($sB64, @CRLF, "")
+	Local $sPayload = "key=" & $sApiKey & "&method=base64&json=0&body=" & _azUrlEncode($sB64)
+
+	For $iTry = 1 To 3
+		$oHttp = ObjCreate("WinHttp.WinHttpRequest.5.1")
+		If @error Then
+			writeLogFile($logFile, "AzCaptcha base64 ObjCreate failed! try=" & $iTry)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.Open("POST", "http://azcaptcha.com/in.php", False)
+		$iErr = @error
+		If $iErr <> 0 Then
+			writeLogFile($logFile, "AzCaptcha base64 Open failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended)
+			If $iTry < 3 Then secondWait(1)
+			ContinueLoop
+		EndIf
+
+		$oHttp.SetTimeouts(30000, 30000, 30000, 60000)
+		$oHttp.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+		$oHttp.SetRequestHeader("Expect", "")
+		$oHttp.SetRequestHeader("User-Agent", "AutoIt WinHttpRequest")
+
+		$g_azComErrNumber = 0
+		$g_azComErrDescription = ""
+		$iErr = _azSafeSend($oHttp, $sPayload)
+
+		If $iErr = 0 Then ExitLoop
+		writeLogFile($logFile, "AzCaptcha base64 Send failed! try=" & $iTry & " err=" & $iErr & " ext=" & @extended & " com=0x" & Hex($g_azComErrNumber, 8) & " " & $g_azComErrDescription)
+		If $iTry < 3 Then secondWait(1)
+	Next
+
+	If $iErr <> 0 Then
+		writeLogFile($logFile, "AzCaptcha base64 request failed after retries!")
+		Return SetError(4, 0, "")
+	EndIf
+
+	$sResp = $oHttp.ResponseText
+	If Not IsString($sResp) Or $sResp = "" Then
+		writeLogFile($logFile, "AzCaptcha base64 response empty or invalid!")
+		Return SetError(4, 0, "")
+	EndIf
+
+	$sResp = StringStripWS($sResp, 3)
+	writeLogFile($logFile, "AzCaptcha base64 resp: " & $sResp)
+	If StringLen($sResp) >= 3 And StringLeft($sResp, 3) = "OK|" Then
+		Return StringTrimLeft($sResp, 3)
+	EndIf
+
+	Return SetError(4, 0, "")
+EndFunc   ;==>_azSubmitImageCaptchaBase64
+
+Func _azUrlEncode($sInput)
+	Local $sOutput = StringReplace($sInput, "%", "%25")
+	$sOutput = StringReplace($sOutput, "+", "%2B")
+	$sOutput = StringReplace($sOutput, "/", "%2F")
+	$sOutput = StringReplace($sOutput, "=", "%3D")
+	$sOutput = StringReplace($sOutput, "&", "%26")
+	$sOutput = StringReplace($sOutput, " ", "%20")
+	Return $sOutput
+EndFunc   ;==>_azUrlEncode
+
+Func _azBinaryToBase64($bData)
+	If Not IsBinary($bData) Or BinaryLen($bData) = 0 Then Return SetError(1, 0, "")
+
+	Local $oXml = ObjCreate("Msxml2.DOMDocument.6.0")
+	If @error Or Not IsObj($oXml) Then Return SetError(2, 0, "")
+
+	Local $oNode = $oXml.createElement("b64")
+	If @error Or Not IsObj($oNode) Then Return SetError(3, 0, "")
+
+	$oNode.DataType = "bin.base64"
+	$oNode.nodeTypedValue = $bData
+	Local $sB64 = $oNode.text
+	If @error Or Not IsString($sB64) Or $sB64 = "" Then Return SetError(4, 0, "")
+
+	Return $sB64
+EndFunc   ;==>_azBinaryToBase64
+
+Func _azComErrHandler($oError)
+	$g_azComErrNumber = $oError.number
+	$g_azComErrDescription = $oError.windescription
+	; Handler phai nhe va khong throw tiep de tranh dung chuong trinh
+	writeLogFile($logFile, "AzCaptcha COM error: num=0x" & Hex($g_azComErrNumber, 8) & " desc=" & $g_azComErrDescription)
+	Return SetError(1)
+EndFunc   ;==>_azComErrHandler
+
+Func _azSafeSend(ByRef $oHttp, $vBody = "")
+	If Not IsObj($oHttp) Then
+		$g_azComErrNumber = 1
+		$g_azComErrDescription = "oHttp is not an object"
+		Return 1
+	EndIf
+
+	$g_azComErrNumber = 0
+	$g_azComErrDescription = ""
+	If $vBody = "" Then
+		$oHttp.Send()
+	Else
+		$oHttp.Send($vBody)
+	EndIf
+
+	If @error <> 0 Then Return @error
+	If $g_azComErrNumber <> 0 Then Return 1
+	Return 0
+EndFunc   ;==>_azSafeSend
 
 ; Method: _azGetImageCaptchaResult
 ; Description: Poll ket qua tu AzCaptcha res.php
