@@ -130,7 +130,12 @@ Func resetV2($jAccountInfo)
 		EndIf
 	EndIf
 
-	processResetV2($jAccountInfo)
+	Local $isResetSuccess = processResetV2($jAccountInfo)
+	If Not $resetOnline And Not $isResetSuccess Then
+		writeLogFile($logFile, "Reset khong thanh cong, thuc hien return char: " & $charName)
+		returnChar($mainNo)
+		sendKeyF8()
+	EndIf
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
 EndFunc
 
@@ -142,7 +147,7 @@ Func processResetV2($jAccountInfo)
 	writeLogMethodStart("processResetV2", @ScriptLineNumber, $charName)
 	If Not login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password")) Then
 		writeLogFile($logFile, "Dang nhap that bai: " & $charName)
-		Return
+		Return False
 	EndIf
 
 	Local $timeNow = getTimeNow()
@@ -152,17 +157,19 @@ Func processResetV2($jAccountInfo)
 	Local $nLvl = getCurrentlvl($sLogReset)
 	Local $nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
 
-	If Not _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return
+	If Not _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return False
 
 	Local $lvlCanRs = calculateRequiredLevelForResetV2($rsCount)
 	If $nLvl < $lvlCanRs Then
 		writeLogFile($logFile, "Chua du level de reset. Lvl hien tai=" & $nLvl & " - lvl can=" & $lvlCanRs)
 		updateLastTimeRs($charName, getTimeNow())
-		If Not $resetOnline Then minisizeMain(getMainNoByChar($charName))
-		Return
+		Return False
 	EndIf
 
-	resetInWeb($sSession, $oAccountInfo)
+	If Not resetInWeb($sSession, $oAccountInfo) Then
+		writeLogFile($logFile, "Reset web that bai sau retry: " & $charName)
+		Return False
+	EndIf
 	_ProcessRs_UpdateAccountInfoV2($charName)
 
 	If Not $resetOnline Then
@@ -183,10 +190,11 @@ Func processResetV2($jAccountInfo)
 			addPointInGameV2()
             startAutoPlus()
 		EndIf
-		minisizeMain($mainNo)
+		sendKeyF8()
 	EndIf
 
 	writeLogMethodEnd("processResetV2", @ScriptLineNumber, $charName)
+	Return True
 EndFunc
 
 Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)

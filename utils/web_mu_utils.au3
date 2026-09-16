@@ -805,14 +805,14 @@ Func checkAutoZEnable($sSession, $charName)
 EndFunc   ;==>checkAutoZEnable
 
 ; Method: checkResetFail
-; Description: Kiểm tra thẻ div#index_content_hidden có phần tử con (vd: script báo lỗi captcha) hay không => Reset chưa thành công
+; Description: Kiểm tra input captcha có class is-invalid hay không => fail do captcha
 Func checkResetFail($sSession)
-	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@id='index_content_hidden']/*")
+	Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//input[@name='captcha' and contains(@class,'is-invalid')]")
 	If @error Then
-		writeLogFile($logFile, "checkResetFail: index_content_hidden rỗng => Reset thành công")
+		writeLogFile($logFile, "checkResetFail: captcha khong co is-invalid => Khong fail do captcha")
 		Return False
 	Else
-		writeLogFile($logFile, "checkResetFail: index_content_hidden có phần tử con => Reset chưa thành công")
+		writeLogFile($logFile, "checkResetFail: captcha co class is-invalid => Fail do captcha")
 		Return True
 	EndIf
 EndFunc   ;==>checkResetFail
@@ -840,11 +840,13 @@ Func resetInWeb($sSession, $oAccountInfo)
 
 	; Thuc hien lay captcha va submit, neu rs chua thanh cong (index_content_hidden co phan tu con) thi thuc hien lai
 	Local $iMaxRetry = 2
+	Local $isResetSuccess = False
 	For $i = 1 To $iMaxRetry
 		solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
 		checkCaptchaThenSubmit($sSession)
 		secondWait(3)
 		If Not checkResetFail($sSession) Then
+			$isResetSuccess = True
 			ExitLoop
 		EndIf
 		writeLogFile($logFile, "resetInWeb: Reset chưa thành công, thực hiện lại lần thứ " & $i)
@@ -852,7 +854,10 @@ Func resetInWeb($sSession, $oAccountInfo)
 
 	; close diaglog confirm
 	closeDiaglogConfim($sSession)
-	Return True
+	If Not $isResetSuccess Then
+		writeLogFile($logFile, "resetInWeb: Reset that bai sau " & $iMaxRetry & " lan thu")
+	EndIf
+	Return $isResetSuccess
 EndFunc   ;==>resetInWeb
 
 Func goPageBuffChar($sSession)
