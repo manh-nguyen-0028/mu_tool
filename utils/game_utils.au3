@@ -689,7 +689,6 @@ EndFunc   ;==>choise_sv
 Func goSportStadium($sportNo = 1)
 	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
-;~ secondWait(2)
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
 	$sportArenaX = 269
 	$sportArenaY = 329
@@ -704,7 +703,6 @@ Func goSportStadium($sportNo = 1)
 		$sportArenaY = _JSONGet($jsonPositionConfig, "button.sport_arena_3.y")
 	EndIf
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
-	secondWait(2)
 	sendKeyTab()
 EndFunc   ;==>goSportStadium
 
