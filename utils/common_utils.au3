@@ -19,7 +19,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 ;~ Global $baseMuUrl = "https://hn.mugamethuvn.info/"
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
-Global $devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
+Global $positionConfigFileName,$devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName
 Global $aCharInAccount
 
@@ -49,6 +49,7 @@ Func init()
 		$value = getPropertyJson($jsonConfig[$i], "value")
 		If $active Then
 			If "position" == $type Then
+				$positionConfigFileName = $value
 				$jsonPositionConfig = getJsonFromFile($jsonPathRoot & $value)
 				ContinueLoop ; Bỏ qua các lệnh còn lại và chuyển sang lần lặp tiếp theo
 			ElseIf "devil" == $type Then
@@ -84,6 +85,10 @@ Func init()
 	initPositionConfig($jsonPositionConfig)
 	
 	Return True
+EndFunc
+
+Func reloadPositionConfig()
+	Return getJsonFromFile($jsonPathRoot & $positionConfigFileName)
 EndFunc
 
 Func initPositionConfig($jsonPositionConfig)

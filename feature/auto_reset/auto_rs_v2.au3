@@ -97,6 +97,11 @@ Func _NormalizeAccountV2($jAccount)
 	If $username == "" Then $username = getPropertyJson($jAccount, "user_name")
 	_JSONSet($username, $jAccount, "username")
 	_JSONSet($username, $jAccount, "user_name")
+	Local $typeRs = StringLower(String(getPropertyJson($jAccount, "type_rs")))
+	If $typeRs == "1" Then $typeRs = "vip"
+	If $typeRs == "0" Then $typeRs = "free"
+	If $typeRs <> "vip" Then $typeRs = "free"
+	_JSONSet($typeRs, $jAccount, "type_rs")
 
 	If getPropertyJson($jAccount, "go_arena") == "" Then _JSONSet(False, $jAccount, "go_arena")
 	If getPropertyJson($jAccount, "hour_per_reset") == "" Then _JSONSet(1, $jAccount, "hour_per_reset")
@@ -134,6 +139,9 @@ Func resetV2($jAccountInfo)
 	If Not $resetOnline And Not $isResetSuccess Then
 		writeLogFile($logFile, "Reset khong thanh cong, thuc hien return char: " & $charName)
 		returnChar($mainNo)
+		stopAddPointStartAutoPlus()
+		sendKeyShiftF()
+		secondWait(1)
 		sendKeyF8()
 	EndIf
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
@@ -175,21 +183,17 @@ Func processResetV2($jAccountInfo)
 	If Not $resetOnline Then
 		Local $mainNo = getMainNoByChar($charName)
 		returnChar($mainNo)
-        secondWait(2)
-		stopAutoPlus()
-		secondWait(2)
-		addPointInGameV2()
-        secondWait(2)
-        startAutoPlus()
+        stopAddPointStartAutoPlus()
 		minisizeMain($mainNo)
 
 		Local $goArena = $oAccountInfo.Item("goArena")
 		If $goArena Then
 			processGoArenaV2($mainNo, $rsCount, Number($oAccountInfo.Item("arenaLoopCount")))
 			moveOtherMap($charName)
-			addPointInGameV2()
-            startAutoPlus()
+			addPointStartAutoPlus()
 		EndIf
+		sendKeyShiftF()
+		secondWait(1)
 		sendKeyF8()
 	EndIf
 
@@ -201,7 +205,7 @@ Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)
 	If $arenaLoopCount < 1 Then $arenaLoopCount = 1
 	writeLogFile($logFile, "go_arena=true => cho 2 phut va vao arena")
 	writeLogFile($logFile, "So lan loop check arena: " & $arenaLoopCount)
-	minuteWait(2)
+	minuteWait(1)
 	activeAndMoveWin($mainNo)
 	goMapArena($rsCount)
 	minisizeMain($mainNo)
@@ -350,33 +354,15 @@ Func _ProcessRs_UpdateAccountInfoV2($charName)
 	Next
 EndFunc
 
-Func addPointInGameV2()
-	sendKeyC()
-	secondWait(1)
-	For $i = 0 To 1
-		clickButtonAddPointV2()
-	Next
-	sendKeyC()
-EndFunc
-
-Func clickButtonAddPointV2()
-	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_x"), getProperty("button.bang_c.add_point_y"))
-	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_x"), getProperty("button.bang_c.add_point_confirm_y"))
-	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_dl_x"), getProperty("button.bang_c.add_point_confirm_dl_y"))
-	secondWait(1)
-EndFunc
-
 Func validAccountRsV2($aAccountActiveRs)
 	Local $aAccValidate[0]
 	Local $timeWaitRsVip = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_vip")
 	Local $timeWaitRsZenRs50 = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
 	Local $maxRsVip = _JSONGet($jsonPositionConfig, "common.auto.max_rs_vip")
-	Local $maxRsPo = _JSONGet($jsonPositionConfig, "common.auto.max_rs_po")
 
 	If $timeWaitRsVip == "" Then $timeWaitRsVip = 20
 	If $timeWaitRsZenRs50 == "" Then $timeWaitRsZenRs50 = 30
 	If $maxRsVip == "" Then $maxRsVip = 10
-	If $maxRsPo == "" Then $maxRsPo = 10
 
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		Local $jAccount = _NormalizeAccountV2($aAccountActiveRs[$i])
@@ -385,7 +371,7 @@ Func validAccountRsV2($aAccountActiveRs)
 		If _ValidRs_IsMaxResetReachedV2($jAccount) Then ContinueLoop
 		If _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZenRs50) Then ContinueLoop
 		If _ValidRs_IsDailyLimitExceededV2($jAccount) Then ContinueLoop
-		_ValidRs_AdjustTypeRsIfOverDailyLimitV2($jAccount, $maxRsVip, $maxRsPo)
+		_ValidRs_AdjustTypeRsIfOverDailyLimitV2($jAccount, $maxRsVip)
 		$aAccValidate = redimArray($aAccValidate, $jAccount)
 	Next
 	Return $aAccValidate
@@ -421,21 +407,19 @@ Func _ValidRs_IsMaxResetReachedV2($jAccount)
 EndFunc
 
 Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZenRs50)
-	Local $typeRs = Number(getPropertyJson($jAccount, "type_rs"))
+	Local $typeRs = StringLower(String(getPropertyJson($jAccount, "type_rs")))
 	Local $rs = Number(getPropertyJson($jAccount, "rs"))
 	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
 	Local $currentTime = getTimeNow()
 	Local $lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
-	Local $lastTimeRsAdd60 = _DateAdd('n', 60, $lastTimeRs)
 	Local $lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
 	Local $lastTimeRsAddRsZenRs50 = _DateAdd('n', $timeWaitRsZenRs50, $lastTimeRs)
 
-	If $typeRs == 0 Then
+	If $typeRs == "free" Then
 		If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then Return True
 		If $currentTime < $lastTimeRsAddRsZenRs50 And $rs < 50 Then Return True
 	EndIf
-	If $typeRs == 1 And $currentTime < $lastTimeRsAddRsVip Then Return True
-	If $typeRs == 2 And $currentTime < $lastTimeRsAdd60 Then Return True
+	If $typeRs == "vip" And $currentTime < $lastTimeRsAddRsVip Then Return True
 	Return False
 EndFunc
 
@@ -448,11 +432,11 @@ Func _ValidRs_IsDailyLimitExceededV2($jAccount)
 	Return False
 EndFunc
 
-Func _ValidRs_AdjustTypeRsIfOverDailyLimitV2(ByRef $jAccount, $maxRsVip, $maxRsPo)
-	Local $typeRs = Number(getPropertyJson($jAccount, "type_rs"))
+Func _ValidRs_AdjustTypeRsIfOverDailyLimitV2(ByRef $jAccount, $maxRsVip)
+	Local $typeRs = StringLower(String(getPropertyJson($jAccount, "type_rs")))
 	Local $timeRs = Number(getPropertyJson($jAccount, "time_rs"))
 	Local $hourPerRs = Number(getPropertyJson($jAccount, "hour_per_reset"))
-	If (($typeRs == 1 And $timeRs > $maxRsVip) Or ($typeRs == 2 And $timeRs > $maxRsPo)) And ($hourPerRs == 0) Then
-		_JSONSet(0, $jAccount, "type_rs")
+	If ($typeRs == "vip" And $timeRs > $maxRsVip) And ($hourPerRs == 0) Then
+		_JSONSet("free", $jAccount, "type_rs")
 	EndIf
 EndFunc

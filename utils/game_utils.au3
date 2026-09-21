@@ -687,6 +687,7 @@ Func choise_sv()
 EndFunc   ;==>choise_sv
 
 Func goSportStadium($sportNo = 1)
+	$jsonPositionConfig = reloadPositionConfig()
 	writeLogFile($logFile, "Bat dau vao sport arena: " & $sportNo)
 	sendKeyTab()
 	; sport chia lam tung cap do tu de toi kho, tuy muc dich su dung
@@ -702,6 +703,7 @@ Func goSportStadium($sportNo = 1)
 		$sportArenaX = _JSONGet($jsonPositionConfig, "button.sport_arena_3.x")
 		$sportArenaY = _JSONGet($jsonPositionConfig, "button.sport_arena_3.y")
 	EndIf
+	writeLogFile($logFile, "Click vao sport arena" & $sportNo & " tai vi tri: " & $sportArenaX & "-" & $sportArenaY)
 	_MU_MouseClick_Delay($sportArenaX, $sportArenaY)
 	sendKeyTab()
 EndFunc   ;==>goSportStadium
@@ -1367,4 +1369,33 @@ Func startAutoPlus()
 	secondWait(2)
 	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
 	secondWait(1)
+EndFunc
+
+Func stopAddPointStartAutoPlus()
+	secondWait(1)
+	stopAutoPlus()
+	addPointStartAutoPlus()
+EndFunc
+
+Func addPointInGameV2()
+	sendKeyC()
+	secondWait(1)
+	For $i = 0 To 1
+		clickButtonAddPoint()
+	Next
+	sendKeyC()
+EndFunc
+
+Func clickButtonAddPoint()
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_x"), getProperty("button.bang_c.add_point_y"))
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_x"), getProperty("button.bang_c.add_point_confirm_y"))
+	_MU_MouseClick_Delay(getProperty("button.bang_c.add_point_confirm_dl_x"), getProperty("button.bang_c.add_point_confirm_dl_y"))
+	secondWait(1)
+EndFunc
+
+Func addPointStartAutoPlus()
+	secondWait(1)
+	addPointInGameV2()
+	secondWait(1)
+	startAutoPlus()
 EndFunc

@@ -90,7 +90,7 @@ Func login($sSession, $username, $password)
 	writeLogFile($logFile, "Đăng nhập vào website với username: " & $username)
 	; vao website
 	navigateUrl($sSession, $baseMuUrl)
-	;~ secondWait(5)
+	_WD_Window($sSession, "MINIMIZE")
 	; get title
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
@@ -562,6 +562,7 @@ Func getLogReset($sSession, $charName)
 		EndIf
 		writeLogFile($logFile, "Lấy log reset thất bại, thực hiện retry lần thứ " & ($i + 1))
 	Next
+	_WD_Window($sSession, "MINIMIZE")
 	Return 0 & "|" & '' & "|" & 0 & "|" & 0 & "|" & 0
 EndFunc
 
@@ -571,29 +572,6 @@ Func getLogResetCommon($sSession, $charName)
 	; Chuyen den site nay de thuc hien check thong tin
 	_WD_Navigate($sSession, combineUrl("web/char/char_info.shtml"))
 	_WD_LoadWait($sSession, 1000)
-
-	; Kiem tra trang thai online. ; Kiem tra trong div co href="/web/char/char_info.detail.shtml?name=PhapSuNhi" co chua class="text-success" hay khong 
-	; Day la text html:
-	;~ <div class="col-4 col-md-2 col-sm-3 pb-3" href="/web/char/char_info.detail.shtml?name=PhapSuNhi" target="#t-char_info_detail" style="cursor: pointer;">
-
-	;~ 				<div class="d-flex justify-content-center"><img src="/assets/img/char_icon/07_a.png" style="width: 100%; max-width: 90px;"></div>
-	;~ 				<p class="text-center mb-2 mt-1">
-	;~ 					Reset: <b>614</b> lần<br>
-	;~ 											<span class="text-success">Online (sS15)</span>
-	;~ 										</p>
-	;~ 				<button class="btn 
-	;~ 											btn-secondary 
-	;~ 											btn-sm btn-block t-char_info_btn">PhapSuNhi</button>
-	;~ 			</div>
-	; Click vao button nhan vat can check
-	
-	;~ $checkOnlineStatus = findElement($sSession, "//div[@href='/web/char/char_info.detail.shtml?name=" & $charName & "']//span[contains(@class,'text-success')]")
-	;~ If @error Then
-	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang offline!")
-	;~ 	Return False
-	;~ Else
-	;~ 	writeLogFile($logFile, "Nhân vật " & $charName & " đang online!")
-	;~ EndIf
 
 	$sElement = findElement($sSession, "//button[contains(text(),'" & $charName & "')]")
 	clickElement($sSession, $sElement)
@@ -609,9 +587,6 @@ Func getLogResetCommon($sSession, $charName)
 		writeLogFile($logFile, "Không lấy được thông tin nhân vật từ web!")
 		Return False
 	EndIf
-;~ 	$charInfoText: Reset 1160 lần, point dư: 20,000
-;~ Level Master: 538, skill_3: 0, skill_4: 0, level thuộc tính: 8, điểm quả: 0
-;~ xxx11 level 400 (Hôm nay reset 3 lượt. Tháng này reset 101 lượt)
 
 	; $currentReset so o giua tri Reset va lần. trong ví dụ trên là 1160
 	Local $tempSplit = StringSplit($charInfoText, "Reset ", 1)
