@@ -90,7 +90,7 @@ Func login($sSession, $username, $password)
 	writeLogFile($logFile, "Đăng nhập vào website với username: " & $username)
 	; vao website
 	navigateUrl($sSession, $baseMuUrl)
-	;~ secondWait(5)
+	_WD_Window($sSession, "MINIMIZE")
 	; get title
 	$sTitle = getTitleWebsite($sSession)
 	$timeLoginFail = 0
