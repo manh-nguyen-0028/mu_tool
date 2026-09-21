@@ -205,7 +205,7 @@ Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)
 	If $arenaLoopCount < 1 Then $arenaLoopCount = 1
 	writeLogFile($logFile, "go_arena=true => cho 2 phut va vao arena")
 	writeLogFile($logFile, "So lan loop check arena: " & $arenaLoopCount)
-	minuteWait(2)
+	minuteWait(1)
 	activeAndMoveWin($mainNo)
 	goMapArena($rsCount)
 	minisizeMain($mainNo)
