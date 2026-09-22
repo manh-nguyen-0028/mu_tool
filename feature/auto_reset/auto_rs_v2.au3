@@ -104,7 +104,9 @@ Func _NormalizeAccountV2($jAccount)
 	_JSONSet($typeRs, $jAccount, "type_rs")
 
 	If getPropertyJson($jAccount, "go_arena") == "" Then _JSONSet(False, $jAccount, "go_arena")
+	If getPropertyJson($jAccount, "is_hide") == "" Then _JSONSet(False, $jAccount, "is_hide")
 	If getPropertyJson($jAccount, "hour_per_reset") == "" Then _JSONSet(1, $jAccount, "hour_per_reset")
+	If getPropertyJson($jAccount, "max_hour_reset") == "" Then _JSONSet(24, $jAccount, "max_hour_reset")
 	If getPropertyJson($jAccount, "time_rs") == "" Then _JSONSet(0, $jAccount, "time_rs")
 	If getPropertyJson($jAccount, "limit") == "" Then _JSONSet(5, $jAccount, "limit")
 	If getPropertyJson($jAccount, "arena_loop_count") == "" Then _JSONSet(5, $jAccount, "arena_loop_count")
@@ -142,7 +144,7 @@ Func resetV2($jAccountInfo)
 		stopAddPointStartAutoPlus()
 		sendKeyShiftF()
 		secondWait(1)
-		sendKeyF8()
+		_HideMainIfNeededV2($mainNo, getPropertyJson($jAccountInfo, "is_hide"))
 	EndIf
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
 EndFunc
@@ -194,7 +196,7 @@ Func processResetV2($jAccountInfo)
 		EndIf
 		sendKeyShiftF()
 		secondWait(1)
-		sendKeyF8()
+		_HideMainIfNeededV2($mainNo, $oAccountInfo.Item("isHide"))
 	EndIf
 
 	writeLogMethodEnd("processResetV2", @ScriptLineNumber, $charName)
@@ -313,7 +315,17 @@ Func extractAccountInfoV2($jAccountInfo)
 	$oAccountInfo.Item("timeRs") = getPropertyJson($jAccountInfo, "time_rs")
 	$oAccountInfo.Item("arenaLoopCount") = getPropertyJson($jAccountInfo, "arena_loop_count")
 	$oAccountInfo.Item("goArena") = getPropertyJson($jAccountInfo, "go_arena")
+	$oAccountInfo.Item("isHide") = getPropertyJson($jAccountInfo, "is_hide")
 	Return $oAccountInfo
+EndFunc
+
+Func _HideMainIfNeededV2($mainNo, $isHide)
+	If Not $isHide Then
+		minisizeMain($mainNo)
+		Return
+	EndIf
+
+	sendKeyF8()
 EndFunc
 
 Func calculateRequiredLevelForResetV2($rsCount)
@@ -367,6 +379,7 @@ Func validAccountRsV2($aAccountActiveRs)
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		Local $jAccount = _NormalizeAccountV2($aAccountActiveRs[$i])
 		If _ValidRs_IsInvalidLastTimeV2($jAccount) Then ContinueLoop
+		If _ValidRs_IsOverMaxHourResetV2($jAccount) Then ContinueLoop
 		If _ValidRs_IsNotTimeToResetV2($jAccount) Then ContinueLoop
 		If _ValidRs_IsMaxResetReachedV2($jAccount) Then ContinueLoop
 		If _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZenRs50) Then ContinueLoop
@@ -384,6 +397,13 @@ Func _ValidRs_IsInvalidLastTimeV2($jAccount)
 		updateLastTimeRs($charName, getTimeNow())
 		Return True
 	EndIf
+	Return False
+EndFunc
+
+Func _ValidRs_IsOverMaxHourResetV2($jAccount)
+	Local $maxHourReset = Number(getPropertyJson($jAccount, "max_hour_reset"))
+	If $maxHourReset <= 0 Then $maxHourReset = 24
+	If Number(@HOUR) >= $maxHourReset Then Return True
 	Return False
 EndFunc
 
