@@ -8,6 +8,60 @@
 $className = "auto_rs_v2.au3"
 
 ;~ startAutoRsV2()
+Func start()
+	While True
+		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
+			startAutoRsV2()
+			;~ startAutoBuff()
+		EndIf
+
+		Local $waitMinutes = calculateWaitMinutesV2()
+		If $waitMinutes > 0 Then
+			minuteWait($waitMinutes)
+		Else
+			Local $timeLoop = _JSONGet($jsonPositionConfig, "common.auto.time_loop_auto_rs")
+			writeLog("Time loop for auto reset v2: " & $timeLoop)
+			If (Number($timeLoop) = 0 Or Number($timeLoop) == 60) Then
+				waitToNextHourMinutes(1, 07, 00)
+			Else
+				minuteWait($timeLoop)
+			EndIf
+		EndIf
+	WEnd
+EndFunc
+
+; Method: calculateWaitMinutesV2
+; Description: Tinh so phut cho dua tren next_reset (last_time_reset + hour_per_reset) som nhat
+;              cua cac account active. Tra ve -1 khi khong co account de fallback ve time_loop.
+Func calculateWaitMinutesV2()
+	Local $jAccMerge = mergeInfoAccountRs()
+	If UBound($jAccMerge) == 0 Then Return -1
+
+	Local $timeNow = getTimeNow()
+	Local $nMinWait = 0, $bFound = False
+
+	For $i = 0 To UBound($jAccMerge) - 1
+		Local $jAccount = _NormalizeAccountV2($jAccMerge[$i])
+		Local $lastResetStatus = getPropertyJson($jAccount, "last_reset_status")
+		If Not getPropertyJson($jAccount, "active") Then ContinueLoop
+		If Not $lastResetStatus Then ContinueLoop
+
+		Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
+		Local $hourPerRs = Number(getPropertyJson($jAccount, "hour_per_reset"))
+		Local $nextTimeRs = addTimePerRs($lastTimeRs, $hourPerRs)
+		Local $minToNext = _DateDiff('n', $timeNow, $nextTimeRs)
+
+		If Not $bFound Or $minToNext < $nMinWait Then
+			$nMinWait = $minToNext
+			$bFound = True
+		EndIf
+	Next
+
+	If Not $bFound Then Return -1
+	If $nMinWait < 5 Then $nMinWait = 5
+	writeLog("Wait minutes tinh theo next_reset som nhat: " & $nMinWait)
+	Return $nMinWait
+EndFunc 
 
 Func startAutoRsV2()
 	Local $aResetAccounts[0], $aWithdrawAccounts[0], $aResetValidated[0], $aProcessAccounts[0]
@@ -105,6 +159,9 @@ Func _NormalizeAccountV2($jAccount)
 
 	If getPropertyJson($jAccount, "go_arena") == "" Then _JSONSet(False, $jAccount, "go_arena")
 	If getPropertyJson($jAccount, "is_hide") == "" Then _JSONSet(False, $jAccount, "is_hide")
+	If getPropertyJson($jAccount, "lvl_move") == "" Then _JSONSet(400, $jAccount, "lvl_move")
+	If getPropertyJson($jAccount, "switch_other_main") == "" Then _JSONSet(False, $jAccount, "switch_other_main")
+	If getPropertyJson($jAccount, "char_main_name") == "" Then _JSONSet("", $jAccount, "char_main_name")
 	If getPropertyJson($jAccount, "hour_per_reset") == "" Then _JSONSet(1, $jAccount, "hour_per_reset")
 	If getPropertyJson($jAccount, "max_hour_reset") == "" Then _JSONSet(24, $jAccount, "max_hour_reset")
 	If getPropertyJson($jAccount, "time_rs") == "" Then _JSONSet(0, $jAccount, "time_rs")
@@ -113,6 +170,7 @@ Func _NormalizeAccountV2($jAccount)
 	If getPropertyJson($jAccount, "last_time_reset") == "" Then _JSONSet(getTimeNow(), $jAccount, "last_time_reset")
 	If getPropertyJson($jAccount, "rs") == "" Then _JSONSet(0, $jAccount, "rs")
 	If getPropertyJson($jAccount, "max_rs") == "" Then _JSONSet(2000, $jAccount, "max_rs")
+	If getPropertyJson($jAccount, "last_reset_status") == "" Then _JSONSet(True, $jAccount, "last_reset_status")
 
 	Return $jAccount
 EndFunc
@@ -173,11 +231,13 @@ Func processResetV2($jAccountInfo)
 	If $nLvl < $lvlCanRs Then
 		writeLogFile($logFile, "Chua du level de reset. Lvl hien tai=" & $nLvl & " - lvl can=" & $lvlCanRs)
 		updateLastTimeRs($charName, getTimeNow())
+		_UpdateLastResetStatusV2($charName, False)
 		Return False
 	EndIf
 
 	If Not resetInWeb($sSession, $oAccountInfo) Then
 		writeLogFile($logFile, "Reset web that bai sau retry: " & $charName)
+		_UpdateLastResetStatusV2($charName, False)
 		Return False
 	EndIf
 	_ProcessRs_UpdateAccountInfoV2($charName)
@@ -193,6 +253,19 @@ Func processResetV2($jAccountInfo)
 			processGoArenaV2($mainNo, $rsCount, Number($oAccountInfo.Item("arenaLoopCount")))
 			moveOtherMap($charName)
 			addPointStartAutoPlus()
+		EndIf
+
+		Local $sLogResetAfter = getLogReset($sSession, $charName)
+		Local $currentLvl = getCurrentlvl($sLogResetAfter)
+		Local $lvlMove = Number($oAccountInfo.Item("lvlMove"))
+		writeLogFile($logFile, "Current level after reset: " & $currentLvl & " - Level to move: " & $lvlMove)
+		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
+		If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
+			activeAndMoveWin($mainNo)
+			If checkActiveAutoHome() Then 
+				switchToMainCharItem($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
+				Return True
+			EndIf
 		EndIf
 		sendKeyShiftF()
 		secondWait(1)
@@ -316,16 +389,10 @@ Func extractAccountInfoV2($jAccountInfo)
 	$oAccountInfo.Item("arenaLoopCount") = getPropertyJson($jAccountInfo, "arena_loop_count")
 	$oAccountInfo.Item("goArena") = getPropertyJson($jAccountInfo, "go_arena")
 	$oAccountInfo.Item("isHide") = getPropertyJson($jAccountInfo, "is_hide")
+	$oAccountInfo.Item("lvlMove") = getPropertyJson($jAccountInfo, "lvl_move")
+	$oAccountInfo.Item("switchOtherMain") = getPropertyJson($jAccountInfo, "switch_other_main")
+	$oAccountInfo.Item("charMainName") = getPropertyJson($jAccountInfo, "char_main_name")
 	Return $oAccountInfo
-EndFunc
-
-Func _HideMainIfNeededV2($mainNo, $isHide)
-	If Not $isHide Then
-		minisizeMain($mainNo)
-		Return
-	EndIf
-
-	sendKeyF8()
 EndFunc
 
 Func calculateRequiredLevelForResetV2($rsCount)
@@ -359,6 +426,22 @@ Func _ProcessRs_UpdateAccountInfoV2($charName)
 			_JSONSet($currentRs, $jItem, "rs")
 			_JSONSet($resetInDay, $jItem, "time_rs")
 			_JSONSet($sTimeReset, $jItem, "last_time_reset")
+			_JSONSet(True, $jItem, "last_reset_status")
+			$jsonRsGame[$i] = $jItem
+			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
+			ExitLoop
+		EndIf
+	Next
+EndFunc
+
+; Method: _UpdateLastResetStatusV2
+; Description: Cap nhat trang thai lan reset truoc (true/false) vao file config theo char_name.
+Func _UpdateLastResetStatusV2($charName, $status)
+	Local $jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
+	For $i = 0 To UBound($jsonRsGame) - 1
+		If getPropertyJson($jsonRsGame[$i], "char_name") == $charName Then
+			Local $jItem = $jsonRsGame[$i]
+			_JSONSet($status, $jItem, "last_reset_status")
 			$jsonRsGame[$i] = $jItem
 			setJsonToFileFormat($jsonPathRoot & $autoRsUpdateInfoFileName, $jsonRsGame)
 			ExitLoop

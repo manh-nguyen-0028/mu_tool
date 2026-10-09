@@ -1,4 +1,4 @@
 [
-  {"active":true,"username":"user_reset_01","type_rs":"free","type":"reset","hour_per_reset":1,"max_hour_reset":24,"is_hide":false,"char_name":"xxx11","reset_online":false,"go_arena":true, "password":"your_password"},
-  {"active":true,"username":"user_withdraw_01","type_rs":"vip","type":"withdraw","hour_per_reset":8,"max_hour_reset":24,"is_hide":false,"char_name":"EmGaiMua","reset_online":true,"go_arena":false,"password":"your_password"}
+  {"active":true,"username":"user_reset_01","type_rs":"free","type":"reset","hour_per_reset":1,"max_hour_reset":24,"is_hide":false,"char_name":"xxx11","reset_online":false,"go_arena":true,"lvl_move":400,"switch_other_main":true,"char_main_name":"xxx11", "password":"your_password"},
+  {"active":true,"username":"user_withdraw_01","type_rs":"vip","type":"withdraw","hour_per_reset":8,"max_hour_reset":24,"is_hide":false,"char_name":"EmGaiMua","reset_online":true,"go_arena":false,"lvl_move":400,"switch_other_main":false,"char_main_name":"","password":"your_password"}
 ]

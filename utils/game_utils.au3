@@ -616,7 +616,7 @@ EndFunc   ;==>switchToMainChar
 ; Description: Xu ly chuyen sang main chinh cho 1 nhan vat trong truong hop main chinh chua duoc active
 ; - Neu main chinh da duoc active thi khong can switch nua, chi can minisize main con lai
 ; - Neu main chinh chua duoc active thi thuc hien switch sang main chinh, neu switch thanh cong thi minisize main con lai, neu switch khong thanh cong thi minisize main hien tai
-Func switchToMainCharItem($charName, $mainCharName)
+Func switchToMainCharItem($charName, $mainCharName, $isHide = False)
     Local $mainNo = getMainNoByChar($charName)
 
     ; Truong hop main cha da duoc active thi khong can switch nua
@@ -632,11 +632,14 @@ Func switchToMainCharItem($charName, $mainCharName)
     If Not activeAndMoveWin($mainNo) Then Return
 
     Local $resultSwitch = switchOtherChar($mainCharName)
+	sendKeyShiftF()
     ; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
     If $resultSwitch Then
-        minisizeMain(getMainNoByChar($mainCharName))
+        ;~ minisizeMain(getMainNoByChar($mainCharName))
+		If $isHide Then _HideMainIfNeededV2(getMainNoByChar($mainCharName), True)
     Else
-        minisizeMain($mainNo)
+        ;~ minisizeMain($mainNo)
+		If $isHide Then _HideMainIfNeededV2($mainNo, True)
     EndIf
 EndFunc   ;==>switchToMainCharItem
 
@@ -1398,4 +1401,12 @@ Func addPointStartAutoPlus()
 	addPointInGameV2()
 	secondWait(1)
 	startAutoPlus()
+EndFunc
+
+Func _HideMainIfNeededV2($mainNo, $isHide)
+	If Not $isHide Then
+		minisizeMain($mainNo)
+		Return
+	EndIf
+	sendKeyF8()
 EndFunc
