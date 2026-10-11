@@ -636,10 +636,10 @@ Func switchToMainCharItem($charName, $mainCharName, $isHide = False)
     ; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
     If $resultSwitch Then
         ;~ minisizeMain(getMainNoByChar($mainCharName))
-		If $isHide Then _HideMainIfNeededV2(getMainNoByChar($mainCharName), True)
+		_HideMainIfNeededV2(getMainNoByChar($mainCharName), $isHide)
     Else
         ;~ minisizeMain($mainNo)
-		If $isHide Then _HideMainIfNeededV2($mainNo, True)
+		_HideMainIfNeededV2($mainNo, True)
     EndIf
 EndFunc   ;==>switchToMainCharItem
 

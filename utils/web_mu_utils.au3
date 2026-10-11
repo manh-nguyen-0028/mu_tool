@@ -812,7 +812,7 @@ Func resetInWeb($sSession, $oAccountInfo)
 	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & $oAccountInfo.Item("typeRs"))
 	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"")")
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"").click()")
-
+	secondWait(2)
 	; Thuc hien lay captcha va submit, neu rs chua thanh cong (index_content_hidden co phan tu con) thi thuc hien lai
 	Local $iMaxRetry = 2
 	Local $isResetSuccess = False

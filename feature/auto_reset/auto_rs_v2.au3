@@ -8,6 +8,8 @@
 $className = "auto_rs_v2.au3"
 
 ;~ startAutoRsV2()
+start()
+
 Func start()
 	While True
 		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
@@ -200,8 +202,25 @@ Func resetV2($jAccountInfo)
 		writeLogFile($logFile, "Reset khong thanh cong, thuc hien return char: " & $charName)
 		returnChar($mainNo)
 		stopAddPointStartAutoPlus()
-		sendKeyShiftF()
+		;~ sendKeyShiftF()
 		secondWait(1)
+		Local $attempts = 0
+		Local $isActive = False
+
+		While $attempts < 2
+			$isActive = checkActiveAutoHome()
+			If $isActive Then
+				ExitLoop
+			Else
+				minuteWait(2)
+			EndIf
+			$attempts += 1
+		WEnd
+
+		; If checkActiveAutoHome() returns true, call switchToMainCharItem()
+		If $isActive Then
+			switchToMainCharItem($charName, $jAccountInfo.Item("charMainName"), $jAccountInfo.Item("isHide"))
+		EndIf
 		_HideMainIfNeededV2($mainNo, getPropertyJson($jAccountInfo, "is_hide"))
 	EndIf
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
@@ -227,11 +246,43 @@ Func processResetV2($jAccountInfo)
 
 	If Not _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return False
 
+	Local $mainNo = getMainNoByChar($charName)
+	
 	Local $lvlCanRs = calculateRequiredLevelForResetV2($rsCount)
 	If $nLvl < $lvlCanRs Then
 		writeLogFile($logFile, "Chua du level de reset. Lvl hien tai=" & $nLvl & " - lvl can=" & $lvlCanRs)
 		updateLastTimeRs($charName, getTimeNow())
 		_UpdateLastResetStatusV2($charName, False)
+		Local $sLogResetAfter = getLogReset($sSession, $charName)
+		Local $currentLvl = getCurrentlvl($sLogResetAfter)
+		Local $lvlMove = Number($oAccountInfo.Item("lvlMove"))
+		writeLogFile($logFile, "Current level after reset: " & $currentLvl & " - Level to move: " & $lvlMove)
+		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
+		;~ ; return char
+		;~ returnChar($mainNo)
+		;~ If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
+		;~ 	activeAndMoveWin($mainNo)
+		;~ 	secondWait(2)
+		;~ 	; check active auto home. loop max 2 times, each time wait 2 seconds. If not active, switch to main char item
+		;~ 	; Attempt to check checkActiveAutoHome() up to 2 times
+		;~ 	Local $attempts = 0
+		;~ 	Local $isActive = False
+
+		;~ 	While $attempts < 2
+		;~ 		$isActive = checkActiveAutoHome()
+		;~ 		If $isActive Then
+		;~ 			ExitLoop
+		;~ 		Else
+		;~ 			minuteWait(2)
+		;~ 		EndIf
+		;~ 		$attempts += 1
+		;~ 	WEnd
+
+		;~ 	; If checkActiveAutoHome() returns true, call switchToMainCharItem()
+		;~ 	If $isActive Then
+		;~ 		switchToMainCharItem($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
+		;~ 	EndIf
+		;~ EndIf
 		Return False
 	EndIf
 
@@ -243,7 +294,6 @@ Func processResetV2($jAccountInfo)
 	_ProcessRs_UpdateAccountInfoV2($charName)
 
 	If Not $resetOnline Then
-		Local $mainNo = getMainNoByChar($charName)
 		returnChar($mainNo)
         stopAddPointStartAutoPlus()
 		minisizeMain($mainNo)
@@ -262,9 +312,23 @@ Func processResetV2($jAccountInfo)
 		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
 		If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
 			activeAndMoveWin($mainNo)
-			If checkActiveAutoHome() Then 
-				switchToMainCharItem($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
-				Return True
+			;~ minuteWait(2)
+			Local $attempts = 0
+			Local $isActive = False
+
+			While $attempts < 2
+				$isActive = checkActiveAutoHome()
+				If $isActive Then
+					ExitLoop
+				Else
+					minuteWait(2)
+				EndIf
+				$attempts += 1
+			WEnd
+
+			; If checkActiveAutoHome() returns true, call switchToMainCharItem()
+			If $isActive Then
+				switchToMainCharItem($charName, $jAccountInfo.Item("charMainName"), $jAccountInfo.Item("isHide"))
 			EndIf
 		EndIf
 		sendKeyShiftF()
