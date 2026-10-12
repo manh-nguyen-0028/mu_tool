@@ -338,6 +338,8 @@ Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $ma
 	Local $isActive = False
 
 	While $attempts < $maxAttempts
+		activeAndMoveWinByChar($charName)
+		secondWait(2)
 		$isActive = checkActiveAutoHome()
 		If $isActive Then
 			ExitLoop
@@ -348,7 +350,7 @@ Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $ma
 	WEnd
 
 	; B4: Khi auto home active thi tien hanh switch sang main char
-	If $isActive Then
+	If $isActive Or $isCharActive Then
 		switchToMainCharItem($charName, $charMainName, $isHide)
 		Return True
 	EndIf
