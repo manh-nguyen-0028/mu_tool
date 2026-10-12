@@ -632,15 +632,13 @@ Func switchToMainCharItem($charName, $mainCharName, $isHide = False)
     If Not activeAndMoveWin($mainNo) Then Return
 
     Local $resultSwitch = switchOtherChar($mainCharName)
-	sendKeyShiftF()
+	;~ sendKeyShiftF()
     ; Neu thanh cong thi an main da duoc swith di, neu khong thi an main hien tai
+	$mainNoResultSwith = getMainNoByChar($charName)
     If $resultSwitch Then
-        ;~ minisizeMain(getMainNoByChar($mainCharName))
-		_HideMainIfNeededV2(getMainNoByChar($mainCharName), $isHide)
-    Else
-        ;~ minisizeMain($mainNo)
-		_HideMainIfNeededV2($mainNo, True)
+		$mainNoResultSwith = getMainNoByChar($mainCharName)
     EndIf
+	_HideMainIfNeededV2($mainNoResultSwith, $isHide)
 EndFunc   ;==>switchToMainCharItem
 
 Func changeServer($mainNo)

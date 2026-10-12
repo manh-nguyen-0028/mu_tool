@@ -7,10 +7,19 @@
 
 $className = "auto_rs_v2.au3"
 
+; Ma loi khi reset khong thanh cong (tra ve qua @error cua processResetV2)
+Global Const $RS_ERR_NOT_ENOUGH_LVL = 1
+Global Const $RS_ERR_WEB_RESET_FAILED = 2
+Global Const $RS_ERR_LOGIN_FAILED = 3
+Global Const $RS_ERR_NOT_TIME_YET = 4
+Global Const $RS_ERR_ACTIVE_GAME_FAILED = 5
+Global Const $RS_ERR_CHANGE_CHAR_FAILED = 6
+
 ;~ startAutoRsV2()
 start()
 
 Func start()
+	writeLogMethodStart("start", @ScriptLineNumber)
 	While True
 		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
 			startAutoRsV2()
@@ -36,6 +45,7 @@ EndFunc
 ; Description: Tinh so phut cho dua tren next_reset (last_time_reset + hour_per_reset) som nhat
 ;              cua cac account active. Tra ve -1 khi khong co account de fallback ve time_loop.
 Func calculateWaitMinutesV2()
+	writeLogMethodStart("calculateWaitMinutesV2", @ScriptLineNumber)
 	Local $jAccMerge = mergeInfoAccountRs()
 	If UBound($jAccMerge) == 0 Then Return -1
 
@@ -149,6 +159,7 @@ Func startAutoRsV2()
 EndFunc
 
 Func _NormalizeAccountV2($jAccount)
+	writeLogMethodStart("_NormalizeAccountV2", @ScriptLineNumber)
 	Local $username = getPropertyJson($jAccount, "username")
 	If $username == "" Then $username = getPropertyJson($jAccount, "user_name")
 	_JSONSet($username, $jAccount, "username")
@@ -178,65 +189,59 @@ Func _NormalizeAccountV2($jAccount)
 EndFunc
 
 Func resetV2($jAccountInfo)
+	; B1: Lay thong tin co ban cua account reset
 	Local $charName = getPropertyJson($jAccountInfo, "char_name")
 	Local $resetOnline = getPropertyJson($jAccountInfo, "reset_online")
 	Local $mainNo = getMainNoByChar($charName)
 
 	writeLogMethodStart("resetV2", @ScriptLineNumber, $charName)
-	If Not $resetOnline Then
-		Local $activeMain = activeAndMoveWin($mainNo)
-		If Not $activeMain Then $activeMain = switchOtherChar($charName)
-		If Not $activeMain Then
-			writeLogFile($logFile, "Khong active duoc cua so game de reset: " & $charName)
-			Return
-		EndIf
-
-		If Not changeChar($mainNo) Then
-			writeLogFile($logFile, "Khong doi duoc nhan vat truoc reset: " & $charName)
-			Return
-		EndIf
-	EndIf
-
+	; B2: Goi luong reset chinh va nhan ket qua + ma loi
 	Local $isResetSuccess = processResetV2($jAccountInfo)
+	Local $rsErrCode = @error
+	Local $isCharChanged = @extended
+	Local $needSwitchMainChar = ($rsErrCode = $RS_ERR_NOT_ENOUGH_LVL Or $rsErrCode = $RS_ERR_WEB_RESET_FAILED)
+	If Not $isResetSuccess Then writeLogFile($logFile, "Reset khong thanh cong - ma loi: " & $rsErrCode & " - char: " & $charName)
+
+	; B3: Xu ly nhanh cho case reset that bai (chi ap dung khi reset online = false)
 	If Not $resetOnline And Not $isResetSuccess Then
-		writeLogFile($logFile, "Reset khong thanh cong, thuc hien return char: " & $charName)
-		returnChar($mainNo)
-		stopAddPointStartAutoPlus()
-		;~ sendKeyShiftF()
-		secondWait(1)
-		Local $attempts = 0
-		Local $isActive = False
-
-		While $attempts < 2
-			$isActive = checkActiveAutoHome()
-			If $isActive Then
-				ExitLoop
-			Else
-				minuteWait(2)
-			EndIf
-			$attempts += 1
-		WEnd
-
-		; If checkActiveAutoHome() returns true, call switchToMainCharItem()
-		If $isActive Then
-			switchToMainCharItem($charName, $jAccountInfo.Item("charMainName"), $jAccountInfo.Item("isHide"))
+		; B3.1: Neu da doi char truoc do thi tra lai char cu, dung auto plus tam thoi
+		If $isCharChanged Then
+			writeLogFile($logFile, "Reset khong thanh cong, thuc hien return char: " & $charName)
+			returnChar($mainNo)
+			stopAddPointStartAutoPlus()
+			;~ sendKeyShiftF()
+			secondWait(2)
 		EndIf
-		_HideMainIfNeededV2($mainNo, getPropertyJson($jAccountInfo, "is_hide"))
+
+		; B3.2: Chi thu switch sang main char voi nhom loi duoc chi dinh
+		If $needSwitchMainChar And $jAccountInfo.Item("switchOtherMain") Then
+			_TrySwitchToMainCharIfAutoHomeActive($charName, getPropertyJson($jAccountInfo, "charMainName"), getPropertyJson($jAccountInfo, "isHide"))
+		EndIf
+
+		; B3.3: Neu da can thiep vao flow game thi hide cua so theo config
+		If $isCharChanged Or $needSwitchMainChar Then
+			_HideMainIfNeededV2($mainNo, getPropertyJson($jAccountInfo, "is_hide"))
+		EndIf
 	EndIf
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
 EndFunc
 
 Func processResetV2($jAccountInfo)
+	; B1: Chuan hoa thong tin account
 	Local $oAccountInfo = extractAccountInfoV2($jAccountInfo)
 	Local $charName = $oAccountInfo.Item("charName")
 	Local $resetOnline = $oAccountInfo.Item("resetOnline")
+	Local $mainNo = getMainNoByChar($charName)
+	Local $isCharChanged = 0
 
 	writeLogMethodStart("processResetV2", @ScriptLineNumber, $charName)
+	; B2: Dang nhap web
 	If Not login($sSession, $oAccountInfo.Item("username"), $oAccountInfo.Item("password")) Then
 		writeLogFile($logFile, "Dang nhap that bai: " & $charName)
-		Return False
+		Return SetError($RS_ERR_LOGIN_FAILED, $isCharChanged, False)
 	EndIf
 
+	; B3: Lay log reset hien tai va tinh toan dieu kien reset
 	Local $timeNow = getTimeNow()
 	Local $sLogReset = getLogReset($sSession, $charName)
 	Local $lastTimeRs = getTimeReset($sLogReset, 0)
@@ -244,55 +249,44 @@ Func processResetV2($jAccountInfo)
 	Local $nLvl = getCurrentlvl($sLogReset)
 	Local $nextTimeRs = addTimePerRs($lastTimeRs, Number($oAccountInfo.Item("hourPerRs")))
 
-	If Not _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return False
-
-	Local $mainNo = getMainNoByChar($charName)
+	; B4: Check den gio reset chua
+	If Not _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName) Then Return SetError($RS_ERR_NOT_TIME_YET, $isCharChanged, False)
 	
+	; B5: Check du level reset chua
 	Local $lvlCanRs = calculateRequiredLevelForResetV2($rsCount)
 	If $nLvl < $lvlCanRs Then
 		writeLogFile($logFile, "Chua du level de reset. Lvl hien tai=" & $nLvl & " - lvl can=" & $lvlCanRs)
 		updateLastTimeRs($charName, getTimeNow())
 		_UpdateLastResetStatusV2($charName, False)
-		Local $sLogResetAfter = getLogReset($sSession, $charName)
-		Local $currentLvl = getCurrentlvl($sLogResetAfter)
-		Local $lvlMove = Number($oAccountInfo.Item("lvlMove"))
-		writeLogFile($logFile, "Current level after reset: " & $currentLvl & " - Level to move: " & $lvlMove)
-		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
-		;~ ; return char
-		;~ returnChar($mainNo)
-		;~ If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
-		;~ 	activeAndMoveWin($mainNo)
-		;~ 	secondWait(2)
-		;~ 	; check active auto home. loop max 2 times, each time wait 2 seconds. If not active, switch to main char item
-		;~ 	; Attempt to check checkActiveAutoHome() up to 2 times
-		;~ 	Local $attempts = 0
-		;~ 	Local $isActive = False
-
-		;~ 	While $attempts < 2
-		;~ 		$isActive = checkActiveAutoHome()
-		;~ 		If $isActive Then
-		;~ 			ExitLoop
-		;~ 		Else
-		;~ 			minuteWait(2)
-		;~ 		EndIf
-		;~ 		$attempts += 1
-		;~ 	WEnd
-
-		;~ 	; If checkActiveAutoHome() returns true, call switchToMainCharItem()
-		;~ 	If $isActive Then
-		;~ 		switchToMainCharItem($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
-		;~ 	EndIf
-		;~ EndIf
-		Return False
+		Return SetError($RS_ERR_NOT_ENOUGH_LVL, $isCharChanged, False)
 	EndIf
 
+	; B6: Neu reset offline thi active cua so game + doi char truoc khi reset web
+	If Not $resetOnline Then
+		Local $activeMain = activeAndMoveWin($mainNo)
+		If Not $activeMain Then $activeMain = switchOtherChar($charName)
+		If Not $activeMain Then
+			writeLogFile($logFile, "Khong active duoc cua so game de reset: " & $charName)
+			Return SetError($RS_ERR_ACTIVE_GAME_FAILED, $isCharChanged, False)
+		EndIf
+
+		If Not changeChar($mainNo) Then
+			writeLogFile($logFile, "Khong doi duoc nhan vat truoc reset: " & $charName)
+			Return SetError($RS_ERR_CHANGE_CHAR_FAILED, $isCharChanged, False)
+		EndIf
+		$isCharChanged = 1
+	EndIf
+
+	; B7: Thuc hien reset tren web
 	If Not resetInWeb($sSession, $oAccountInfo) Then
 		writeLogFile($logFile, "Reset web that bai sau retry: " & $charName)
 		_UpdateLastResetStatusV2($charName, False)
-		Return False
+		Return SetError($RS_ERR_WEB_RESET_FAILED, $isCharChanged, False)
 	EndIf
+	; B8: Dong bo thong tin reset moi ve file json
 	_ProcessRs_UpdateAccountInfoV2($charName)
 
+	; B9: Hau xu ly phia game sau khi reset thanh cong
 	If Not $resetOnline Then
 		returnChar($mainNo)
         stopAddPointStartAutoPlus()
@@ -305,42 +299,66 @@ Func processResetV2($jAccountInfo)
 			addPointStartAutoPlus()
 		EndIf
 
+		; B9.1: Neu dat nguong level va co bat switchOtherMain thi thu switch sang main char
 		Local $sLogResetAfter = getLogReset($sSession, $charName)
 		Local $currentLvl = getCurrentlvl($sLogResetAfter)
 		Local $lvlMove = Number($oAccountInfo.Item("lvlMove"))
 		writeLogFile($logFile, "Current level after reset: " & $currentLvl & " - Level to move: " & $lvlMove)
 		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
 		If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
-			activeAndMoveWin($mainNo)
-			;~ minuteWait(2)
-			Local $attempts = 0
-			Local $isActive = False
-
-			While $attempts < 2
-				$isActive = checkActiveAutoHome()
-				If $isActive Then
-					ExitLoop
-				Else
-					minuteWait(2)
-				EndIf
-				$attempts += 1
-			WEnd
-
-			; If checkActiveAutoHome() returns true, call switchToMainCharItem()
-			If $isActive Then
-				switchToMainCharItem($charName, $jAccountInfo.Item("charMainName"), $jAccountInfo.Item("isHide"))
-			EndIf
+			_TrySwitchToMainCharIfAutoHomeActive($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
 		EndIf
-		sendKeyShiftF()
+		;~ sendKeyShiftF()
 		secondWait(1)
 		_HideMainIfNeededV2($mainNo, $oAccountInfo.Item("isHide"))
 	EndIf
 
+	; B10: Ket thuc thanh cong
 	writeLogMethodEnd("processResetV2", @ScriptLineNumber, $charName)
-	Return True
+	Return SetError(0, $isCharChanged, True)
+EndFunc
+
+Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $maxAttempts = 2, $waitMinutes = 2)
+	writeLogMethodStart("_TrySwitchToMainCharIfAutoHomeActive", @ScriptLineNumber, $charName)
+	; B1: Neu main char da active san thi bo qua switch
+	If activeAndMoveWinByChar($charMainName) Then
+		writeLogFile($logFile, "Main char da active, bo qua switch: " & $charMainName)
+		Return True
+	EndIf
+
+	; B2: Dam bao char hien tai dang duoc active de tiep tuc xu ly
+	Local $isCharActive = activeAndMoveWinByChar($charName)
+	If Not $isCharActive Then
+		writeLogFile($logFile, "Khong active duoc char de xu ly switch main char cua: " & $charName)
+		Return False
+	EndIf
+
+	; B3: Retry check auto home trong so lan gioi han
+	Local $attempts = 0
+	Local $isActive = False
+
+	While $attempts < $maxAttempts
+		$isActive = checkActiveAutoHome()
+		If $isActive Then
+			ExitLoop
+		Else
+			minuteWait($waitMinutes)
+		EndIf
+		$attempts += 1
+	WEnd
+
+	; B4: Khi auto home active thi tien hanh switch sang main char
+	If $isActive Then
+		switchToMainCharItem($charName, $charMainName, $isHide)
+		Return True
+	EndIf
+
+	; B5: Het retry nhung auto home van chua active
+	Return False
 EndFunc
 
 Func processGoArenaV2($mainNo, $rsCount, $arenaLoopCount)
+	writeLogMethodStart("processGoArenaV2", @ScriptLineNumber)
 	If $arenaLoopCount < 1 Then $arenaLoopCount = 1
 	writeLogFile($logFile, "go_arena=true => cho 2 phut va vao arena")
 	writeLogFile($logFile, "So lan loop check arena: " & $arenaLoopCount)
@@ -425,6 +443,7 @@ Func withDrawRsV2($jAccountInfo)
 EndFunc
 
 Func _UpdateWithdrawInfoV2($charName, $timeRs, $lastTimeReset)
+	writeLogMethodStart("_UpdateWithdrawInfoV2", @ScriptLineNumber, $charName)
 	Local $jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	For $i = 0 To UBound($jsonRsGame) - 1
 		If getPropertyJson($jsonRsGame[$i], "char_name") == $charName Then
@@ -439,6 +458,7 @@ Func _UpdateWithdrawInfoV2($charName, $timeRs, $lastTimeReset)
 EndFunc
 
 Func extractAccountInfoV2($jAccountInfo)
+	writeLogMethodStart("extractAccountInfoV2", @ScriptLineNumber)
 	Local $oAccountInfo = ObjCreate("Scripting.Dictionary")
 	Local $username = getPropertyJson($jAccountInfo, "username")
 	If $username == "" Then $username = getPropertyJson($jAccountInfo, "user_name")
@@ -460,6 +480,7 @@ Func extractAccountInfoV2($jAccountInfo)
 EndFunc
 
 Func calculateRequiredLevelForResetV2($rsCount)
+	writeLogMethodStart("calculateRequiredLevelForResetV2", @ScriptLineNumber)
 	Local $lvlCanRs = 400
 	If $rsCount < 50 Then
 		$lvlCanRs = 200 + ($rsCount * 5)
@@ -469,6 +490,7 @@ Func calculateRequiredLevelForResetV2($rsCount)
 EndFunc
 
 Func _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName)
+	writeLogMethodStart("_CheckTimeToResetV2", @ScriptLineNumber, $charName)
 	If ($timeNow < $nextTimeRs) Then
 		writeLogFile($logFile, "Chua den thoi gian reset: " & $charName)
 		updateLastTimeRs($charName, $lastTimeRs)
@@ -478,6 +500,7 @@ Func _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName)
 EndFunc
 
 Func _ProcessRs_UpdateAccountInfoV2($charName)
+	writeLogMethodStart("_ProcessRs_UpdateAccountInfoV2", @ScriptLineNumber, $charName)
 	Local $jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	Local $sLogReset = getLogReset($sSession, $charName)
 	Local $resetInDay = getRsInDay($sLogReset)
@@ -501,6 +524,7 @@ EndFunc
 ; Method: _UpdateLastResetStatusV2
 ; Description: Cap nhat trang thai lan reset truoc (true/false) vao file config theo char_name.
 Func _UpdateLastResetStatusV2($charName, $status)
+	writeLogMethodStart("_UpdateLastResetStatusV2", @ScriptLineNumber, $charName)
 	Local $jsonRsGame = getJsonFromFile($jsonPathRoot & $autoRsUpdateInfoFileName)
 	For $i = 0 To UBound($jsonRsGame) - 1
 		If getPropertyJson($jsonRsGame[$i], "char_name") == $charName Then
@@ -514,6 +538,7 @@ Func _UpdateLastResetStatusV2($charName, $status)
 EndFunc
 
 Func validAccountRsV2($aAccountActiveRs)
+	writeLogMethodStart("validAccountRsV2", @ScriptLineNumber)
 	Local $aAccValidate[0]
 	Local $timeWaitRsVip = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_vip")
 	Local $timeWaitRsZenRs50 = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
@@ -538,6 +563,7 @@ Func validAccountRsV2($aAccountActiveRs)
 EndFunc
 
 Func _ValidRs_IsInvalidLastTimeV2($jAccount)
+	writeLogMethodStart("_ValidRs_IsInvalidLastTimeV2", @ScriptLineNumber)
 	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
 	Local $charName = getPropertyJson($jAccount, "char_name")
 	If $lastTimeRs == 0 Or StringLen($lastTimeRs) <= 1 Then
@@ -548,6 +574,7 @@ Func _ValidRs_IsInvalidLastTimeV2($jAccount)
 EndFunc
 
 Func _ValidRs_IsOverMaxHourResetV2($jAccount)
+	writeLogMethodStart("_ValidRs_IsOverMaxHourResetV2", @ScriptLineNumber)
 	Local $maxHourReset = Number(getPropertyJson($jAccount, "max_hour_reset"))
 	If $maxHourReset <= 0 Then $maxHourReset = 24
 	If Number(@HOUR) >= $maxHourReset Then Return True
@@ -555,6 +582,7 @@ Func _ValidRs_IsOverMaxHourResetV2($jAccount)
 EndFunc
 
 Func _ValidRs_IsNotTimeToResetV2($jAccount)
+	writeLogMethodStart("_ValidRs_IsNotTimeToResetV2", @ScriptLineNumber)
 	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
 	Local $hourPerRs = getPropertyJson($jAccount, "hour_per_reset")
 	Local $currentTime = getTimeNow()
@@ -565,6 +593,7 @@ Func _ValidRs_IsNotTimeToResetV2($jAccount)
 EndFunc
 
 Func _ValidRs_IsMaxResetReachedV2($jAccount)
+	writeLogMethodStart("_ValidRs_IsMaxResetReachedV2", @ScriptLineNumber)
 	Local $rs = Number(getPropertyJson($jAccount, "rs"))
 	Local $maxRs = Number(getPropertyJson($jAccount, "max_rs"))
 	If $maxRs <= 0 Then $maxRs = 2000
@@ -574,6 +603,7 @@ Func _ValidRs_IsMaxResetReachedV2($jAccount)
 EndFunc
 
 Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZenRs50)
+	writeLogMethodStart("_ValidRs_IsTypeRsTimeNotReachedV2", @ScriptLineNumber)
 	Local $typeRs = StringLower(String(getPropertyJson($jAccount, "type_rs")))
 	Local $rs = Number(getPropertyJson($jAccount, "rs"))
 	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
@@ -591,6 +621,7 @@ Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZen
 EndFunc
 
 Func _ValidRs_IsDailyLimitExceededV2($jAccount)
+	writeLogMethodStart("_ValidRs_IsDailyLimitExceededV2", @ScriptLineNumber)
 	Local $timeRs = Number(getPropertyJson($jAccount, "time_rs"))
 	Local $limit = Number(getPropertyJson($jAccount, "limit"))
 	Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
@@ -600,6 +631,7 @@ Func _ValidRs_IsDailyLimitExceededV2($jAccount)
 EndFunc
 
 Func _ValidRs_AdjustTypeRsIfOverDailyLimitV2(ByRef $jAccount, $maxRsVip)
+	writeLogMethodStart("_ValidRs_AdjustTypeRsIfOverDailyLimitV2", @ScriptLineNumber)
 	Local $typeRs = StringLower(String(getPropertyJson($jAccount, "type_rs")))
 	Local $timeRs = Number(getPropertyJson($jAccount, "time_rs"))
 	Local $hourPerRs = Number(getPropertyJson($jAccount, "hour_per_reset"))
