@@ -610,11 +610,12 @@ Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZen
 	Local $currentTime = getTimeNow()
 	Local $lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 	Local $lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
-	Local $lastTimeRsAddRsZenRs50 = _DateAdd('n', $timeWaitRsZenRs50, $lastTimeRs)
+	Local $timeWaitRsUnder50 = $rs + 6
+	Local $lastTimeRsAddRsUnder50 = _DateAdd('n', $timeWaitRsUnder50, $lastTimeRs)
 
 	If $typeRs == "free" Then
 		If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then Return True
-		If $currentTime < $lastTimeRsAddRsZenRs50 And $rs < 50 Then Return True
+		If $currentTime < $lastTimeRsAddRsUnder50 And $rs < 50 Then Return True
 	EndIf
 	If $typeRs == "vip" And $currentTime < $lastTimeRsAddRsVip Then Return True
 	Return False
