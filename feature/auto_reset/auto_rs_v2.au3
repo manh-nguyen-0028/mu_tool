@@ -3,6 +3,7 @@
 #include "../../utils/common_utils.au3"
 #include "../../utils/web_mu_utils.au3"
 #include "../../utils/game_utils.au3"
+#include "../auto_buff/auto_buff.au3"
 #RequireAdmin
 
 $className = "auto_rs_v2.au3"
@@ -23,7 +24,7 @@ Func start()
 	While True
 		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
 			startAutoRsV2()
-			;~ startAutoBuff()
+			startAutoBuff()
 		EndIf
 
 		Local $waitMinutes = calculateWaitMinutesV2()

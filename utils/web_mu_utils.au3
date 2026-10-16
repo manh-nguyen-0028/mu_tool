@@ -212,8 +212,11 @@ Func checkCaptchaThenSubmit($sSession)
 		; Click submit
 		_WD_ExecuteScript($sSession, "$(""button[type='submit']"").click();")
 		secondWait(2)
+		Return True
+	Else
+		writeLogFile($logFile, "Captcha chưa được nhập, không thể submit!")
+		Return False
 	EndIf
-	Return True
 EndFunc   ;==>checkCaptchaThenSubmit
 
 ; Tao function giai ma captcha tu azcaptcha
@@ -813,12 +816,18 @@ Func resetInWeb($sSession, $oAccountInfo)
 	writeLogFile($logFile, "resetInWeb: Thực hiện click radio reset type: " & "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"")")
 	_WD_ExecuteScript($sSession, "$(""input[name='rstype'][value='" & $oAccountInfo.Item("typeRs") & "']"").click()")
 	secondWait(2)
+	_WD_ExecuteScript($sSession, "window.scrollTo(0, document.body.scrollHeight);")
+	secondWait(2)
 	; Thuc hien lay captcha va submit, neu rs chua thanh cong (index_content_hidden co phan tu con) thi thuc hien lai
 	Local $iMaxRetry = 2
 	Local $isResetSuccess = False
 	For $i = 1 To $iMaxRetry
 		solveImageCaptchaAz($sSession, "//img[@class='captcha_img']", 90, 5)
-		checkCaptchaThenSubmit($sSession)
+		$checkCaptchaSubmit =  checkCaptchaThenSubmit($sSession)
+		If Not $checkCaptchaSubmit Then
+			writeLogFile($logFile, "resetInWeb: Submit captcha that bai, thuc hien lai lan thu " & $i)
+			ContinueLoop
+		EndIf
 		secondWait(3)
 		If Not checkResetFail($sSession) Then
 			$isResetSuccess = True
