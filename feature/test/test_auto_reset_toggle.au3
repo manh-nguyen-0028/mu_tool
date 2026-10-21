@@ -59,13 +59,13 @@ EndFunc   ;==>_RestoreToggleConfig
 
 Func _NoActiveConfigText()
 	Return '[' & _
-			'{"active":false,"char_name":"char1","is_swith_other_char":false,"other_char_name":""},' & _
+			'{"active":false,"char_name":"QuyHuyet","is_swith_other_char":false,"other_char_name":""},' & _
 			'{"active":false,"char_name":"char2","is_swith_other_char":true,"other_char_name":"char3"}]'
 EndFunc   ;==>_NoActiveConfigText
 
 Func testGetActiveResetToggleChars()
 	_UseTempToggleConfig('[' & _
-			'{"active":true,"char_name":"char1","is_swith_other_char":false,"other_char_name":""},' & _
+			'{"active":true,"char_name":"QuyHuyet","is_swith_other_char":false,"other_char_name":""},' & _
 			'{"active":false,"char_name":"char2","is_swith_other_char":false,"other_char_name":""},' & _
 			'{"active":true,"char_name":"char3","is_swith_other_char":true,"other_char_name":"char4"}]')
 	Local $aActive = getActiveResetToggleChars()
@@ -73,7 +73,7 @@ Func testGetActiveResetToggleChars()
 
 	If Not _AssertToggle("so char active", UBound($aActive), 2) Then Return False
 	Local $ok = True
-	If Not _AssertToggle("char[0]", getPropertyJson($aActive[0], "char_name"), "char1") Then $ok = False
+	If Not _AssertToggle("char[0]", getPropertyJson($aActive[0], "char_name"), "QuyHuyet") Then $ok = False
 	If Not _AssertToggle("char[1]", getPropertyJson($aActive[1], "char_name"), "char3") Then $ok = False
 	If Not _AssertToggle("char[1] switch other", getPropertyJson($aActive[1], "is_swith_other_char") == True, True) Then $ok = False
 	Return $ok

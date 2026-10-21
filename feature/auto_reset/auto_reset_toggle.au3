@@ -67,7 +67,10 @@ Func processResetToggleChar($jChar, $enable)
 		writeLogFile($logFile, "Khong active duoc char " & $charName & " => Bo qua")
 		Return False
 	EndIf
-
+	; Thuc hien bam enter 1 lan de xoa bo cac popup (neu co) truoc khi bat/tat checkbox reset
+	sendKeyEnter()
+	secondWait(1)
+	
 	Local $result = applyResetCheckboxState($enable)
 	writeLogFile($logFile, "Ket qua toggle reset char " & $charName & ": " & $result)
 	minisizeMainByChar($charName)
