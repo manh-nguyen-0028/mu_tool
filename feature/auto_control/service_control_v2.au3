@@ -3,7 +3,6 @@
 #include "../../utils/game_utils.au3"
 #include "../auto_reset/auto_rs_v2.au3"
 #include "../auto_buff/auto_buff.au3"
-#include "../auto_reset/auto_reset_toggle.au3"
 #RequireAdmin
 
 start()
@@ -12,9 +11,6 @@ start()
 ; Description: Main loop for service control V2. Runs auto reset V2 and auto buff.
 Func start()
 	While True
-		; Scheduler bat/tat reset trong Auto Plus (00:06 / 06:30) - chay doc lap voi auto reset v2
-		startAutoResetToggle()
-
 		If Not checkProcessExists("mu_auction.exe") And ((@HOUR < 23) Or (@HOUR == 23 And @MIN <= 20)) Then
 			startAutoRsV2()
 			startAutoBuff()

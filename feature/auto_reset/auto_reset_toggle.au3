@@ -4,80 +4,42 @@
 
 $className = "auto_reset_toggle.au3"
 
-; Moc gio bat/tat checkbox reset trong Auto Plus (tinh theo phut trong ngay) va do lech cho phep (+- phut)
-Global Const $RS_TOGGLE_ON_MINUTE = 6              ; 00:06 => bat
-Global Const $RS_TOGGLE_OFF_MINUTE = 6 * 60 + 30   ; 06:30 => tat
-Global Const $RS_TOGGLE_WINDOW_MINUTE = 5
+; Thu vien bat/tat checkbox reset trong Auto Plus cho cac char active trong config.
+; Entry point de dat lich (Task Scheduler): auto_reset_on.au3 (bat) va auto_reset_off.au3 (tat).
 
-; Debounce: ngay (YYYY/MM/DD) da chay moc bat/tat gan nhat trong tien trinh hien tai
-Global $rsToggleLastDateOn = "", $rsToggleLastDateOff = ""
+; Method: startAutoResetOn
+; Description: Bat checkbox reset cho cac char active trong config
+Func startAutoResetOn()
+	Return runAutoResetToggle(True)
+EndFunc   ;==>startAutoResetOn
 
-; Ket qua cua resolveResetToggleAction
-Global Const $RS_TOGGLE_ACTION_SKIP = -1, $RS_TOGGLE_ACTION_OFF = 0, $RS_TOGGLE_ACTION_ON = 1
+; Method: startAutoResetOff
+; Description: Tat checkbox reset cho cac char active trong config
+Func startAutoResetOff()
+	Return runAutoResetToggle(False)
+EndFunc   ;==>startAutoResetOff
 
-;~ startAutoResetToggle()
-
-; Method: startAutoResetToggle
-; Description: Bat checkbox reset luc 00:06 va tat luc 06:30 (+- 5 phut) cho cac char active trong config.
-;              Moi moc chay toi da 1 lan/ngay. Goi duoc nhieu lan trong vong lap service.
-Func startAutoResetToggle()
-	Local $sFilePath = $outputPathRoot & "File_Log_AutoResetToggle_.txt"
+; Method: runAutoResetToggle
+; Description: Bat/tat checkbox reset cho cac char active trong config. Tra ve so char xu ly thanh cong.
+Func runAutoResetToggle($enable)
+	Local $sFilePath = $outputPathRoot & ($enable ? "File_Log_AutoResetOn_.txt" : "File_Log_AutoResetOff_.txt")
 	$logFile = FileOpen($sFilePath, $iLogOverwrite)
-	writeLogMethodStart("startAutoResetToggle", @ScriptLineNumber)
+	writeLogMethodStart("runAutoResetToggle", @ScriptLineNumber, "enable=" & $enable)
 
-	Local $todayStr = @YEAR & "/" & @MON & "/" & @MDAY
-	Local $action = resolveResetToggleAction(@HOUR * 60 + @MIN, $todayStr)
-	If $action == $RS_TOGGLE_ACTION_SKIP Then
-		FileClose($logFile)
-		Return
-	EndIf
-	Local $enable = ($action == $RS_TOGGLE_ACTION_ON)
-
+	Local $successCount = 0
 	Local $aActive = getActiveResetToggleChars()
 	If UBound($aActive) == 0 Then
 		writeLogFile($logFile, "Khong co char nao active trong config auto reset toggle")
 	Else
 		For $i = 0 To UBound($aActive) - 1
-			processResetToggleChar($aActive[$i], $enable)
+			If processResetToggleChar($aActive[$i], $enable) Then $successCount += 1
 		Next
 	EndIf
 
-	If $enable Then
-		$rsToggleLastDateOn = $todayStr
-	Else
-		$rsToggleLastDateOff = $todayStr
-	EndIf
-
-	writeLogMethodEnd("startAutoResetToggle", @ScriptLineNumber)
+	writeLogMethodEnd("runAutoResetToggle", @ScriptLineNumber, "thanh cong " & $successCount & "/" & UBound($aActive))
 	FileClose($logFile)
-EndFunc   ;==>startAutoResetToggle
-
-; Method: resolveResetToggleAction
-; Description: Xac dinh hanh dong (BAT/TAT/bo qua) theo phut trong ngay va debounce theo ngay
-Func resolveResetToggleAction($nowMinute, $todayStr)
-	If isInToggleWindow($RS_TOGGLE_ON_MINUTE, $nowMinute) Then
-		If $rsToggleLastDateOn == $todayStr Then
-			writeLogFile($logFile, "Moc BAT reset da chay hom nay => Bo qua")
-			Return $RS_TOGGLE_ACTION_SKIP
-		EndIf
-		Return $RS_TOGGLE_ACTION_ON
-	ElseIf isInToggleWindow($RS_TOGGLE_OFF_MINUTE, $nowMinute) Then
-		If $rsToggleLastDateOff == $todayStr Then
-			writeLogFile($logFile, "Moc TAT reset da chay hom nay => Bo qua")
-			Return $RS_TOGGLE_ACTION_SKIP
-		EndIf
-		Return $RS_TOGGLE_ACTION_OFF
-	EndIf
-	writeLogFile($logFile, "Chua den moc gio bat/tat reset => Bo qua")
-	Return $RS_TOGGLE_ACTION_SKIP
-EndFunc   ;==>resolveResetToggleAction
-
-; Method: isInToggleWindow
-; Description: Kiem tra phut trong ngay (mac dinh = gio hien tai) co nam trong cua so [moc - 5 phut, moc + 5 phut] hay khong
-Func isInToggleWindow($targetMinuteOfDay, $nowMinute = Default)
-	If IsKeyword($nowMinute) Then $nowMinute = @HOUR * 60 + @MIN
-	Return Abs($nowMinute - $targetMinuteOfDay) <= $RS_TOGGLE_WINDOW_MINUTE
-EndFunc   ;==>isInToggleWindow
+	Return $successCount
+EndFunc   ;==>runAutoResetToggle
 
 ; Method: getActiveResetToggleChars
 ; Description: Doc config va tra ve danh sach record active
