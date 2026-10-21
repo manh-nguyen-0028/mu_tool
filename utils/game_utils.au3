@@ -1171,6 +1171,68 @@ Func startAutoPlusWithoutReset()
 	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
 EndFunc   ;==>startAutoPlusWithoutReset
 
+; Method: checkResetCheckboxChecked
+; Description: Kiem tra checkbox reset trong Auto Plus dang duoc tick (bang image search is_checked_reset.bmp)
+Func checkResetCheckboxChecked()
+	Local $pathImage = $imagePathRoot & "common" & "\is_checked_reset.bmp"
+	If Not FileExists($pathImage) Then
+		writeLogFile($logFile, "Khong tim thay file anh: " & $pathImage)
+		Return False
+	EndIf
+	Return searchImageFullScreenMu($pathImage)
+EndFunc   ;==>checkResetCheckboxChecked
+
+; Method: applyResetCheckboxState
+; Description: Mo Auto Plus, dua checkbox reset ve trang thai mong muon (chi click khi lech), verify lai bang anh roi bam Start.
+;              Luon bam Start de khong de Auto Plus bi dung. Tra ve True neu checkbox dung trang thai mong muon.
+Func applyResetCheckboxState($enable)
+	writeLogMethodStart("applyResetCheckboxState", @ScriptLineNumber, "enable=" & $enable)
+	Local $result = False
+	Local $checkboxX = getProperty("button.train_in_game.checkbox_reset_x")
+	Local $checkboxY = getProperty("button.train_in_game.checkbox_reset_y")
+
+	; 1. Dung Auto Plus roi mo panel Auto Plus
+	stopAutoPlus()
+	secondWait(1)
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_x"), getProperty("button.train_in_game.button_y"))
+	secondWait(2)
+
+	; 2. Kiem tra trang thai hien tai, chi click khi lech trang thai mong muon
+	If checkResetCheckboxChecked() == $enable Then
+		writeLogFile($logFile, "Checkbox reset da dung trang thai mong muon (enable=" & $enable & ")")
+		$result = True
+	Else
+		writeLogFile($logFile, "Checkbox reset lech trang thai => click doi trang thai (enable=" & $enable & ")")
+		_MU_MouseClick_Delay($checkboxX, $checkboxY)
+		secondWait(1)
+		If checkResetCheckboxChecked() == $enable Then
+			writeLogFile($logFile, "Doi trang thai checkbox reset thanh cong")
+			$result = True
+		Else
+			writeLogFile($logFile, "Verify checkbox reset THAT BAI sau khi click (enable=" & $enable & ")")
+		EndIf
+	EndIf
+
+	; 3. Bam Start
+	_MU_MouseClick_Delay(getProperty("button.train_in_game.button_start_x"), getProperty("button.train_in_game.button_start_y"))
+	secondWait(1)
+
+	writeLogMethodEnd("applyResetCheckboxState", @ScriptLineNumber, "result=" & $result)
+	Return $result
+EndFunc   ;==>applyResetCheckboxState
+
+; Method: activeCharForAutoPlus
+; Description: Active cua so game cua char; neu that bai va $trySwitchOther = True thi thu switch tu char khac cung tai khoan
+Func activeCharForAutoPlus($charName, $trySwitchOther = False)
+	If activeAndMoveWinByChar($charName) Then Return True
+	writeLogFile($logFile, "Khong active duoc main: " & $charName)
+	If $trySwitchOther Then
+		If switchOtherChar($charName) Then Return True
+		writeLogFile($logFile, "Switch sang char " & $charName & " that bai")
+	EndIf
+	Return False
+EndFunc   ;==>activeCharForAutoPlus
+
 Func switchSvInGame($oAccountInfo)
 	; 3. Thuc hien doi server trong game nhe
 	_MU_MouseClick_Delay(getProperty("button.swith_sv_in_game.button_x"), getProperty("button.swith_sv_in_game.button_y"))

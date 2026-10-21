@@ -1,0 +1,4 @@
+[
+	{"active":true,"char_name":"char1","is_swith_other_char":false,"other_char_name":""},
+	{"active":true,"char_name":"char2","is_swith_other_char":true,"other_char_name":"char3"}
+]
