@@ -895,3 +895,194 @@ Func addPointReset($sSession)
 		Return True
 	EndIf
 EndFunc
+
+; ===== Nhóm Zalo web =====
+Global $zaloWebUrl = "https://chat.zalo.me/"
+
+; Method: checkZaloLoggedIn
+; Description: Chờ giao diện chat Zalo xuất hiện (tab chính), tối đa $iMaxTry lần x 20s để kịp quét QR thủ công
+Func checkZaloLoggedIn($sSession, $iMaxTry = 6)
+	writeLogMethodStart("checkZaloLoggedIn", @ScriptLineNumber)
+	For $i = 1 To $iMaxTry
+		findElement($sSession, "//*[@id='main-tab']")
+		If @error = 0 Then
+			writeLogFile($logFile, "Zalo da dang nhap!")
+			writeLogMethodEnd("checkZaloLoggedIn", @ScriptLineNumber)
+			Return True
+		EndIf
+		writeLogFile($logFile, "Zalo chua dang nhap, cho lan " & $i & "/" & $iMaxTry)
+	Next
+	writeLogMethodEnd("checkZaloLoggedIn", @ScriptLineNumber)
+	Return False
+EndFunc   ;==>checkZaloLoggedIn
+
+; Method: searchZaloGroup
+; Description: Nhập tên group vào ô tìm kiếm của Zalo
+Func searchZaloGroup($sSession, $groupName)
+	writeLogMethodStart("searchZaloGroup", @ScriptLineNumber, $groupName)
+	Local $sElement = findElement($sSession, "//input[@id='contact-search-input']")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay o tim kiem Zalo!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+	_WD_ElementAction($sSession, $sElement, 'CLEAR')
+	_WD_ElementAction($sSession, $sElement, 'value', $groupName)
+	secondWait(2)
+	writeLogMethodEnd("searchZaloGroup", @ScriptLineNumber, $groupName)
+	Return True
+EndFunc   ;==>searchZaloGroup
+
+; Method: clickZaloGroupItem
+; Description: Click kết quả tìm kiếm theo id group-item-<groupId>, fallback theo tên group
+Func clickZaloGroupItem($sSession, $groupId, $groupName = "")
+	writeLogMethodStart("clickZaloGroupItem", @ScriptLineNumber, $groupId)
+	Local $sElement = ""
+	If $groupId <> "" Then
+		$sElement = findElement($sSession, "//*[@id='group-item-" & $groupId & "']")
+		If @error Then $sElement = ""
+	EndIf
+
+	If $sElement = "" And $groupName <> "" Then
+		writeLogFile($logFile, "Khong thay group-item-" & $groupId & ", fallback tim theo ten group")
+		; DOM Zalo dùng nbsp trong tên nên phải đổi sang khoảng trắng trước khi so sánh
+		$sElement = findElement($sSession, "//*[contains(@class,'conv-item-title__name')][contains(translate(., '" & ChrW(160) & "', ' '), '" & $groupName & "')]")
+		If @error Then $sElement = ""
+	EndIf
+
+	If $sElement = "" Then
+		writeLogFile($logFile, "Khong tim thay group tren Zalo: " & $groupName)
+		Return False
+	EndIf
+
+	clickElement($sSession, $sElement)
+	secondWait(2)
+	writeLogMethodEnd("clickZaloGroupItem", @ScriptLineNumber, $groupId)
+	Return True
+EndFunc   ;==>clickZaloGroupItem
+
+; Method: checkZaloGroupHeader
+; Description: Kiểm tra tiêu đề chat đang mở có đúng tên group không
+Func checkZaloGroupHeader($sSession, $groupName)
+	Local $sElement = findElement($sSession, "//*[@id='header']//*[contains(@class,'header-title')]")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay tieu de group tren Zalo!")
+		Return False
+	EndIf
+	Local $sTitle = StringReplace(getTextElement($sSession, $sElement), ChrW(160), " ")
+	writeLogFile($logFile, "Zalo header: " & $sTitle & " - expected: " & $groupName)
+	Return StringStripWS($sTitle, 3) == StringStripWS($groupName, 3)
+EndFunc   ;==>checkZaloGroupHeader
+
+; Method: clickZaloMessageInput
+; Description: Click vào ô nhập tin nhắn của đoạn chat đang mở
+Func clickZaloMessageInput($sSession)
+	Local $sElement = findElement($sSession, "//*[@id='richInput']")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay o nhap tin nhan Zalo!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+	writeLogFile($logFile, "Da click o nhap tin nhan Zalo")
+	Return True
+EndFunc   ;==>clickZaloMessageInput
+
+; Method: sendZaloText
+; Description: Nhập text nhiều dòng vào ô nhập tin nhắn rồi gửi. Dán qua clipboard để giữ xuống dòng, lỗi thì gõ từng dòng bằng Shift+Enter.
+Func sendZaloText($sSession, $sText)
+	writeLogMethodStart("sendZaloText", @ScriptLineNumber)
+	Local $sElement = findElement($sSession, "//*[@id='richInput']")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay o nhap tin nhan Zalo!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+
+	Local $bPasted = False
+	If ClipPut($sText) Then
+		; Ctrl giữ nguyên đến khi gặp phím NULL (0xE000)
+		_WD_ElementAction($sSession, $sElement, 'value', ChrW(0xE009) & "v" & ChrW(0xE000))
+		secondWait(1)
+		$bPasted = (StringStripWS(getTextElement($sSession, $sElement), 8) <> "")
+	EndIf
+
+	If $bPasted Then
+		writeLogFile($logFile, "Da dan noi dung vao o nhap tin nhan Zalo")
+	Else
+		writeLogFile($logFile, "Dan clipboard that bai, go tung dong")
+		typeZaloLines($sSession, $sElement, $sText)
+	EndIf
+	secondWait(1)
+
+	; Ưu tiên bấm nút Gửi, không có thì dùng phím Enter
+	Local $sSendBtn = findElement($sSession, "//div[@icon='Sent-msg_24_Line']")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay nut Gui, gui bang phim Enter")
+		_WD_ElementAction($sSession, $sElement, 'value', ChrW(0xE007))
+	Else
+		clickElement($sSession, $sSendBtn)
+	EndIf
+	secondWait(2)
+	writeLogMethodEnd("sendZaloText", @ScriptLineNumber)
+	Return True
+EndFunc   ;==>sendZaloText
+
+; Method: typeZaloLines
+; Description: Gõ từng dòng vào ô nhập, xuống dòng bằng Shift+Enter (Enter đơn sẽ gửi tin)
+Func typeZaloLines($sSession, $sElement, $sText)
+	Local $sShiftEnter = ChrW(0xE008) & ChrW(0xE006) & ChrW(0xE000)
+	Local $aLines = StringSplit(StringReplace(StringReplace($sText, @CRLF, @LF), @CR, @LF), @LF, 2)
+	For $i = 0 To UBound($aLines) - 1
+		If $i > 0 Then _WD_ElementAction($sSession, $sElement, 'value', $sShiftEnter)
+		If $aLines[$i] <> "" Then _WD_ElementAction($sSession, $sElement, 'value', $aLines[$i])
+	Next
+	writeLogFile($logFile, "Da go " & UBound($aLines) & " dong vao o nhap tin nhan Zalo")
+EndFunc   ;==>typeZaloLines
+
+; Method: uploadZaloImages
+; Description: Click nút gửi hình ảnh rồi chọn toàn bộ ảnh trong thư mục qua hộp thoại Open của Windows
+Func uploadZaloImages($sSession, $sFolderPath)
+	writeLogMethodStart("uploadZaloImages", @ScriptLineNumber, $sFolderPath)
+	Local $aImages = getImageFilesInFolder($sFolderPath)
+	If UBound($aImages) = 0 Then
+		writeLogFile($logFile, "Khong co anh trong thu muc: " & $sFolderPath)
+		Return False
+	EndIf
+
+	Local $sElement = findElement($sSession, "//div[@icon='Photo_24_Line']")
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay nut gui hinh anh Zalo!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+
+	Local $isSelected = selectFilesInOpenDialog($sFolderPath, $aImages)
+	secondWait(3)
+	writeLogMethodEnd("uploadZaloImages", @ScriptLineNumber, $sFolderPath)
+	Return $isSelected
+EndFunc   ;==>uploadZaloImages
+
+; Method: selectFilesInOpenDialog
+; Description: Điều khiển hộp thoại Open: vào thư mục rồi chọn nhiều file theo tên
+Func selectFilesInOpenDialog($sFolderPath, $aFileNames, $iTimeoutSec = 15)
+	Local $hWnd = WinWait("[CLASS:#32770]", "", $iTimeoutSec)
+	If Not $hWnd Then
+		writeLogFile($logFile, "Khong thay hop thoai chon file!")
+		Return False
+	EndIf
+	WinActivate($hWnd)
+
+	; Vào thư mục trước để các tên file bên dưới được hiểu là tương đối
+	ControlSetText($hWnd, "", "Edit1", $sFolderPath)
+	ControlClick($hWnd, "", "Button1")
+	secondWait(1)
+
+	Local $sNames = ""
+	For $i = 0 To UBound($aFileNames) - 1
+		$sNames &= '"' & $aFileNames[$i] & '" '
+	Next
+	ControlSetText($hWnd, "", "Edit1", StringStripWS($sNames, 2))
+	ControlClick($hWnd, "", "Button1")
+	writeLogFile($logFile, "Da chon " & UBound($aFileNames) & " anh tu: " & $sFolderPath)
+	Return True
+EndFunc   ;==>selectFilesInOpenDialog

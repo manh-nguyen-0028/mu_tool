@@ -21,6 +21,7 @@ Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN 
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $positionConfigFileName,$devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName, $autoResetToggleConfigFileName
+Global $zaloPostConfigFileName
 Global $aCharInAccount
 
 ; Khai báo biến toàn cục
@@ -80,6 +81,8 @@ Func init()
 				$autoBuffFileName = $value
 			ElseIf "auto_reset_toggle" == $type Then
 				$autoResetToggleConfigFileName = $value
+			ElseIf "zalo_post" == $type Then
+				$zaloPostConfigFileName = $value
 			EndIf
 		EndIf
 	Next
@@ -561,6 +564,28 @@ Func readFileTxtToArray($filePath)
 		writeLogFile($logFile,"Read file " & $filePath & " success !")
 	EndIf
 	Return $aResult
+EndFunc
+
+; Method: readFileTextUtf8
+; Description: Đọc file text dạng UTF-8 (tiếng Việt), trả về "" nếu file không tồn tại.
+Func readFileTextUtf8($filePath)
+	If Not FileExists($filePath) Then Return SetError(1, 0, "")
+	Local $hFile = FileOpen($filePath, 128)
+	Local $sText = FileRead($hFile)
+	FileClose($hFile)
+	Return $sText
+EndFunc
+
+; Method: getImageFilesInFolder
+; Description: Trả về mảng tên file ảnh (jpg, jpeg, png, gif, bmp, webp) trong thư mục, không đệ quy.
+Func getImageFilesInFolder($sFolderPath)
+	Local $aImages[0]
+	Local $aFiles = _FileListToArray($sFolderPath, "*", 1)
+	If @error Then Return $aImages
+	For $i = 1 To $aFiles[0]
+		If StringRegExp($aFiles[$i], "(?i)\.(jpe?g|png|gif|bmp|webp)$") Then _ArrayAdd($aImages, $aFiles[$i])
+	Next
+	Return $aImages
 EndFunc
 
 ; Method: checkProcessExists
