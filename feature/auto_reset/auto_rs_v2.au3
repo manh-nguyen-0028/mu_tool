@@ -666,6 +666,8 @@ Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZen
 	If $rs < 20 Then 
 		$timeWaitRsUnder50 = 6
 	ElseIf $rs < 30 Then
+		$timeWaitRsUnder50 = 20
+	ElseIf $rs < 40 Then
 		$timeWaitRsUnder50 = $rs + 6
 	EndIf
 	Local $lastTimeRsAddRsUnder50 = _DateAdd('n', $timeWaitRsUnder50, $lastTimeRs)
