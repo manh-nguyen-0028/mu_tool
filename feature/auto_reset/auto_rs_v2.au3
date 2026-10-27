@@ -330,7 +330,7 @@ Func processResetV2($jAccountInfo, $iDepth = 0)
 	Return SetError(0, $isCharChanged, True)
 EndFunc
 
-Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $maxAttempts = 2, $waitMinutes = 2)
+Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $maxAttempts = 2, $waitMinutes = 1)
 	writeLogMethodStart("_TrySwitchToMainCharIfAutoHomeActive", @ScriptLineNumber, $charName)
 	; B1: Neu main char da active san thi bo qua switch
 	If activeAndMoveWinByChar($charMainName) Then
@@ -352,6 +352,9 @@ Func _TrySwitchToMainCharIfAutoHomeActive($charName, $charMainName, $isHide, $ma
 	While $attempts < $maxAttempts
 		activeAndMoveWinByChar($charName)
 		secondWait(2)
+		; thuc hien click ra giua man hinh de loai bo cac popup
+		clickCenterChar()
+		secondWait(1)
 		$isActive = checkActiveAutoHome()
 		If $isActive Then
 			ExitLoop
@@ -658,7 +661,13 @@ Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZen
 	Local $currentTime = getTimeNow()
 	Local $lastTimeRsAdd30 = _DateAdd('n', 30, $lastTimeRs)
 	Local $lastTimeRsAddRsVip = _DateAdd('n', $timeWaitRsVip, $lastTimeRs)
-	Local $timeWaitRsUnder50 = $rs + 6
+	; $timeWaitRsUnder50 = 6 neu rs < 20. tu 20 toi 30 = $rs + 6. tu 30 tro len = $rs * 2
+	Local $timeWaitRsUnder50 = $rs * 2
+	If $rs < 20 Then 
+		$timeWaitRsUnder50 = 6
+	ElseIf $rs < 30 Then
+		$timeWaitRsUnder50 = $rs + 6
+	EndIf
 	Local $lastTimeRsAddRsUnder50 = _DateAdd('n', $timeWaitRsUnder50, $lastTimeRs)
 
 	If $typeRs == "free" Then
