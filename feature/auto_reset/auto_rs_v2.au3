@@ -16,6 +16,9 @@ Global Const $RS_ERR_NOT_TIME_YET = 4
 Global Const $RS_ERR_ACTIVE_GAME_FAILED = 5
 Global Const $RS_ERR_CHANGE_CHAR_FAILED = 6
 
+; So lan reset lien tiep toi da cho cung 1 char trong 1 luot xu ly
+Global Const $RS_MAX_REPEAT = 5
+
 ;~ startAutoRsV2()
 start()
 
@@ -57,7 +60,7 @@ Func calculateWaitMinutesV2()
 		Local $jAccount = _NormalizeAccountV2($jAccMerge[$i])
 		Local $lastResetStatus = getPropertyJson($jAccount, "last_reset_status")
 		If Not getPropertyJson($jAccount, "active") Then ContinueLoop
-		If Not $lastResetStatus Then ContinueLoop
+		;~ If Not $lastResetStatus Then ContinueLoop
 
 		Local $lastTimeRs = getPropertyJson($jAccount, "last_time_reset")
 		Local $hourPerRs = Number(getPropertyJson($jAccount, "hour_per_reset"))
@@ -227,7 +230,7 @@ Func resetV2($jAccountInfo)
 	writeLogMethodEnd("resetV2", @ScriptLineNumber, $charName)
 EndFunc
 
-Func processResetV2($jAccountInfo)
+Func processResetV2($jAccountInfo, $iDepth = 0)
 	; B1: Chuan hoa thong tin account
 	Local $oAccountInfo = extractAccountInfoV2($jAccountInfo)
 	Local $charName = $oAccountInfo.Item("charName")
@@ -306,6 +309,14 @@ Func processResetV2($jAccountInfo)
 		Local $lvlMove = Number($oAccountInfo.Item("lvlMove"))
 		writeLogFile($logFile, "Current level after reset: " & $currentLvl & " - Level to move: " & $lvlMove)
 		writeLogFile($logFile, "Switch other main: " & $oAccountInfo.Item("switchOtherMain") & " - Char main name: " & $oAccountInfo.Item("charMainName"))
+
+		; B9.2: Du level va du thoi gian cho reset tiep thi reset lai chinh char nay
+		If $iDepth < $RS_MAX_REPEAT And _CanResetAgainV2($jAccountInfo, $sLogResetAfter, $currentLvl) Then
+			writeLogFile($logFile, "Du level va du thoi gian cho reset, reset tiep: " & $charName & " - lan " & ($iDepth + 2))
+			Local $isResetAgain = processResetV2($jAccountInfo, $iDepth + 1)
+			Local $iErrAgain = @error, $iExtAgain = @extended
+			Return SetError($iErrAgain, $iExtAgain, $isResetAgain)
+		EndIf
 		If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
 			_TrySwitchToMainCharIfAutoHomeActive($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
 		EndIf
@@ -492,6 +503,45 @@ Func calculateRequiredLevelForResetV2($rsCount)
 	Return $lvlCanRs
 EndFunc
 
+; Method: _CanResetAgainV2
+; Description: Kiem tra co reset tiep duoc khong: du level + cac dieu kien validate reset (hour_per_reset, vip/free, max rs, limit/ngay)
+;              tren du lieu moi nhat sau reset. Cap nhat rs/last_time_reset/time_rs vao $jAccountInfo.
+Func _CanResetAgainV2($jAccountInfo, $sLogReset, $currentLvl)
+	Local $charName = getPropertyJson($jAccountInfo, "char_name")
+	Local $lvlCanRs = calculateRequiredLevelForResetV2(getRsCount($sLogReset))
+	If $currentLvl < $lvlCanRs Then Return False
+
+	_JSONSet(getCurrentReset($sLogReset), $jAccountInfo, "rs")
+	_JSONSet(getRsInDay($sLogReset), $jAccountInfo, "time_rs")
+	_JSONSet(getTimeReset($sLogReset, 0), $jAccountInfo, "last_time_reset")
+
+	Local $aWait = _GetTimeWaitRsConfigV2()
+	Local $bBlocked = _ValidRs_IsOverMaxHourResetV2($jAccountInfo) _
+			Or _ValidRs_IsNotTimeToResetV2($jAccountInfo) _
+			Or _ValidRs_IsMaxResetReachedV2($jAccountInfo) _
+			Or _ValidRs_IsTypeRsTimeNotReachedV2($jAccountInfo, $aWait[0], $aWait[1]) _
+			Or _ValidRs_IsDailyLimitExceededV2($jAccountInfo)
+	If $bBlocked Then
+		writeLogFile($logFile, "Du level (" & $currentLvl & " >= " & $lvlCanRs & ") nhung khong dat dieu kien validate reset tiep: " & $charName)
+		Return False
+	EndIf
+	_ValidRs_AdjustTypeRsIfOverDailyLimitV2($jAccountInfo, $aWait[2])
+	Return True
+EndFunc
+
+; Method: _GetTimeWaitRsConfigV2
+; Description: Tra ve mang [time_wait_rs_vip, time_wait_rs_zen_rs_50, max_rs_vip] tu position config, co gia tri mac dinh
+Func _GetTimeWaitRsConfigV2()
+	Local $aWait[3]
+	$aWait[0] = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_vip")
+	$aWait[1] = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
+	$aWait[2] = _JSONGet($jsonPositionConfig, "common.auto.max_rs_vip")
+	If $aWait[0] == "" Then $aWait[0] = 20
+	If $aWait[1] == "" Then $aWait[1] = 30
+	If $aWait[2] == "" Then $aWait[2] = 10
+	Return $aWait
+EndFunc
+
 Func _CheckTimeToResetV2($timeNow, $lastTimeRs, $nextTimeRs, $charName)
 	writeLogMethodStart("_CheckTimeToResetV2", @ScriptLineNumber, $charName)
 	If ($timeNow < $nextTimeRs) Then
@@ -543,13 +593,8 @@ EndFunc
 Func validAccountRsV2($aAccountActiveRs)
 	writeLogMethodStart("validAccountRsV2", @ScriptLineNumber)
 	Local $aAccValidate[0]
-	Local $timeWaitRsVip = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_vip")
-	Local $timeWaitRsZenRs50 = _JSONGet($jsonPositionConfig, "common.auto.time_wait_rs_zen_rs_50")
-	Local $maxRsVip = _JSONGet($jsonPositionConfig, "common.auto.max_rs_vip")
-
-	If $timeWaitRsVip == "" Then $timeWaitRsVip = 20
-	If $timeWaitRsZenRs50 == "" Then $timeWaitRsZenRs50 = 30
-	If $maxRsVip == "" Then $maxRsVip = 10
+	Local $aWait = _GetTimeWaitRsConfigV2()
+	Local $timeWaitRsVip = $aWait[0], $timeWaitRsZenRs50 = $aWait[1], $maxRsVip = $aWait[2]
 
 	For $i = 0 To UBound($aAccountActiveRs) - 1
 		Local $jAccount = _NormalizeAccountV2($aAccountActiveRs[$i])

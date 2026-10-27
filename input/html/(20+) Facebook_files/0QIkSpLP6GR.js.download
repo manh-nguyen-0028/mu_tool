@@ -1,0 +1,3 @@
+;/*FB_PKG_DELIM*/
+
+__d("willAttemptEncryptedMediaAtJoin",["ZenonAppProvider","ZenonE2eeMandatedStateManager","ZenonE2eeTransformGate","qex"],(function(t,n,r,o,a,i,l){"use strict";function e(){var e;if(r("ZenonE2eeMandatedStateManager").isInfraE2eeMandated())return!0;var t=(e=r("qex")._("1722"))!=null?e:!1;return o("ZenonE2eeTransformGate").isE2eeTransformSupported(o("ZenonAppProvider").isMessengerWebApp())&&t}l.default=e}),98);

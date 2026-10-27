@@ -1086,3 +1086,133 @@ Func selectFilesInOpenDialog($sFolderPath, $aFileNames, $iTimeoutSec = 15)
 	writeLogFile($logFile, "Da chon " & UBound($aFileNames) & " anh tu: " & $sFolderPath)
 	Return True
 EndFunc   ;==>selectFilesInOpenDialog
+
+; ===== Nhóm Facebook web =====
+; XPath chỉ dùng ký tự ASCII (hoặc ChrW) vì file không có BOM nên AutoIt đọc literal tiếng Việt theo ANSI
+Global Const $FB_XPATH_COMPOSER = "//span[contains(text(),'ang ngh')][not(ancestor::div[@role='dialog'])]"
+Global Const $FB_XPATH_DIALOG_TEXTBOX = "//div[@role='dialog']//div[@role='textbox'][@contenteditable='true']"
+Global Const $FB_XPATH_DIALOG_PHOTO_BTN = "//div[@role='dialog']//div[contains(@aria-label,'nh/video')][@role='button']"
+Global Const $FB_XPATH_DIALOG_FILE_INPUT = "//div[@role='dialog']//input[@type='file']"
+Global Const $FB_XPATH_DIALOG_ADD_PHOTO = "//div[@role='dialog']//*[contains(text(),'nh/video')]"
+Global $FB_XPATH_DIALOG_POST_BTN = "//div[@role='dialog']//div[@aria-label='" & ChrW(0x110) & ChrW(0x103) & "ng'][@role='button']"
+
+; Method: clickFacebookComposer
+; Description: Click vùng "bạn đang nghĩ gì thế?" để mở popup tạo bài viết
+Func clickFacebookComposer($sSession)
+	Local $sElement = findElement($sSession, $FB_XPATH_COMPOSER)
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay vung dang bai Facebook (chua dang nhap hoac sai URL)!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+	secondWait(2)
+	writeLogFile($logFile, "Da click vung dang bai Facebook")
+	Return True
+EndFunc   ;==>clickFacebookComposer
+
+; Method: sendFacebookText
+; Description: Nhập text nhiều dòng vào popup tạo bài viết. Dán qua clipboard để giữ xuống dòng, lỗi thì gõ từng dòng.
+Func sendFacebookText($sSession, $sText)
+	writeLogMethodStart("sendFacebookText", @ScriptLineNumber)
+	Local $sElement = findElement($sSession, $FB_XPATH_DIALOG_TEXTBOX)
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay o nhap noi dung bai viet Facebook!")
+		Return False
+	EndIf
+	clickElement($sSession, $sElement)
+
+	Local $bPasted = False
+	If ClipPut($sText) Then
+		; Ctrl giữ nguyên đến khi gặp phím NULL (0xE000)
+		_WD_ElementAction($sSession, $sElement, 'value', ChrW(0xE009) & "v" & ChrW(0xE000))
+		secondWait(1)
+		$bPasted = (StringStripWS(getTextElement($sSession, $sElement), 8) <> "")
+	EndIf
+
+	If $bPasted Then
+		writeLogFile($logFile, "Da dan noi dung vao bai viet Facebook")
+	Else
+		writeLogFile($logFile, "Dan clipboard that bai, go tung dong")
+		Local $aLines = StringSplit(StringReplace(StringReplace($sText, @CRLF, @LF), @CR, @LF), @LF, 2)
+		For $i = 0 To UBound($aLines) - 1
+			; Enter đơn trong ô bài viết Facebook là xuống dòng
+			If $i > 0 Then _WD_ElementAction($sSession, $sElement, 'value', ChrW(0xE007))
+			If $aLines[$i] <> "" Then _WD_ElementAction($sSession, $sElement, 'value', $aLines[$i])
+		Next
+	EndIf
+	secondWait(1)
+	writeLogMethodEnd("sendFacebookText", @ScriptLineNumber)
+	Return True
+EndFunc   ;==>sendFacebookText
+
+; Method: uploadFacebookImages
+; Description: Bấm nút Ảnh/video rồi gửi toàn bộ ảnh trong thư mục vào input file; không có input thì mở hộp thoại Open của Windows
+Func uploadFacebookImages($sSession, $sFolderPath)
+	writeLogMethodStart("uploadFacebookImages", @ScriptLineNumber, $sFolderPath)
+	Local $aImages = getImageFilesInFolder($sFolderPath)
+	If UBound($aImages) = 0 Then
+		writeLogFile($logFile, "Khong co anh trong thu muc: " & $sFolderPath)
+		Return False
+	EndIf
+
+	Local $sPhotoBtn = findElement($sSession, $FB_XPATH_DIALOG_PHOTO_BTN)
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay nut Anh/video Facebook!")
+		Return False
+	EndIf
+	clickElement($sSession, $sPhotoBtn)
+	secondWait(2)
+
+	; Input file thường bị ẩn nên không dùng findElement (yêu cầu visible)
+	Local $sFileInput = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $FB_XPATH_DIALOG_FILE_INPUT)
+	Local $isUploaded = False
+	If @error = 0 And $sFileInput <> "" Then
+		Local $sPaths = ""
+		For $i = 0 To UBound($aImages) - 1
+			$sPaths &= $sFolderPath & "\" & $aImages[$i] & @LF
+		Next
+		_WD_ElementAction($sSession, $sFileInput, 'value', StringTrimRight($sPaths, 1))
+		$isUploaded = (@error = 0)
+		writeLogFile($logFile, "Da gui " & UBound($aImages) & " anh vao input file")
+	EndIf
+
+	If Not $isUploaded Then
+		writeLogFile($logFile, "Khong dung duoc input file, mo hop thoai chon file")
+		Local $sAddPhoto = findElement($sSession, $FB_XPATH_DIALOG_ADD_PHOTO)
+		If @error Then
+			writeLogFile($logFile, "Khong tim thay vung them anh/video Facebook!")
+			Return False
+		EndIf
+		clickElement($sSession, $sAddPhoto)
+		$isUploaded = selectFilesInOpenDialog($sFolderPath, $aImages)
+	EndIf
+
+	; Chờ ảnh tải lên, càng nhiều ảnh càng lâu
+	secondWait(3 + UBound($aImages) * 2)
+	writeLogMethodEnd("uploadFacebookImages", @ScriptLineNumber, $sFolderPath)
+	Return $isUploaded
+EndFunc   ;==>uploadFacebookImages
+
+; Method: submitFacebookPost
+; Description: Bấm nút Đăng trong popup rồi chờ popup đóng (tối đa $iMaxTry x 5s)
+Func submitFacebookPost($sSession, $iMaxTry = 12)
+	writeLogMethodStart("submitFacebookPost", @ScriptLineNumber)
+	Local $sPostBtn = findElement($sSession, $FB_XPATH_DIALOG_POST_BTN)
+	If @error Then
+		writeLogFile($logFile, "Khong tim thay nut Dang bai Facebook!")
+		Return False
+	EndIf
+	clickElement($sSession, $sPostBtn)
+
+	For $i = 1 To $iMaxTry
+		secondWait(5)
+		_WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $FB_XPATH_DIALOG_TEXTBOX)
+		If @error Then
+			writeLogFile($logFile, "Da dang bai Facebook thanh cong!")
+			writeLogMethodEnd("submitFacebookPost", @ScriptLineNumber)
+			Return True
+		EndIf
+	Next
+	writeLogFile($logFile, "Popup dang bai chua dong sau khi bam Dang!")
+	Return False
+EndFunc   ;==>submitFacebookPost

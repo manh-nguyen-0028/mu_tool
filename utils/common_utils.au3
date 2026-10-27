@@ -21,7 +21,7 @@ Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN 
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $positionConfigFileName,$devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
 Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName, $autoResetToggleConfigFileName
-Global $zaloPostConfigFileName
+Global $zaloPostConfigFileName, $facebookPostConfigFileName
 Global $aCharInAccount
 
 ; Khai báo biến toàn cục
@@ -83,6 +83,8 @@ Func init()
 				$autoResetToggleConfigFileName = $value
 			ElseIf "zalo_post" == $type Then
 				$zaloPostConfigFileName = $value
+			ElseIf "facebook_post" == $type Then
+				$facebookPostConfigFileName = $value
 			EndIf
 		EndIf
 	Next
