@@ -28,9 +28,9 @@ Global $aCharInAccount
 Global $iLogOverwrite = 2 ; Ghi đè file log
 
 ; Khai báo hằng số
-Global Const $WM_MOUSEMOVE = 0x0200
-Global Const $WM_LBUTTONDOWN = 0x0201
-Global Const $WM_LBUTTONUP = 0x0202
+Global Const $WM_MOUSEMOVE_CUSTOM = 0x0200
+Global Const $WM_LBUTTONDOWN_CUSTOM = 0x0201
+Global Const $WM_LBUTTONUP_CUSTOM = 0x0202
 
 ; Khởi tạo biến logFile
 Global $className = "MuTool"
@@ -827,11 +827,11 @@ Func ControlClick_NoFocus($hWnd, $ControlID, $toadoX, $toadoY)
     Local $lParam = BitOR($toadoY * 0x10000, $toadoX)
 
     ; Gửi thông điệp nhấn chuột trái (LBUTTONDOWN)
-    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONDOWN, "wparam", 0, "lparam", $lParam)
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONDOWN_CUSTOM, "wparam", 0, "lparam", $lParam)
     Sleep(500) ; Khoảng nghỉ để mô phỏng nhấn giữ
 
     ; Gửi thông điệp nhả chuột trái (LBUTTONUP)
-    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONUP, "wparam", 0, "lparam", $lParam)
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_LBUTTONUP_CUSTOM, "wparam", 0, "lparam", $lParam)
 EndFunc
 
 ; Hàm di chuyển chuột đến một tọa độ xác định trong control
@@ -847,7 +847,7 @@ Func ControlMouseMove($hWnd, $ControlID, $toadoX, $toadoY)
     Local $lParam = BitOR($toadoY * 0x10000, $toadoX)
 
     ; Gửi thông điệp WM_MOUSEMOVE đến control
-    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_MOUSEMOVE, "wparam", 0, "lparam", $lParam)
+    DllCall("user32.dll", "int", "PostMessage", "hwnd", $hControl, "uint", $WM_MOUSEMOVE_CUSTOM, "wparam", 0, "lparam", $lParam)
 EndFunc
 
 Func getMainNoByChar($charName)
