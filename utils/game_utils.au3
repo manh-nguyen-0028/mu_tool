@@ -1443,9 +1443,12 @@ EndFunc
 Func addPointInGameV2()
 	sendKeyC()
 	secondWait(1)
-	For $i = 0 To 1
-		clickButtonAddPoint()
-	Next
+	;~ For $i = 0 To 1
+	;~ 	clickButtonAddPoint()
+	;~ Next
+
+	clickButtonAddPoint()		
+
 	sendKeyC()
 EndFunc
 

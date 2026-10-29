@@ -300,7 +300,6 @@ Func processResetV2($jAccountInfo, $iDepth = 0)
 		If $goArena Then
 			processGoArenaV2($mainNo, $rsCount, Number($oAccountInfo.Item("arenaLoopCount")))
 			moveOtherMap($charName)
-			addPointStartAutoPlus()
 		EndIf
 
 		; B9.1: Neu dat nguong level va co bat switchOtherMain thi thu switch sang main char
@@ -317,6 +316,10 @@ Func processResetV2($jAccountInfo, $iDepth = 0)
 			Local $iErrAgain = @error, $iExtAgain = @extended
 			Return SetError($iErrAgain, $iExtAgain, $isResetAgain)
 		EndIf
+
+		; Add them 1 lan + diem
+		addPointStartAutoPlus()
+
 		If $currentLvl >= $lvlMove And $oAccountInfo.Item("switchOtherMain") Then
 			_TrySwitchToMainCharIfAutoHomeActive($charName, $oAccountInfo.Item("charMainName"), $oAccountInfo.Item("isHide"))
 		EndIf
@@ -519,13 +522,20 @@ Func _CanResetAgainV2($jAccountInfo, $sLogReset, $currentLvl)
 	_JSONSet(getTimeReset($sLogReset, 0), $jAccountInfo, "last_time_reset")
 
 	Local $aWait = _GetTimeWaitRsConfigV2()
-	Local $bBlocked = _ValidRs_IsOverMaxHourResetV2($jAccountInfo) _
-			Or _ValidRs_IsNotTimeToResetV2($jAccountInfo) _
-			Or _ValidRs_IsMaxResetReachedV2($jAccountInfo) _
-			Or _ValidRs_IsTypeRsTimeNotReachedV2($jAccountInfo, $aWait[0], $aWait[1]) _
-			Or _ValidRs_IsDailyLimitExceededV2($jAccountInfo)
-	If $bBlocked Then
-		writeLogFile($logFile, "Du level (" & $currentLvl & " >= " & $lvlCanRs & ") nhung khong dat dieu kien validate reset tiep: " & $charName)
+	Local $sBlockedReason = ""
+	If _ValidRs_IsOverMaxHourResetV2($jAccountInfo) Then
+		$sBlockedReason = "vuot max_hour_reset (gio hien tai >= " & getPropertyJson($jAccountInfo, "max_hour_reset") & ")"
+	ElseIf _ValidRs_IsNotTimeToResetV2($jAccountInfo) Then
+		$sBlockedReason = "chua den gio reset (last_time_reset + hour_per_reset)"
+	ElseIf _ValidRs_IsMaxResetReachedV2($jAccountInfo) Then
+		$sBlockedReason = "da dat max_rs (rs=" & getPropertyJson($jAccountInfo, "rs") & ", max_rs=" & getPropertyJson($jAccountInfo, "max_rs") & ")"
+	ElseIf _ValidRs_IsTypeRsTimeNotReachedV2($jAccountInfo, $aWait[0], $aWait[1]) Then
+		$sBlockedReason = "chua du thoi gian cho theo type_rs=" & getPropertyJson($jAccountInfo, "type_rs")
+	ElseIf _ValidRs_IsDailyLimitExceededV2($jAccountInfo) Then
+		$sBlockedReason = "vuot limit/ngay (time_rs=" & getPropertyJson($jAccountInfo, "time_rs") & ", limit=" & getPropertyJson($jAccountInfo, "limit") & ")"
+	EndIf
+	If $sBlockedReason <> "" Then
+		writeLogFile($logFile, "Du level (" & $currentLvl & " >= " & $lvlCanRs & ") nhung khong dat dieu kien validate reset tiep: " & $charName & " - ly do: " & $sBlockedReason)
 		Return False
 	EndIf
 	_ValidRs_AdjustTypeRsIfOverDailyLimitV2($jAccountInfo, $aWait[2])
@@ -673,6 +683,8 @@ Func _ValidRs_IsTypeRsTimeNotReachedV2($jAccount, $timeWaitRsVip, $timeWaitRsZen
 	Local $lastTimeRsAddRsUnder50 = _DateAdd('n', $timeWaitRsUnder50, $lastTimeRs)
 
 	If $typeRs == "free" Then
+		writeLogFile($logFile, "Type RS: " & $typeRs & ", RS: " & $rs & ", Last Time RS: " & $lastTimeRs)
+		writeLogFile($logFile, "$timeWaitRsUnder50: " & $timeWaitRsUnder50 & ", $lastTimeRsAddRsUnder50: " & $lastTimeRsAddRsUnder50)
 		If $currentTime < $lastTimeRsAdd30 And $rs >= 50 Then Return True
 		If $currentTime < $lastTimeRsAddRsUnder50 And $rs < 50 Then Return True
 	EndIf
