@@ -65,3 +65,8 @@ Ghi lại các thay đổi tọa độ trong `position_config.json` / `m1_positi
 
 [2026/06/22] - So sánh main → update/v1.22
 - Xóa: common.auto.time_wait_after_follow = 10 — Chuyển cấu hình thời gian chờ sau follow sang devil config để đúng domain của feature Devil
+[2026/10/30] - So sánh main → update hiện tại
+- Thêm: button.train_in_game.checkbox_devil_x = 0 — Tọa độ X checkbox devil trong Auto Plus (placeholder, cần cập nhật theo cửa sổ thực tế)
+- Thêm: button.train_in_game.checkbox_devil_y = 0 — Tọa độ Y checkbox devil trong Auto Plus (placeholder, cần cập nhật theo cửa sổ thực tế)
+- **Used by:** applyDevilCheckboxState() trong utils/game_utils.au3
+- **Feature:** feature/auto_devil/auto_devil_toggle.au3

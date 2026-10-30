@@ -20,7 +20,7 @@ Global $currentFile = @ScriptName ; Lấy tên file script hiện tại
 Global $baseMuUrl = "https://hn.gamethuvn.net/", $titleGameMain = "MU GamethuVN - Season 21"
 Global $sSession, $logFile, $jsonPositionConfig, $jsonConfig
 Global $positionConfigFileName,$devilFileName, $devilFixedFileName, $accountRsFileName,$accountRsFixedFileName, $charInAccountFileName, $buySvGoldFileName, $autoLoginFileName, $autoRsUpdateInfoFileName, $accountPasswordFileName
-Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName, $autoResetToggleConfigFileName
+Global $autoMoveConfigFileName, $autoAuctionConfigFileName, $resetOnlineConfigFileName, $autoBuffFileName, $autoResetToggleConfigFileName, $autoDevilToggleConfigFileName
 Global $zaloPostConfigFileName, $facebookPostConfigFileName
 Global $aCharInAccount
 
@@ -81,6 +81,8 @@ Func init()
 				$autoBuffFileName = $value
 			ElseIf "auto_reset_toggle" == $type Then
 				$autoResetToggleConfigFileName = $value
+			ElseIf "auto_devil_toggle" == $type Then
+				$autoDevilToggleConfigFileName = $value
 			ElseIf "zalo_post" == $type Then
 				$zaloPostConfigFileName = $value
 			ElseIf "facebook_post" == $type Then

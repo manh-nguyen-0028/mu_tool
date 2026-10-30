@@ -96,7 +96,9 @@
       "button_stop_x": 306,
       "button_stop_y": 78,
       "checkbox_reset_x": 0,
-      "checkbox_reset_y": 0
+      "checkbox_reset_y": 0,
+		  "checkbox_devil_x": 322, 
+		  "checkbox_devil_y": 332
     },
     "swith_sv_in_game": {
       "button_x": 100,
