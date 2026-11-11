@@ -11,6 +11,12 @@
       "max_rs_po": 10,
       "min_wait_go_devil": 1
     },
+    "auto_plus_schedule": {
+      "reset_on": "00:30",
+      "reset_off": "06:30",
+      "devil_off": "18:08",
+      "devil_on": "23:40"
+    },
     "web": {
       "mu_url": "https://hn.mugamethuvn.info/"
     },
@@ -80,6 +86,10 @@
     }
   },
   "button": {
+    "dong_y": {
+      "x": 100,
+      "y": 200
+    },
     "bang_c": {
       "add_point_x": 429,
       "add_point_y": 178,

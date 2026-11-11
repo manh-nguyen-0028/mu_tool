@@ -13,34 +13,58 @@ serviceControlStart()
 Func serviceControlStart()
 	While True
 		Local $startDay = @MDAY
-		writeLog("Bat dau ngay moi: " & @YEAR & "/" & @MON & "/" & @MDAY)
+		showStepLog("Bat dau ngay moi: " & @YEAR & "/" & @MON & "/" & @MDAY)
 
+		showStepLog("Dang chay startAutoBuff")
 		startAutoBuff()
-		runScheduledStep(0, 30, "startAutoResetOn")
-		runScheduledStep(6, 30, "startAutoResetOff")
-		runScheduledStep(18, 8, "startAutoDevilOff")
-		runScheduledStep(23, 40, "startAutoDevilOn")
+		showStepLog("Xong startAutoBuff")
+		runScheduledStepByConfig("reset_on", "00:30", "startAutoResetOn")
+		runScheduledStepByConfig("reset_off", "06:30", "startAutoResetOff")
+		runScheduledStepByConfig("devil_off", "18:08", "startAutoDevilOff")
+		runScheduledStepByConfig("devil_on", "23:40", "startAutoDevilOn")
 
-		; Cho sang ngay moi roi moi lap lai chu trinh
+		showStepLog("Xong cac buoc trong ngay, cho sang ngay moi")
 		While @MDAY == $startDay
 			Sleep(10000)
 		WEnd
 	WEnd
 EndFunc   ;==>serviceControlStart
 
+; Method: runScheduledStepByConfig
+; Description: Doc moc gio "HH:MM" tu common.auto_plus_schedule.<$key> trong position_config (khong co thi dung $default) roi goi runScheduledStep
+Func runScheduledStepByConfig($key, $default, $funcName)
+	Local $time = _JSONGet($jsonPositionConfig, "common.auto_plus_schedule." & $key)
+	If $time == "" Then $time = $default
+	Local $parts = StringSplit($time, ":")
+	If $parts[0] <> 2 Then
+		showStepLog("Sai dinh dang gio '" & $time & "' cho " & $key & " => dung mac dinh " & $default)
+		$parts = StringSplit($default, ":")
+	EndIf
+	Return runScheduledStep(Number($parts[1]), Number($parts[2]), $funcName)
+EndFunc   ;==>runScheduledStepByConfig
+
 ; Method: runScheduledStep
 ; Description: Cho toi gio:phut hom nay roi chay ham $funcName. Bo qua neu moc gio da qua.
 Func runScheduledStep($hour, $min, $funcName)
 	Local $diff = createTimeToTicks($hour, $min, 0) - createTimeToTicks(@HOUR, @MIN, @SEC)
 	If $diff < 0 Then
-		writeLog("Da qua " & $hour & "h" & $min & " => bo qua " & $funcName)
+		showStepLog("Da qua " & $hour & "h" & $min & " => bo qua " & $funcName)
 		Return False
 	EndIf
-	writeLog("Cho toi " & $hour & "h" & $min & " de chay " & $funcName & " (" & timeToText($diff) & ")")
+	showStepLog("Cho toi " & $hour & "h" & $min & " de chay " & $funcName & " (" & timeToText($diff) & ")")
 	Sleep($diff)
-	Call($funcName)
+	showStepLog("Dang chay " & $funcName)
+	Local $result = Call($funcName)
+	showStepLog("Xong " & $funcName & " - thanh cong: " & $result)
 	Return True
 EndFunc   ;==>runScheduledStep
+
+; Method: showStepLog
+; Description: Ghi log console va hien thong bao tray tren man hinh (TrayTip khong de lai overlay len cua so game)
+Func showStepLog($text)
+	writeLog($text)
+	TrayTip("Auto Plus", $text, 5)
+EndFunc   ;==>showStepLog
 
 ; Method: startPath
 ; Description: Executes auto reset V2 executable path.

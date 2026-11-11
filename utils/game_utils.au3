@@ -1022,8 +1022,11 @@ Func clickCenterChar()
 EndFunc   ;==>clickCenterChar
 
 ; Send key enter
-Func sendKeyEnter()
-	sendKeyDelay("{Enter}")
+Func sendKeyEnter($iTimes = 1)
+	For $i = 1 To $iTimes
+		sendKeyDelay("{Enter}")
+		secondWait(1)
+	Next
 EndFunc   ;==>sendKeyEnter
 
 ; Send key home
