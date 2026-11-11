@@ -68,8 +68,7 @@ Func processDevilToggleChar($jChar, $enable)
 		Return False
 	EndIf
 	; Bam enter 1 lan de xoa cac popup (neu co) truoc khi bat/tat checkbox devil
-	sendKeyEnter()
-	secondWait(1)
+	sendKeyEnter(2)
 
 	Local $result = applyDevilCheckboxState($enable)
 	writeLogFile($logFile, "Ket qua toggle devil char " & $charName & ": " & $result)
